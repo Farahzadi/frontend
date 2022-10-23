@@ -1,0 +1,49 @@
+name: Build and Deploy main app on production
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'info'
+
+jobs:
+  build_and_push:
+    runs-on: self-hosted
+    steps:
+      - name: pull latest code
+        uses: actions/checkout@v2
+
+      - name: build step
+        run: docker build -t ghcr.io/dedogmadao/dt-frontend/dt-frontend:${{ github.ref_name }}-latest .
+
+      - name: login to docker registry
+        run: echo ${{ secrets.PERSONAL_GITHUB_TOKEN }} | docker login ghcr.io -u flokibb --password-stdin
+
+      - name: push docker image to package registry
+        run: docker push ghcr.io/dedogmadao/dt-frontend/dt-frontend:${{ github.ref_name }}-latest
+
+
+  deploy:
+    needs: build_and_push
+    runs-on: self-hosted
+
+    steps:
+      - name: connect to server
+      
+      - name: update docker-compose file
+
+      - name: export needed secret variables
+
+      - name: docker login
+
+      - name: remove old image
+
+      - name: pull new docker image
+
+      - name: restart docker compose
+
