@@ -1,0 +1,147 @@
+:root {
+   --gray: #74777f;
+   --liteBlue: #94a2c9;
+}
+
+.spot_form {
+    width: 100;
+    color: white;
+}
+
+.spf_head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.spf_head_total_amount {
+    display: flex;
+    align-items: center;
+}
+
+.spf_head_total_amount span {
+    color: var(--gray);
+    margin-right: 7px;
+}
+
+.spf_head_total_amount strong {
+    color: var(--liteBlue);
+}
+
+.spf_head span {
+    color: var(--gray);
+}
+
+.spf_head strong {
+    color: var(--liteBlue);
+}
+
+.spf_input_box {
+    margin-top: 10px;
+    width: 100%;
+    height: 40px;
+    border-radius: 5px;
+    padding: 0 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2B3E5A;
+}
+
+.spf_input_box input {
+    background-color: transparent;
+    outline: none;
+    border: none;
+    color: white;
+    height: 100%;
+    text-align: right;
+    width: 100%;
+    margin: 0 7px 1px;
+    line-height: 12px;
+}
+
+.spf_input_box input:disabled,
+.spf_input_box span.text-disabled {
+    background-color: transparent;
+    color: gray;
+}
+
+.spf_input_box .spf_desc_text {
+    color: #94a2c9;
+}
+
+.spf_range {
+    width: 98%;
+    padding-left: 10px;
+}
+
+.spf_fee {
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    color: var(--liteBlue);
+}
+
+.spf_fee i {
+    font-size: 25px;
+    margin-left: 5px;
+}
+
+.buy-and-sell {
+    width: 10em;
+}
+
+.spot_box_footer{
+    justify-content: space-around;
+    margin-top: 15px;
+}
+
+.buy_btn {
+    background: #3fe199;
+    text-transform: capitalize;
+}
+
+.sell_btn {
+    background: #c4384e;
+    text-transform: capitalize;
+}
+
+.buy_btn:hover {
+    filter: brightness(85%);
+}
+
+
+.sell_btn:hover {
+    filter: brightness(85%);
+}
+
+.btn_fix {
+    margin-top: 10px;
+}
+
+.fee-container {
+    margin-top: 2px;
+    color: var(--gray);
+}
+
+.buy-and-sell-container {
+    margin-left: .25em;
+}
+
+.connect-btn {
+    display: flex;
+    justify-content: space-between;
+}
+
+@media screen and (max-width: 655px) {
+    .spot_form {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 355px) {
+    .spf_input_box input {
+        width: 50%;
+    }
+}
