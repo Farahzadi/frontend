@@ -1,0 +1,50 @@
+.nonce-bg {
+  height: calc(100vh - 50px);
+  background-color: #100c22;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  color: #fff;
+}
+.nonce-text {
+  width: 1000px;
+  max-width: 90%;
+  height: 70%;
+  padding: 10px;
+  border: 1px solid;
+  border-radius: 10px;
+  font-size: 20px;
+  overflow-y: auto;
+  margin-top: 30px;
+}
+.nonce-text::-webkit-scrollbar {
+  width: 10px;
+}
+
+.nonce-text::-webkit-scrollbar-track {
+  box-shadow: transparent;
+  border-radius: 50px;
+}
+
+.nonce-text::-webkit-scrollbar-thumb {
+  background: rgb(255, 255, 255);
+  border-radius: 50px;
+  background-clip: padding-box;
+}
+
+.nonce-text::-webkit-scrollbar-thumb:hover {
+  background: #fff9f9;
+}
+.nonce-bg form {
+  margin: 20px 0;
+  width: 1000px;
+  max-width: 90%;
+  text-align: center    ;
+}
+.nonce-bg form p{
+    margin-bottom: 10px;
+}
+.nonce-bg .bg_btn{
+    width: 500px;
+    max-width: 90%;
+}
