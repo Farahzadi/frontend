@@ -1,0 +1,94 @@
+.subtitle {
+  color: var(--grey);
+}
+.cardsContainer {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  min-width: min(1500px - 160px, 100% - 160px);
+}
+.card {
+  border: 2px solid transparent;
+  margin: 0.8rem 0;
+  text-align: left;
+  padding: 2rem;
+  border-radius: 23px;
+  position: relative;
+  background-clip: padding-box;
+  background-position: 0 center;
+  background-repeat: no-repeat;
+  background-color: var(--darkBG);
+}
+.cardBG {
+  max-width: min(100%, 370px);
+  position: relative;
+  padding: 0 12.5px;
+}
+.cardBG::before {
+  content: ' ';
+  background-position: 0;
+  background-repeat: no-repeat;
+  background-image: url('/images/Dex-tutorial-1.svg');
+  background-size: contain;
+  background-color: var(--darkBG);
+  position: absolute;
+  top: calc(50% - 27px);
+  left: 0;
+  right: calc(100% - 40px);
+  bottom: calc(50% - 27px);
+  z-index: 10;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  margin: -2.5px;
+  background: linear-gradient(to right, #9648ff, #20c4ba);
+  border-radius: inherit;
+}
+.cardBG:first-child::before {
+  background-image: url('/images/Dex-tutorial-1.svg');
+}
+.cardBG:nth-child(2)::before {
+  background-image: url('/images/Dex-tutorial-2.svg');
+}
+.cardBG:nth-child(3)::before {
+  background-image: url('/images/Dex-tutorial-3.svg');
+}
+@media (min-width: 640px) {
+  /* .cardsContainer {
+    flex-direction: row;
+    max-width: calc(100% - 160px);
+  }
+  .card {
+    margin: 0 0.8rem;
+  }
+  .cardBG::before {
+    background-size: 57px 80px;
+    right: calc(100% - 60px);
+    top: calc(50% - 40px);
+    bottom: calc(50% - 40px);
+  } */
+}
+@media (min-width: 769px) {
+  .cardsContainer {
+    flex-direction: row;
+    max-width: calc(100% - 160px);
+  }
+  .card {
+    margin: 0 0.8rem;
+  }
+  .cardBG::before {
+    background-size: 50px 80px;
+    right: calc(100% - 60px);
+    top: calc(50% - 40px);
+    bottom: calc(50% - 40px);
+  }
+}

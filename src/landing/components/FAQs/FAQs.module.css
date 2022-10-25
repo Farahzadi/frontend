@@ -1,0 +1,35 @@
+.section {
+    max-width: 80rem;
+    margin: auto;
+}
+.container {
+
+}
+.item {
+    border-bottom: 0.6px solid rgba(128,126,152,0.5);
+    cursor: pointer;
+    padding: 2rem 0;
+}
+.item:last-child {
+    border-bottom: none;
+}
+.itemHeader {
+    display: flex;
+    justify-content: space-between;
+}
+.itemHeader h3 {
+    text-align: start;
+}
+.item p {
+    height: 0;
+    overflow: hidden;
+    text-align: start;
+    transition: height 0.7s ease-in-out;
+    font-size: 1rem;
+    line-height: 2rem;
+    color: var(--grey);
+}
+.expandedAnswer {
+    height: auto !important;
+    padding-top: 1rem;
+}
