@@ -1,0 +1,76 @@
+.section {
+  background: url(/images/lavender-stars.svg) no-repeat center center;
+  background-size: cover;
+
+}
+.container {
+  display: flex;
+  align-items: center;
+  flex-flow: column;
+}
+.imgContainer {
+  flex: 50%;
+  text-align: center;
+}
+.title {
+  display: none;
+}
+.textContainer {
+  flex: 50%;
+}
+.textContainer div {
+  width: 80%;
+  margin: 0 auto;
+}
+.textContainer div h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.tradeBtn {
+  border: none;
+  border-radius: 10px;
+  max-width: 280px;
+  width: 100%;
+  height: 36px;
+  font-size: 1rem;
+  display: block;
+  background: linear-gradient(to right, #cba7ef 50%, #240233 50%);
+  background-size: 200% 100%;
+  background-position: right bottom;
+  transition: all 0.5s ease-out;
+  margin: 1.2rem auto 2.3rem;
+}
+.tradeBtn:hover {
+  background-position: left bottom;
+  color: #240233;
+}
+
+@media (min-width: 640px) {
+
+  .title {
+    display: block;
+    margin-bottom: 1rem;
+  }
+  .titleXS {
+    display: none;
+  }
+  .textContainer p {
+    font-size: 1.15rem;
+    margin-bottom: 2.25rem;
+    line-height: 140%;
+  }
+
+  .tradeBtn {
+    width: 280px;
+    height: 55px;
+    font-size: 1rem;
+    font-weight: bold;
+  }
+}
+@media (min-width: 769px) {
+  .container {
+    flex-flow: row;
+  }
+}

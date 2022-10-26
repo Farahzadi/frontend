@@ -1,0 +1,117 @@
+.container {
+  margin: 0 auto;
+  padding: 3.3rem 2.25rem 4rem;
+  /* max-width: 1700px; */
+  color: white;
+  /* background: #11142B url(/images/stars-bg.svg) no-repeat center center;
+  background-attachment: fixed;
+  background-size: cover; */
+  /* min-height: calc(850px - var(--navbar-height)); */
+}
+.headerText {
+  max-width: 800px;
+  text-align: center;
+  line-height: 2rem;
+}
+.sponsorContainer {
+  font-size: 0.8rem;
+  display: flex;
+  justify-content: center;
+  font-size: 1rem;
+  margin: 1.6875rem 0;
+  color: var(--grey);
+}
+.sponsorContainer img {
+  padding: 0 0.5rem !important;
+}
+.description {
+  font-size: 1.2rem;
+  color: var(--grey);
+}
+.background {
+  width: 850px;
+  align-self: center;
+  max-width: 100%;
+  height: auto;
+  display: none;
+}
+.tradeBtn {
+  border-radius: 10px;
+  background: var(--themeColor);
+  /* width: 100%; */
+  font-size: 1.05rem;
+  color: #fff;
+  text-align: center;
+  margin-top: 2.57rem;
+  line-height: 2.25rem;
+  position: fixed;
+  bottom: 23px;
+  left: 2rem;
+  right: 2rem;
+  z-index: 55;
+}
+.fixedBtn {
+  top: auto;
+}
+.hiddenBtn {
+  opacity: 0 !important;
+  transition: opacity ease-in-out 0.3s;
+}
+.tradeFAB {
+  position: fixed;
+  z-index: 999;
+  bottom: 27px;
+  right: 20px;
+  opacity: 1;
+  width: 57px;
+  height: 57px;
+  border-radius: 50%;
+  transition: opacity ease-in-out 0.3s;
+}
+
+@media (min-width: 769px) {
+  .container {
+    /* background: #11142B; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    padding-left: 7rem;
+  }
+
+  .sponsorContainer {
+    font-size: 1rem;
+    justify-content: flex-start;
+  }
+  .headerText {
+    text-align: start;
+  }
+  .headerText h1 {
+    font-size: 2.7rem;
+    font-weight: bold;
+    color: #fff;
+    line-height: 4.5rem;
+    text-align: start;
+  }
+  .headerText p {
+    font-size: 1.2rem;
+    text-align: start;
+  }
+  /* .container {
+    padding-left: 4rem;
+  } */
+  .logoContainer {
+    display: none;
+  }
+  .background {
+    display: block;
+  }
+  .tradeBtn {
+    display: none;
+  }
+}
+@media ( min-width: 1024px) {
+  .container {
+    /* min-height: 43rem; */
+  }
+}

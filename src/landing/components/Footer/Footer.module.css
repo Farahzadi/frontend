@@ -1,0 +1,102 @@
+.footer {
+  min-height: 850px;
+  background: url('/images/night-bg.jpg') no-repeat;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-flow: column;
+  color: var(--grey) !important;
+  border-top: 3px solid #9747ff;
+  padding: 1.875rem 1.875rem 5rem;
+}
+.footerHeader {
+  margin-top: .7rem;
+  margin-bottom: 1.3rem;
+}
+.footerBottom {
+  margin-top: 0.7rem;
+}
+.mainContainer {
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+}
+.footerCols {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-evenly;
+  align-items: center;
+  /* height: 60%;
+  width: 100%; */
+}
+.footerCol {
+  flex: 33%;
+  height: 100%;
+}
+.footerItem {
+  width: min(50%, 310px);
+  margin: 1.5rem 0;
+}
+.footerItem a {
+  text-decoration: none;
+}
+.itemTitle p {
+  font-size: 1.25rem;
+  margin-bottom: 0.2rem;
+  color: #9291a1 !important;
+  letter-spacing: 0.2rem;
+}
+.fullWidthXS {
+  flex: 1 100%;
+  order: 1;
+}
+.itemBody p {
+  color: #9291a1 !important;
+  font-size: 1.05rem;
+  line-height: 140%;
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .footer {
+    background: var(--lighterBG);
+    padding: 2.5rem 1.875rem;
+  }
+  .mainContainer {
+    max-width: 1000px;
+  }
+  .footerHeader {
+    display: none;
+  }
+  .footerCols {
+    /* max-height: 90vh; */
+    /* padding: 3rem; */
+    max-width: 1200px;
+  }
+  .fullWidthXS {
+    flex: unset;
+    order: unset;
+  }
+  .footerItem {
+    margin: 2.125rem 0.525rem;
+  }
+  .itemBody p {
+    display: block;
+    text-align: start;
+  }
+  .itemTitle p {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    text-align: start;
+  }
+  .footerBottom {
+    display: none;
+  }
+}
+@media (min-width: 1280px) {
+  .footerCols {
+    justify-content: flex-start;
+  }
+}
