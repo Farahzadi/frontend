@@ -1,0 +1,79 @@
+/* login reg btn */
+.login_reg_btn {
+  width: 100%;
+  padding: 10px 20px;
+  border: none;
+  color: white;
+  font-weight: 500;
+  border-radius: 5px;
+  background-color: #08aff3;
+}
+
+.login_reg_btn span {
+  font-weight: 300;
+}
+
+/* bg_btn */
+.bg_btn {
+  display: flex;
+  align-items: center;
+  transition: all 0.2s linear;
+  height: 42px;
+  padding: 4px 30px;
+  background: linear-gradient(to right top, #5f36b2, #6f41c5, #7e4cd8, #8f57eb, #9f63ff);
+  border: none;
+  border-radius: 5px;
+  width: 100%;
+  justify-content: center;
+  position: relative;
+  color: white;
+  font-size: 0.9rem;
+  outline: none;
+}
+.bg_btn-transfer{
+  height: 50px;
+  border-radius: 15px;
+}
+
+.bg_btn > img {
+  margin-right: 10px;
+}
+
+.btn_loader {
+  position: absolute;
+}
+
+.bg_err {
+  background: #b66;
+}
+
+.zig_btn {
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+.zig_btn_sm {
+  padding: 0;
+  width: auto;
+  height: 34px;
+}
+
+.zig_btn_disabled {
+  pointer-events: none;
+  cursor: default;
+}
+
+.zig_disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.zig_btn_loading {
+  opacity: 1;
+  pointer-events: none;
+  background: linear-gradient(to right, #447891, #4a7c85, #486a63);
+}
+
+.zig_btn_icon {
+  font-size: 18px;
+  margin-right: 6px;
+}
