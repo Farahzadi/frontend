@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - development
-    paths:
-      - 'src/app/**'
+    paths-ignore:
+      - 'src/landing/**'
   workflow_dispatch:
     inputs:
       logLevel:
@@ -33,7 +33,7 @@ jobs:
       uses: actions/checkout@v2
     
     - name: build step
-      run: docker build -t {{ secrets.Harbor_DOMAIN }}/staging/app:latest .
+      run: cd src/app; docker build -t {{ secrets.Harbor_DOMAIN }}/staging/app:latest .
 
     - name: login to docker registry
       run:  echo ${{ secrets.Harbor_PASSWORD }} | docker login {{ secrets.Harbor_DOMAIN }}  -u ${{ secrets.Harbor_USERNAME }}  --password-stdin
