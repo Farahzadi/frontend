@@ -1,9 +1,11 @@
-name: Build and Deploy main app on production
+name: App Production CICD
 
 on:
   push:
     branches:
-      - master
+      - development
+    paths:
+      - 'src/app/**'
   workflow_dispatch:
     inputs:
       logLevel:
@@ -11,39 +13,50 @@ on:
         required: true
         default: 'info'
 
+
 jobs:
+
+  environment_step:
+    runs-on: self-hosted
+    outputs:
+      prefix: ${{ steps.env_step.outputs.env_prefix }}
+    steps:
+      - name: Check out current repository and set ENV
+        id: env_step
+        run: if [ "${{ github.ref }}" == 'refs/heads/master' ]; then echo "::set-output name=env_prefix::PRODUCTION_"; else echo "::set-output name=env_prefix::STAGING_"; fi
+
   build_and_push:
     runs-on: self-hosted
+    needs: environment_step
     steps:
-      - name: pull latest code
-        uses: actions/checkout@v2
+    - name: pull latest code
+      uses: actions/checkout@v2
+    
+    - name: build step
+      run: docker build -t {{ secrets.Harbor_DOMAIN }}/production/app:latest .
 
-      - name: build step
-        run: docker build -t ghcr.io/dedogmadao/dt-frontend/dt-frontend:${{ github.ref_name }}-latest .
-
-      - name: login to docker registry
-        run: echo ${{ secrets.PERSONAL_GITHUB_TOKEN }} | docker login ghcr.io -u flokibb --password-stdin
-
-      - name: push docker image to package registry
-        run: docker push ghcr.io/dedogmadao/dt-frontend/dt-frontend:${{ github.ref_name }}-latest
+    - name: login to docker registry
+      run:  echo ${{ secrets.Harbor_PASSWORD }} | docker login {{ secrets.Harbor_DOMAIN }}  -u ${{ secrets.Harbor_USERNAME }}  --password-stdin
 
 
+    - name: push docker image to package registry
+      run: docker push {{ secrets.Harbor_DOMAIN }}/staging/app:latest
+  
   deploy:
-    needs: build_and_push
     runs-on: self-hosted
-
+    needs: build_and_push
     steps:
-      - name: connect to server
-      
-      - name: update docker-compose file
-
-      - name: export needed secret variables
-
-      - name: docker login
-
-      - name: remove old image
-
-      - name: pull new docker image
-
-      - name: restart docker compose
-
+    - name: run command on remote
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets[format('{0}SSH_ACTION_HOST', needs.environment_step.outputs.prefix)] }}
+        username: ${{ secrets[format('{0}SSH_ACTION_USER', needs.environment_step.outputs.prefix)] }}
+        key: ${{ secrets[format('{0}SSH_ACTION_KEY', needs.environment_step.outputs.prefix)] }}
+        port: ${{ secrets[format('{0}SSH_ACTION_PORT', needs.environment_step.outputs.prefix)] }}
+        script: |
+          cd /opt/docker/services/app
+          # export SECRET_KEY=${{ secrets.SECRET_KEY }}
+          echo ${{ secrets.Harbor_PASSWORD }} | docker login {{ secrets.Harbor_DOMAIN }}  -u ${{ secrets.Harbor_USERNAME }}  --password-stdin
+          docker rmi -f {{ secrets.Harbor_DOMAIN }}/staging/app:latest || echo "Ok"
+          docker pull {{ secrets.Harbor_DOMAIN }}/staging/app:latest
+          docker-compose up -d
