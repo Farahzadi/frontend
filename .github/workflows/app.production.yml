@@ -3,7 +3,7 @@ name: App Production CICD
 on:
   push:
     branches:
-      - development
+      - master
     paths-ignore:
       - '.github/**'
       - '.gitignore'
