@@ -5,6 +5,9 @@ on:
     branches:
       - development
     paths-ignore:
+      - '.github/**'
+      - '.gitignore'
+      - 'README.md'
       - 'src/landing/**'
   workflow_dispatch:
     inputs:
