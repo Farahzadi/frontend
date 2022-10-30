@@ -37,7 +37,8 @@ class TradePriceTable extends React.Component {
   };
 
   rangeUi(id) {
-    let selectedPrice, newRangeData = 0.0;
+    let selectedPrice,
+      newRangeData = 0.0;
 
     if (this.props.latestTrades) {
       return null;
@@ -148,11 +149,9 @@ class TradePriceTable extends React.Component {
                 typeof data.price === "number"
                   ? data.price.toPrecision(6)
                   : Number(data.price).toPrecision(6);
-              const amount =
-                typeof data.remaining === "number"
-                  ? data.remaining.toFixed(5)
-                  : Number(data.remaining).toFixed(5);
-              const total = (Number(data.price) * Number(data.remaining)).toFixed(5);
+              const total = (
+                Number(data.price) * Number(data.remaining)
+              ).toFixed(5);
               const time = data.time;
               return (
                 <div
@@ -169,9 +168,7 @@ class TradePriceTable extends React.Component {
                 >
                   <div>{time}</div>
                   <div
-                    className={
-                      data.side === "b" ? "up_value" : "down_value"
-                    }
+                    className={data.side === "b" ? "up_value" : "down_value"}
                   >
                     {price}
                   </div>
@@ -203,8 +200,9 @@ class TradePriceTable extends React.Component {
                 typeof data.remaining === "number"
                   ? data.remaining.toFixed(5)
                   : Number(data.remaining).toFixed(5);
-              const total = (Number(data.price) * Number(data.remaining)).toFixed(5);
-              const time = data.time;
+              const total = (
+                Number(data.price) * Number(data.remaining)
+              ).toFixed(5);
               return (
                 <Tooltip
                   arrow
@@ -235,9 +233,7 @@ class TradePriceTable extends React.Component {
                     onMouseLeave={() => this.rangeUi(-1)}
                   >
                     <div
-                      className={
-                        data.side === "b" ? "up_value" : "down_value"
-                      }
+                      className={data.side === "b" ? "up_value" : "down_value"}
                     >
                       {price}
                     </div>

@@ -17,7 +17,8 @@ import apiReducer, {
   clearUserOrders,
   rangePrice,
   setOrderSide,
-  setSelectedPrice
+  setSelectedPrice,
+  clearUuid,
 } from "lib/store/features/api/apiSlice";
 import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 import api from "lib/api";
@@ -70,8 +71,8 @@ api.on("bridgeReceipt", (bridgeReceipt) => {
 });
 
 api.on("bridgeReceiptStatus", (status) => {
-  store.dispatch(addbridgeReceiptStatus(status))
-})
+  store.dispatch(addbridgeReceiptStatus(status));
+});
 
 api.on("balanceUpdate", (network, balances) => {
   store.dispatch(
@@ -95,8 +96,8 @@ api.on("providerChange", (network) => {
   store.dispatch(setNetwork(network));
 });
 
-api.on("message", (operation, args) => {
-  store.dispatch(handleMessage({ operation, args }));
+api.on("message", (op, data) => {
+  store.dispatch(handleMessage({ op, data }));
 });
 
 api.on("rangePrice", (price) => {
@@ -109,6 +110,10 @@ api.on("selectedPrice", (price) => {
 
 api.on("orderSide", (side) => {
   store.dispatch(setOrderSide(side));
+});
+
+api.on("close", () => {
+  store.dispatch(clearUuid());
 });
 
 export default store;

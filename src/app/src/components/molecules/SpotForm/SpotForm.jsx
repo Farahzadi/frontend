@@ -196,18 +196,10 @@ class SpotForm extends React.Component {
       toast.error(`Total exceeds ${quoteCurrency} balance`);
       return;
     }
-    if (amount < this.props.marketInfo.minSize) {
+    if (amount < this.props.marketInfo.min_order_size) {
       toast.error(
         `Minimum order size is ${parseFloat(
-          this.props.marketInfo.minSize
-        )} ${baseCurrency}`
-      );
-      return;
-    }
-    if (amount > this.props.marketInfo.maxSize) {
-      toast.error(
-        `Maximum order size is ${parseFloat(
-          this.props.marketInfo.maxSize
+          this.props.marketInfo.min_order_size
         )} ${baseCurrency}`
       );
       return;
@@ -294,10 +286,10 @@ class SpotForm extends React.Component {
         this.props.orderType === "market"
       ) {
         return Math.round(finalAmount * 100);
-      } else if (finalAmount < this.props.marketInfo.minSize) {
+      } else if (finalAmount < this.props.marketInfo.min_order_size) {
         return Math.round(finalAmount * 100);
       } else {
-        return Math.round(this.props.marketInfo.minSize * 100);
+        return Math.round(this.props.marketInfo.min_order_size * 100);
       }
     }
     if (this.props.side === "b") {
@@ -312,10 +304,10 @@ class SpotForm extends React.Component {
         this.props.orderType === "market"
       ) {
         return Math.round(finalAmount * 100);
-      } else if (finalAmount < this.props.marketInfo.minSize) {
+      } else if (finalAmount < this.props.marketInfo.min_order_size) {
         return Math.round(finalAmount * 100);
       } else {
-        return Math.round(this.props.marketInfo.minSize * 100);
+        return Math.round(this.props.marketInfo.min_order_size * 100);
       }
     }
   }
@@ -454,12 +446,6 @@ class SpotForm extends React.Component {
       } else {
         newstate.baseAmount = displayAmount;
       }
-      if (displayAmount > this.props.marketInfo.maxSize) {
-        if (this.state.maxSizeSelected === true) {
-          newstate.amount = this.props.marketInfo.maxSize;
-          newstate.baseAmount = this.props.marketInfo.maxSize;
-        }
-      }
     } else if (this.props.side === "b") {
       let quoteAmount =
         ((quoteBalance - api.currencies[quoteCurrency].gasFee) * val) /
@@ -547,98 +533,6 @@ class SpotForm extends React.Component {
             ) : (
               <p>Dexpresso fee is 1% of the order valume</p>
             )}
-          </div>
-        );
-      }
-    }
-  }
-
-  getSwapFeesDetails() {
-    const baseCurrency = this.props.currentMarket.split("-")[0];
-    const quoteCurrency = this.props.currentMarket.split("-")[1];
-    let fees = {
-      etherBase: this.state.amount * 0.02,
-      usdcUsdt: this.state.amount * 0.002,
-    };
-    const baseFee = this.props.marketInfo.baseFee;
-    const quoteFee = this.props.marketInfo.quoteFee;
-
-    if (this.props.orderType === "market") {
-      if (this.props.side === "s") {
-        return (
-          <div>
-            {this.state.amount ? (
-              <p>
-                Dexpresso fee is ~
-                {this.props.currentMarket === "USDC-USDT"
-                  ? parseFloat(fees.usdcUsdt)
-                      .toFixed(7)
-                      .replace(/([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, "$1")
-                  : fees.etherBase.toPrecision(1, 8)}{" "}
-                {baseCurrency}
-              </p>
-            ) : (
-              <p>
-                {this.props.currentMarket === "USDC-USDT"
-                  ? `Dexpresso fee is 0.2% of order amount`
-                  : `Dexpresso fee is 2% of order amount`}
-              </p>
-            )}
-            <p>
-              Network fee is {baseFee} {baseCurrency}
-            </p>
-            {this.state.amount ? (
-              <p>
-                Total fee is ~
-                {this.props.currentMarket === "USDC-USDT"
-                  ? (fees.usdcUsdt + baseFee).toPrecision(1, 8)
-                  : (fees.etherBase + baseFee).toPrecision(1, 8)}{" "}
-                {baseCurrency}
-              </p>
-            ) : null}
-          </div>
-        );
-      } else {
-        return (
-          <div>
-            {this.state.amount ? (
-              <p>
-                Dexpresso fee is ~
-                {this.props.currentMarket === "USDC-USDT"
-                  ? (fees.usdcUsdt * this.props.lastPrice)
-                      .toFixed(7)
-                      .replace(/([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, "$1")
-                  : (fees.etherBase * this.props.lastPrice).toPrecision(
-                      1,
-                      8
-                    )}{" "}
-                {quoteCurrency}
-              </p>
-            ) : (
-              <p>
-                {this.props.currentMarket === "USDC-USDT"
-                  ? `Dexpresso fee is 0.2% of order amount`
-                  : `Dexpresso fee is 2% of order amount`}
-              </p>
-            )}
-            <p>
-              Network fee is {quoteFee} {quoteCurrency}
-            </p>
-            {this.state.amount ? (
-              <p>
-                Total fee is ~
-                {this.props.currentMarket === "USDC-USDT"
-                  ? (
-                      fees.usdcUsdt * this.props.lastPrice +
-                      baseFee
-                    ).toPrecision(1, 8)
-                  : (
-                      fees.etherBase * this.props.lastPrice +
-                      quoteFee
-                    ).toPrecision(1, 8)}{" "}
-                {quoteCurrency}
-              </p>
-            ) : null}
           </div>
         );
       }
@@ -814,14 +708,14 @@ class SpotForm extends React.Component {
                                   "$1"
                                 )
                             : parseFloat(0).toPrecision(6)}{" "}
-                          {this.props.marketInfo.quoteAssetName}
+                          {this.props.marketInfo.quote_asset_name}
                         </>
                       ) : (
                         <>
                           {(
                             this.props.lastPrice * this.state.baseAmount
                           ).toPrecision(5)}{" "}
-                          {this.props.marketInfo.quoteAssetName}
+                          {this.props.marketInfo.quote_asset_name}
                         </>
                       )}
                     </strong>

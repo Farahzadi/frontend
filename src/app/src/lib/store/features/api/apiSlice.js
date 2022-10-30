@@ -5,56 +5,74 @@ import api from "lib/api";
 const makeScope = (state) => `${state.network}-${state.userId}`;
 
 const translators = {
-
   // used for both initial orders and order updates
-  userOrder: o => ({
-    chainId:          o.chain_id,
-    id:               o.id,
-    market:           o.market,
-    side:             o.side,
-    price:            + o.price,
-    baseQuantity:     + o.base_quantity,
-    quoteQuantity:    + o.quote_quantity,
-    expires:          o.expiration,
-    userId:           o.user_id,
-    status:           o.status,
-    remaining:        o.unfilled,
-    type:             o.type,
-    insertTimestamp:  o.created_at,
-    unbroadcasted:    o.unbroadcasted,
-    makerFee:         + o.maker_fee,
-    takerFee:         + o.taker_fee,
-    txHash:           o.tx_hash,
+  userOrder: (o) => ({
+    chainId: o.chain_id,
+    id: o.id,
+    market: o.market,
+    side: o.side,
+    price: +o.price,
+    baseQuantity: +o.base_quantity,
+    quoteQuantity: +o.quote_quantity,
+    expires: o.expiration,
+    userId: o.user_id,
+    status: o.status,
+    remaining: o.unfilled,
+    type: o.type,
+    insertTimestamp: o.created_at,
+    unbroadcasted: o.unbroadcasted,
+    makerFee: +o.maker_fee,
+    takerFee: +o.taker_fee,
+    txHash: o.tx_hash,
   }),
 
-  orderBook: o => ({
-    price:            + o.price,
-    remaining:        + o.base_quantity,
-    side:             o.side,
+  orderBook: (o) => ({
+    price: +o.price,
+    remaining: +o.unfilled,
+    side: o.side,
   }),
 
   // used for both initial fills and fill updates
-  fills: f => ({
-    chainId:          f.chain_id,
-    id:               f.id,
-    market:           f.market,
-    takerSide:        f.taker_side,
-    price:            + f.price,
-    amount:           + f.amount,
-    status:           f.status,
-    txHash:           f.tx_hash,
-    takerUserId:      f.taker_user_id,
-    makerUserId:      f.maker_user_id,
-    type:             f.type,
-    takerOrderId:     f.taker_order_id,
-    makerOrderId:     f.maker_order_id,
-    insertTimestamp:  f.created_at,
-    makerFee:         + f.maker_fee,
-    takerFee:         + f.taker_fee,
-    error:            f.error, // tx rejection error message
+  fills: (f) => ({
+    chainId: f.chain_id,
+    id: f.id,
+    market: f.market,
+    takerSide: f.taker_side,
+    price: +f.price,
+    amount: +f.amount,
+    status: f.status,
+    txHash: f.tx_hash,
+    takerUserId: f.taker_user_id,
+    makerUserId: f.maker_user_id,
+    type: f.type,
+    takerOrderId: f.taker_order_id,
+    makerOrderId: f.maker_order_id,
+    insertTimestamp: f.created_at,
+    makerFee: +f.maker_fee,
+    takerFee: +f.taker_fee,
+    error: f.error, // tx rejection error message
   }),
 
-}
+  markets_config: (c) => ({
+    market: c.market,
+    limitEnabled: c.limit_enabled,
+    swapEnabled: c.swap_nabled,
+    takerFee: c.taker_fee,
+    makerFee: c.maker_fee,
+    swapFee: c.swapFee,
+    minMatchAmount: c.min_match_amount,
+  }),
+
+  markets_stats: (s) => ({
+    market: s.market,
+    price: s.last_price,
+    priceChange: s.change,
+    "24hi": s.high_price,
+    "24lo": s.low_price,
+    baseVolume: s.base_volume,
+    quoteVolume: s.quote_volume,
+  }),
+};
 
 export const apiSlice = createSlice({
   name: "api",
@@ -79,20 +97,64 @@ export const apiSlice = createSlice({
     rangePrice: 0,
     selectedPrice: 0,
     orderSide: false,
+    uuid: null,
   },
   reducers: {
-    _config(state, { payload }) {
-      state.config = {
-        limitEnabled: payload[0].limitEnabled,
-        swapEnabled: payload[0].swapEnabled,
-        makerFee: payload[0].makerFee,
-        takerFee: payload[0].takerFee,
-        swapFee: payload[0].swapFee,
-        minMatchAmount: payload[0].minMatchAmount,
-      };
+    _connected_ws(state, { payload }) {
+      console.log("UUID", payload.uuid);
+      api.ws.uuid = payload.uuid;
+      state.uuid = payload.uuid;
     },
-    _swapfills(state, { payload }) {
-      payload[0].forEach((fill) => {
+    _login_post(state, { payload }) {
+      console.log("LOGIN CAME", payload);
+      sessionStorage.setItem("access_token", payload.access_token);
+      // payload.user_id
+      apiSlice.caseReducers._user_orders(state, {
+        payload: payload.user_orders,
+      });
+      apiSlice.caseReducers._user_fills(state, { payload: payload.user_fills });
+    },
+    _markets_info_get(state, { payload }) {
+      console.log("info came", payload);
+      state.marketinfo = payload.info[0];
+    },
+    _markets_stats_ws(state, { payload }) {
+      console.log("markets stats", payload);
+      payload.map(translators.markets_stats).forEach((update) => {
+        const { market, price, priceChange: change } = update;
+        if (api.validMarkets[state.network].includes(market)) {
+          state.lastPrices[market] = {
+            price,
+            change,
+          };
+        } else {
+          delete state.lastPrices[market];
+        }
+        if (market === state.currentMarket) {
+          state.marketSummary = { ...update };
+        }
+      });
+    },
+    _markets_config_get(state, { payload }) {
+      console.log("config came", payload);
+      state.config = payload.config.map(translators.markets_config)[0];
+    },
+    // _swapfills(state, { payload }) {
+    //   return;
+    //   payload[0].forEach((fill) => {
+    //     const fillid = fill.id;
+    //     if (
+    //       fill.market === state.currentMarket &&
+    //       fill.chainId === state.network
+    //     ) {
+    //       state.marketFills[fillid] = fill;
+    //     }
+    //     state.userFills[fillid] = fill;
+    //   });
+    // },
+    _fills_ws(state, { payload }) {
+      console.log("fills", payload);
+      payload.map(translators.fills).forEach((fill) => {
         const fillid = fill.id;
         if (
           fill.market === state.currentMarket &&
@@ -100,99 +162,72 @@ export const apiSlice = createSlice({
         ) {
           state.marketFills[fillid] = fill;
         }
-        state.userFills[fillid] = fill;
       });
     },
-    _fills(state, { payload }) {
-      payload[0].map(translators.fills).forEach((fill) => {
-        const fillid = fill.id;
-        if (
-          fill.market === state.currentMarket &&
-          fill.chainId === state.network
-        ) {
-          state.marketFills[fillid] = fill;
-        }
-        if (
-          state.userId &&
-          (fill.takerUserId === state.userId.toString() ||
-            fill.makerUserId === state.userId.toString())
-        ) {
-          state.userFills[fillid] = { ...fill, isTaker: fill.takerUserId === state.userId.toString() };
-        }
-      });
+    _user_fills(state, { payload }) {
+      console.log("user fills", payload);
+      payload
+        .map(translators.fills)
+        .filter((fill) => fill.chainId === state.network)
+        .forEach((fill) => {
+          state.userFills[fill.id] = {
+            ...fill,
+            isTaker: fill.takerUserId === state.userId.toString(),
+          };
+        });
     },
-    _fillstatus(state, { payload }) {
-      payload[0].map(translators.fills).forEach((update) => {
+    _user_fills_new_ws(state, { payload }) {
+      apiSlice.caseReducers._user_fills(state, { payload });
+    },
+    _user_fills_update_ws(state, { payload }) {
+      console.log("user fills update", payload);
+      payload.map(translators.fills).forEach((update) => {
         let transactionHash;
         const fillId = update.id;
         const newStatus = update.status;
 
         if (update.txHash) transactionHash = update.txHash;
-        if (state.marketFills[fillId]) {
-          state.marketFills[fillId].status = newStatus;
-          if (transactionHash)
-            state.marketFills[fillId].txHash = transactionHash;
-        }
         if (state.userFills[fillId]) {
           state.userFills[fillId].status = newStatus;
           if (transactionHash) state.userFills[fillId].txHash = transactionHash;
         }
       });
     },
-    _marketsummary(state, { payload }) {
-      state.marketSummary = {
-        market: payload.market,
-        price: payload.price,
-        "24hi": payload.highPrice,
-        "24lo": payload.lowPrice,
-        priceChange: payload.priceChange,
-        baseVolume: payload.baseVolume,
-        quoteVolume: payload.quoteVolume,
-      };
+    _user_orders(state, { payload }) {
+      console.log("user orders...", payload);
+      if (!state.userId) return;
+      payload
+        .map(translators.userOrder)
+        .filter((order) => order.chainId === state.network)
+        .forEach((order) => {
+          if (order.userId === state.userId.toString()) {
+            state.userOrders[order.id] = order;
+            state.unbroadcasted = order.unbroadcasted;
+          }
+        });
     },
-    _marketinfo(state, { payload }) {
-      if (payload[0].error) {
-        console.error(payload[0]);
-      } else {
-        state.marketinfo = payload[0];
-      }
+    _user_order_post(state, { payload }) {
+      toast.info("order post came");
+      apiSlice.caseReducers._user_orders(state, { payload: [payload] });
     },
-    _lastprice(state, { payload }) {
-      payload[0].forEach((update) => {
-        const marketPair = update.market;
-        const lastPrice = update.lastPrice;
-        const change = update.change;
-
-        if (api.validMarkets[state.network].includes(marketPair)) {
-          state.lastPrices[marketPair] = {
-            price: lastPrice,
-            change,
-          };
-        } else {
-          delete state.lastPrices[marketPair];
-        }
-        if (marketPair === state.currentMarket) {
-          state.marketSummary.price = lastPrice;
-          state.marketSummary.priceChange = change;
-          state.marketSummary["24hi"] = update.highPrice;
-          state.marketSummary["24lo"] = update.lowPrice;
-          state.marketSummary.baseVolume = update.baseVolume;
-          state.marketSummary.quoteVolume = update.quoteVolume;
-        }
-      });
+    _user_order_delete(state, { payload }) {
+      console.log("user order delete came", payload);
+      if (payload.success && state.userOrders[payload.id])
+        state.userOrders[payload.id].status = "c";
     },
-    _liquidity(state, { payload }) {
-      state.liquidity = state.liquidity.concat(payload[2]);
+    _user_orders_delete(state, { payload }) {
+      console.log("user orders delete came", payload);
+      for (const id of payload.ids)
+        if (payload.success && state.userOrders[id])
+          state.userOrders[id].status = "c";
     },
-    _orderstatus(state, { payload }) {
-      (payload[0] || []).map(translators.userOrder).forEach(async (update) => {
+    _user_orders_update_ws(state, { payload }) {
+      payload.map(translators.userOrder).forEach(async (update) => {
         let filledOrder, partialmatchorder;
         switch (update.status) {
           case "c":
-            delete state.orders[update.id];
-            if (state.userOrders[update.id]) {
+            if (state.userOrders[update.id])
               state.userOrders[update.id].status = "c";
-            }
             break;
           case "pm":
             partialmatchorder = state.userOrders[update.id];
@@ -225,13 +260,11 @@ export const apiSlice = createSlice({
               state.userId &&
               matchedOrder.userId === state.userId.toString()
             ) {
-              if (!state.userOrders[matchedOrder.id]) {
+              if (!state.userOrders[matchedOrder.id])
                 state.userOrders[matchedOrder.id] = matchedOrder;
-              }
             }
             break;
           case "f":
-            delete state.orders[update.id];
             filledOrder = state.userOrders[update.id];
             if (filledOrder) {
               const sideText = filledOrder.side === "b" ? "buy" : "sell";
@@ -248,26 +281,24 @@ export const apiSlice = createSlice({
               );
             }
             break;
-          case "pf":
-            filledOrder = state.userOrders[update.id];
-            state.orders[update.id].remaining = update.remaining;
-            state.orders[update.id].status = "pf";
-            if (filledOrder) {
-              const remaining = update.remaining;
-              const sideText = filledOrder.side === "b" ? "buy" : "sell";
-              const baseCurrency = filledOrder.market.split("-")[0];
-              filledOrder.status = "pf";
-              filledOrder.remaining = remaining;
-              const noFeeOrder = api.getOrderDetailsWithoutFee(filledOrder);
-              toast.success(
-                `Your ${sideText} order for ${
-                  noFeeOrder.baseQuantity.toPrecision(4) / 1
-                } ${baseCurrency} @ ${
-                  noFeeOrder.price.toPrecision(4) / 1
-                } was partial filled!`
-              );
-            }
-            break;
+          // case "pf":
+          //   filledOrder = state.userOrders[update.id];
+          //   state.orders[update.id].remaining = update.remaining;
+          //   state.orders[update.id].status = "pf";
+          //   if (filledOrder) {
+          //     const remaining = update.remaining;
+          //     const sideText = filledOrder.side === "b" ? "buy" : "sell";
+          //     const baseCurrency = filledOrder.market.split("-")[0];
+          //     filledOrder.status = "pf";
+          //     filledOrder.remaining = remaining;
+          //     const noFeeOrder = api.getOrderDetailsWithoutFee(filledOrder);
+          //     toast.success(
+          //       `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1
+          //       } ${baseCurrency} @ ${noFeeOrder.price.toPrecision(4) / 1
+          //       } was partial filled!`
+          //     );
+          //   }
+          //   break;
           case "b":
             filledOrder = state.userOrders[update.id];
             if (filledOrder) {
@@ -276,7 +307,6 @@ export const apiSlice = createSlice({
             }
             break;
           case "r":
-            delete state.orders[update.id];
             filledOrder = state.userOrders[update.id];
             if (filledOrder) {
               const sideText = filledOrder.side === "b" ? "buy" : "sell";
@@ -301,73 +331,31 @@ export const apiSlice = createSlice({
             if (state.userOrders[update.id]) {
               state.userOrders[update.id].status = "e";
             }
-            if (state.orders[update.id]) {
-              state.orders[update.id].status = "e";
-            }
             break;
           default:
             break;
         }
       });
     },
-    _orders(state, { payload }) {
-      let orders = (payload[0] || [])
-        .map(translators.orderBook)
-        .reduce((res, order) => { 
-          res[order.price] = order;
-          return res;
-        }, {});
-
-      state.orders = orders;
+    _markets_subscription_post(state, { payload }) {
+      // console.log("SUB POST", payload);
     },
-    _userOrders(state, { payload }) {
-      const orders = payload[0]
-        .map(translators.userOrder)
-        .filter(
-          (order) =>
-            order.market === state.currentMarket &&
-            order.chainId === state.network
-        )
-        .reduce((res, order) => {
-          res[order.id] = order;
-          return res;
-        }, {});
-
-      if (state.userId) {
-        for (let i in orders) {
-          if (orders[i].userId === state.userId.toString()) {
-            const orderId = orders[i].id;
-            state.userOrders[orderId] = orders[i];
-            state.unbroadcasted = orders[i].unbroadcasted;
-          }
-        }
-      }
+    _markets_subscription_delete(state, { payload }) {
+      // console.log("SUB DELETE", payload);
     },
-    _swaps(state, { payload }) {
-      const orders = payload[0]
-        .filter(
-          (order) =>
-            order.market === state.currentMarket &&
-            order.chainId === state.network
-        )
-        .reduce((res, order) => {
-          res[order[1]] = order;
-          return res;
-        }, {});
-
-      state.orders = {
-        ...state.orders,
-        ...orders,
-      };
-
-      if (state.userId) {
-        for (let i in orders) {
-          if (orders[i].userId === state.userId.toString()) {
-            const orderId = orders[i].id;
-            state.userOrders[orderId] = orders[i];
-          }
-        }
-      }
+    _orderbook(state, { payload }) {
+      state.orders = payload.map(translators.orderBook).reduce((res, order) => {
+        res[order.price] = order;
+        return res;
+      }, {});
+    },
+    _orderbook_ws(state, { payload }) {
+      // console.log("orderbook", payload);
+      apiSlice.caseReducers._orderbook(state, { payload });
+    },
+    _orders_get(state, { payload }) {
+      // console.log("orders came", payload);
+      apiSlice.caseReducers._orderbook(state, { payload: payload.orderbook });
     },
     setBalances(state, { payload }) {
       const scope = makeScope(state);
@@ -485,6 +473,9 @@ export const apiSlice = createSlice({
     resetOrderBook(state) {
       state.orders = {};
     },
+    clearUuid(state) {
+      state.uuid = null;
+    },
   },
 });
 
@@ -503,6 +494,7 @@ export const {
   setSelectedPrice,
   setOrderSide,
   resetOrderBook,
+  clearUuid,
 } = apiSlice.actions;
 
 export const configSelector = (state) => state.api.config;
@@ -523,6 +515,7 @@ export const unbroadcastedSelector = (state) => state.api.unbroadcasted;
 export const rangePriceSelector = (state) => state.api.rangePrice;
 export const orderSideSelector = (state) => state.api.orderSide;
 export const selectedPriceSelector = (state) => state.api.selectedPrice;
+export const uuidSelector = (state) => state.api.uuid;
 export const bridgeReceiptsStatusSelector = (state) =>
   state.api.bridgeReceiptsStatus;
 export const balancesSelector = (state) =>
