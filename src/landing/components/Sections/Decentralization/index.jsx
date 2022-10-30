@@ -21,7 +21,7 @@ const Decentralization = () => {
 
                 <h1>Decentralization, matters! </h1>
                 <p>
-                  Dexpresso is a decentralized non-custodial order book exchange,
+                  Dexpresso is a decentralized non-custodial order book exchange, 
                   powered by zk-rollups. This allows our users to seamlessly and
                   securely trade with near-zero fees all while providing
                   centralized exchange like quotes on all size trades. We also
