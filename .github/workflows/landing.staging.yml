@@ -8,7 +8,7 @@ on:
       - '.github/**'
       - '.gitignore'
       - 'README.md'
-      - 'src/landing/**'
+      - 'src/app/**'
   workflow_dispatch:
     inputs:
       logLevel:
