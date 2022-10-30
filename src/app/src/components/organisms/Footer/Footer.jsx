@@ -8,7 +8,7 @@ import {
   currentMarketSelector,
   unbroadcastedSelector,
   lastPricesSelector,
-  userIdSelector
+  userIdSelector,
 } from "lib/store/features/api/apiSlice";
 import { Button } from "react-bootstrap";
 
@@ -321,19 +321,18 @@ class Footer extends React.Component {
             const sideClassName = side === "b" ? "up_value" : "down_value";
             const txHash = fill.txHash;
             const time = fill.insertTimestamp;
-            const fee = (isTaker ? fill.takerFee : fill.makerFee) * (side === "b" ? amount * price : amount);
+            const fee =
+              (isTaker ? fill.takerFee : fill.makerFee) *
+              (side === "b" ? amount * price : amount);
             const feeCurrency = side === "b" ? quoteCurrency : baseCurrency;
 
-            date = new Date(time);
-            date = api.hasOneDayPassed(date.toLocaleDateString(), date);
+            date = api.hasOneDayPassed(time);
 
             let feeText;
 
-            if (!api.isZksyncChain())
-              feeText = "0 " + baseCurrency;
-            else
-              feeText = fee.toPrecision(3) + " " + feeCurrency;
-            
+            if (!api.isZksyncChain()) feeText = "0 " + baseCurrency;
+            else feeText = fee.toPrecision(3) + " " + feeCurrency;
+
             const fillWithoutFee = api.getFillDetailsWithoutFee(fill);
             if (api.isZksyncChain()) {
               price = fillWithoutFee.price;
@@ -448,8 +447,7 @@ class Footer extends React.Component {
             const sidetext = side === "s" ? "sell" : "buy";
             const sideClassName = side === "b" ? "up_value" : "down_value";
 
-            date = new Date(time);
-            date = api.hasOneDayPassed(date.toLocaleDateString(), date);
+            date = api.hasOneDayPassed(time);
 
             const orderWithoutFee = api.getOrderDetailsWithoutFee(order);
             if (api.isZksyncChain()) {
@@ -589,9 +587,7 @@ class Footer extends React.Component {
       classNameHistory = "";
     switch (this.state.tab) {
       case "orders":
-        footerContent = this.renderOrderTable(
-          this.getUserOrders()
-        );
+        footerContent = this.renderOrderTable(this.getUserOrders());
         classNameOrders = "selected";
         break;
       case "fills":
