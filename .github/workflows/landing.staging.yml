@@ -21,7 +21,6 @@ jobs:
 
   build_and_push:
     runs-on: self-hosted
-    needs: environment_step
     steps:
     - name: pull latest code
       uses: actions/checkout@v2
