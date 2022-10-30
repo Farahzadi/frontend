@@ -1,0 +1,142 @@
+.market {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: min(1200px, 100%);
+  overflow: auto;
+  max-width: 90%;
+  text-align: center;
+  margin: 0 auto;
+}
+.marketBox {
+  background: url(/images/market.svg) no-repeat center center;
+  min-height: 300px;
+  background-size: contain;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+}
+.marketTabs {
+  display: flex;
+  padding: 0 40px;
+  justify-content: space-evenly;
+  max-width: 1200px;
+  width: 100%;
+}
+.marketBtn {
+  font-size: 1.25rem;
+  border: none;
+  cursor: pointer;
+  padding-bottom: .5rem;
+  border-bottom: none;
+  transition: 0.3s;
+  background: transparent;
+  border-radius: 0;
+  position: relative;
+  padding-bottom: 7px;
+}
+.marketBtn::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc (100% - 3px);
+  bottom: 0;
+  background: white;
+  height: 2px;
+  width: 0;
+  transition: 0.3s;
+}
+.marketBtn:hover::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc (100% - 3px);
+  bottom: 0;
+  background: white;
+  height: 2px;
+  width: 100%;
+  transition: 0.3s;
+}
+.mainContent {
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+}
+.hide {
+  display: none;
+}
+.show {
+  display: flex;
+}
+.show p {
+  margin-right: 30px;
+  font-size: 25px;
+}
+/* Mobile */
+.marketXS {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding-left: 0;
+  padding-right: 0;
+}
+.containerXS {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-flow: row nowrap;
+  overflow: auto;
+  box-sizing: content-box;
+  /* justify-content: center; */
+  align-items: center;
+  padding: 0 2rem;
+}
+.containerXS::-webkit-scrollbar-track, .containerXS::-webkit-scrollbar{
+  display: none;
+}
+.itemXS {
+  min-width: min(236px, 90vw - 2.7rem);
+  border-width: 5px;
+  border-radius: 35px;
+  min-height: 500px;
+  margin: 1rem 1.7rem;
+}
+.ItemHeader {
+  padding: .75rem;
+  line-height: 1.5rem;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+.mainContainerXS {
+  min-height: 407px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.mainContainerXS::before {
+  margin: -5px;
+  background: linear-gradient(to bottom, #9648ff, #20c4ba);
+}
+.marketBtnXS {
+  border: none;
+  border-radius: 0;
+  border-bottom: 3px solid var(--secondaryColor);
+  background: none;
+  font-size: 1.25rem;
+  padding: 1rem;
+}
+@media (min-width: 769px) {
+  .marketBox {
+    min-height: 600px;
+  }
+  .marketBtn {
+    font-size: 1.5rem;
+  }
+}

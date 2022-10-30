@@ -1,0 +1,91 @@
+/* trade_rates_container */
+
+.trade_rates_container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.rates_box {
+    display: flex;
+    flex-direction: column;
+    margin-right: 10px;
+}
+
+.rates_box h2 {
+    font-size: 0.8rem;
+    color: #94a2c9;
+}
+
+.rates_box p {
+    font-size: 0.8rem;
+}
+
+.market strong {
+    color: white;
+    font-size: 0.9rem;
+}
+
+.market p {
+    color: #94a2c9;
+}
+
+.last_price h1 {
+    color: #3fe199;
+    font-size: 0.9rem;
+}
+
+.last_price p {
+    color: white;
+}
+
+.daily_change_down_value p {
+    color: #c4384e;
+}
+
+.daily_change_up_value  p {
+    color: #3fe199;
+}
+
+.rates_box_item p {
+    color: white;
+}
+
+@media screen and (max-width: 1348px) {
+    .trade_left {
+        overflow: auto;
+    }
+    .trade_left::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+        position: relative;
+        z-index: 20;
+    }
+
+    .trade_left::-webkit-scrollbar-track {
+        border-radius: 5px;
+        background: hsla(0, 0%, 100%, 0.15);
+        height: 23px;
+    }
+
+    .trade_left::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background: hsla(0, 0%, 100%, 0.4);
+    }
+
+    .trade_left::-webkit-scrollbar-thumb:window-inactive {
+        background: #fff;
+    }
+}
+
+@media screen and (max-width: 674px) {
+    .trade_rates_container {
+        flex-wrap: wrap;
+    }
+    .rates_box {
+        margin-bottom: 20px;
+    }
+}

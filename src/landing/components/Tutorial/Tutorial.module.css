@@ -1,0 +1,31 @@
+.container {
+    padding: 10px;
+    margin: auto;
+}
+.caption {
+    padding-top: .7rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+.imageContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.imageContainer img {
+    width: 100vw;
+    height: 500px;
+}
+.sliderWrapper {
+    /* max-width: 100%; */
+}
+@media (min-width: 768px) {
+    .container {
+        max-width: 500px ;
+    }
+}
+@media (min-width: 1280px) {
+    .container {
+        max-width: 750px ;
+    }
+}

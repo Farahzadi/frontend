@@ -1,38 +1,70 @@
-.App {
-  text-align: center;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+ul,
+p {
+  margin: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+body {
+  height: 100vh;
+  font-size: 0.9rem;
+}
+
+html {
+  font-size: 16px;
+}
+
+.up_value {
+  color: #3fe199 !important;
+}
+
+.down_value {
+  color: #c4384e !important;
+}
+
+.trade-price-active-tab {
+  color: #5F36B2 !important;
+}
+
+.zig-dropdown .rc-dropdown-menu > .rc-dropdown-menu-item {
+  font-size: 18px;
+  padding: 15px;
+  cursor: pointer;
+}
+
+.zig-dropdown .rc-dropdown-menu > .rc-dropdown-menu-item:hover,
+.zig-dropdown .rc-dropdown-menu > .rc-dropdown-menu-item-active,
+.zig-dropdown .rc-dropdown-menu > .rc-dropdown-menu-item-selected {
+  background-color: #c0cff8;
+  color: #43f;
+}
+
+@font-face {
+  font-family: 'Iceland';
+  src: url('./assets/fonts/Iceland.woff2') format('woff2'),
+       url('./assets/fonts/Iceland.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
+@media screen and (min-width: 1800px) {
+  html {
+      font-size: 18px;
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* WalletConnect customization */
+.walletconnect-modal__base div:nth-child(3) {
+  overflow-y: scroll;
 }

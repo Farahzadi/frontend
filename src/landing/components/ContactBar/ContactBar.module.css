@@ -1,0 +1,38 @@
+.sideMenu {
+  display: flex;
+  justify-content: center;
+  z-index: 5;
+  border: 1px solid var(--themeColor);
+  padding: 17px 21px;
+  border-radius: 20px;
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  -moz-backdrop-filter: blur(1px);
+}
+.sideMenu a {
+  margin-inline: 0.7rem;
+  display: flex;
+}
+
+@media (min-width: 769px) {
+  .sideMenu {
+    flex-direction: column;
+    position: -webkit-sticky;
+    position: fixed;
+    z-index: 5;
+    top: 37%;
+    padding: 1rem 1.2rem 1rem 1rem;
+    border-left: none;
+    border-radius: 40px;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    -moz-backdrop-filter: blur(10px);
+  }
+  .sideMenu a {
+    margin-block: 0.6rem;
+    margin-inline: 0;
+  }
+
+}

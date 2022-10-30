@@ -1,0 +1,26 @@
+name: landing Vercel preview
+
+on:
+  pull_request:
+    branches:    
+      - development
+    paths-ignore:
+      - '.github/**'
+      - '.gitignore'
+      - 'README.md'
+      - 'src/app/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      #  your build commands
+      # - run: |
+      #    ng build --prod
+      - uses: amondnet/vercel-action@v20 #deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }} # Required
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID}}  #Required
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID}} #Required 
+          working-directory: ./src/landing
