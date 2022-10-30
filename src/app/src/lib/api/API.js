@@ -10,6 +10,7 @@ import { getENSName } from "lib/ens";
 import { formatAmount } from "lib/utils";
 import erc20ContractABI from "lib/contracts/ERC20.json";
 import { maxAllowance } from "./constants";
+import axios from "axios";
 
 const chainMap = {
   "0x1": 1,
@@ -28,8 +29,16 @@ export default class API extends Emitter {
   _profiles = {};
   _accountState = null;
   changingWallet = false;
+  lastSocketOpenState = false;
 
-  constructor({ infuraId, websocketUrl, networks, currencies, validMarkets }) {
+  constructor({
+    infuraId,
+    websocketUrl,
+    apiUrl,
+    networks,
+    currencies,
+    validMarkets,
+  }) {
     super();
 
     if (networks) {
@@ -44,6 +53,7 @@ export default class API extends Emitter {
 
     this.infuraId = infuraId;
     this.websocketUrl = websocketUrl;
+    this.apiUrl = apiUrl;
     this.currencies = currencies;
     this.validMarkets = validMarkets;
 
@@ -73,9 +83,9 @@ export default class API extends Emitter {
     if (this.isZksyncChain()) {
       this.web3 = new Web3(
         window.ethereum ||
-        new Web3.providers.HttpProvider(
-          `https://${networkName}.infura.io/v3/${this.infuraId}`
-        )
+          new Web3.providers.HttpProvider(
+            `https://${networkName}.infura.io/v3/${this.infuraId}`
+          )
       );
 
       this.web3Modal = new Web3Modal({
@@ -144,25 +154,30 @@ export default class API extends Emitter {
 
   _socketOpen = () => {
     this.__pingServerTimeout = setInterval(this.ping, 5000);
+    this.lastSocketOpenState = true;
     this.emit("open");
   };
 
-  _socketClose = () => {
-    var date = new Date();
+  _socketClose = ({ noRetry }) => {
     clearInterval(this.__pingServerTimeout);
-    toast.error("Connection to server closed. Please try again in a minute");
     this.emit("close");
-
-    setTimeout(function () {
-      setInterval(window.location.reload(), 60000);
-      window.location.reload();
-    }, (60 - date.getSeconds()) * 1000);
+    if (!noRetry) {
+      toast.error("Connection to server closed. Please try again in a minute");
+      // console.log("test socket close", noRetry);
+      setTimeout(
+        () => {
+          this.lastSocketOpenState = false;
+          this.start();
+        },
+        this.lastSocketOpenState ? 0 : 8000
+      );
+    }
   };
 
   _socketMsg = (e) => {
     if (!e.data && e.data.length <= 0) return;
     const msg = JSON.parse(e.data);
-    this.emit("message", msg.op, msg.args);
+    this.emit("message", msg.op + "_ws", msg.data);
   };
 
   start = () => {
@@ -179,8 +194,9 @@ export default class API extends Emitter {
     this.ws.removeEventListener("open", this._socketOpen);
     this.ws.removeEventListener("close", this._socketClose);
     this.ws.removeEventListener("message", this._socketMsg);
-    this._socketClose();
+    this._socketClose({ noRetry: true });
     this.ws.close();
+    this.ws = null;
     this.emit("stop");
   };
 
@@ -195,6 +211,60 @@ export default class API extends Emitter {
 
   send = (op, args) => {
     return this.ws.send(JSON.stringify({ op, args }));
+  };
+
+  sendRequest = (url, method, data, isPrivate = false) => {
+    if (method) method = method.toLowerCase();
+    let token;
+    if (isPrivate) {
+      token = sessionStorage.getItem("access_token");
+      if (!token) return;
+    }
+    console.log(url, method, data, isPrivate);
+
+    const fullUrl = this.apiUrl + "/" + url;
+    const hasBody = ["post", "put"].includes(method);
+    const finalData = hasBody ? data || {} : undefined;
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+      params: !hasBody && data,
+    };
+    axios[method || "get"](
+      fullUrl,
+      hasBody ? finalData : config,
+      hasBody && config
+    )
+      .then((res) =>
+        this.emit("message", url.replaceAll("/", "_") + "_" + method, res.data)
+      )
+      .catch((error) => {
+        // TODO
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.log(
+            "API Error",
+            error.response.status,
+            (error.response.data.error && error.response.data.message) ||
+              error.message
+          );
+          // console.log("status", error.response.status);
+          // console.log("headers", error.response.headers);
+          // console.log("request", error.request);
+        } else if (error.request) {
+          // The request was made but no response was received
+          // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+          // http.ClientRequest in node.js
+          console.log("request", error.request);
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log("api error", error.message);
+        }
+        // console.log(error.config);
+      });
   };
 
   refreshNetwork = async () => {
@@ -223,9 +293,13 @@ export default class API extends Emitter {
   };
 
   signIn = async (network, ...args) => {
+    // console.log("login ATTEMPT");
     let accountState;
     let signature;
+    const { uuid } = this.ws;
+    if (!uuid) return;
     if (!this._signInProgress) {
+      // console.log("starting login", uuid)
       this._signInProgress = Promise.resolve()
         .then(async () => {
           const apiProvider = this.apiProvider;
@@ -264,13 +338,15 @@ export default class API extends Emitter {
 
           signature = sessionStorage.getItem("login");
 
-          if (accountState && accountState.id && signature) {
-            this.send("login", [
-              network,
-              accountState.address,
-              signature,
-              true,
-            ]);
+          const api = this;
+          if (accountState && accountState.id) {
+            this.sendRequest("login", "POST", {
+              chain_id: network,
+              address: accountState.address,
+              signature: signature,
+              user_data: true,
+              uuid,
+            });
           }
 
           this.emit("signIn", accountState);
@@ -314,15 +390,34 @@ export default class API extends Emitter {
   };
 
   subscribeToMarket = (market) => {
-    this.send("subscribemarket", [this.apiProvider.network, market]);
+    this.sendRequest("markets/subscription", "POST", {
+      chain_id: this.apiProvider.network,
+      market: market,
+      uuid: this.ws.uuid,
+      clear: true,
+    });
   };
 
   unsubscribeToMarket = (market) => {
-    this.send("unsubscribemarket", [this.apiProvider.network, market]);
+    this.sendRequest("markets/subscription", "DELETE", {
+      chain_id: this.apiProvider.network,
+      market: market,
+      uuid: this.ws.uuid,
+    });
   };
 
-  getConfig = (market) => {
-    this.send("config", [this.apiProvider.network, market]);
+  getMarketConfig = (market) => {
+    this.sendRequest("markets/config", "GET", {
+      chain_id: this.apiProvider.network,
+      markets: market,
+    });
+  };
+
+  getMarketInfo = (market) => {
+    this.sendRequest("markets/info", "GET", {
+      chain_id: this.apiProvider.network,
+      markets: market,
+    });
   };
 
   isZksyncChain = () => {
@@ -330,7 +425,14 @@ export default class API extends Emitter {
   };
 
   cancelOrder = (orderId) => {
-    this.send("cancelorder", [this.apiProvider.network, orderId]);
+    this.sendRequest(
+      "user/order",
+      "DELETE",
+      {
+        id: orderId,
+      },
+      true
+    );
   };
 
   verifiedAccountNonce = async () => {
@@ -378,13 +480,15 @@ export default class API extends Emitter {
   };
 
   cancelAllOrders = async () => {
-    const { id: userId } = await this.getAccountState();
-    await this.send("cancelall", [
-      this.apiProvider.network,
-      userId,
-      "all",
-      "all",
-    ]);
+    this.sendRequest(
+      "user/orders",
+      "DELETE",
+      {
+        market: undefined,
+        side: undefined,
+      },
+      true
+    );
     return true;
   };
 
@@ -540,7 +644,7 @@ export default class API extends Emitter {
     } else if (side === "b") {
       quoteQuantity -= fee;
     }
-    const finalTime = this.hasOneDayPassed(time, new Date(time));
+    const finalTime = this.hasOneDayPassed(time);
     return {
       price: price,
       quoteQuantity: quoteQuantity,
@@ -549,13 +653,15 @@ export default class API extends Emitter {
     };
   }
 
-  hasOneDayPassed(time, date) {
+  hasOneDayPassed(time) {
+    const date = new Date(time);
+    const dateString = date.toLocaleDateString();
     let finalDate;
     // get today's date
     var today = new Date().toLocaleDateString();
 
     // inferring a day has yet to pass since both dates are equal.
-    if (time === today) {
+    if (dateString === today) {
       var hr = date.getHours();
       var min = date.getMinutes();
       if (min < 10) {
@@ -568,12 +674,12 @@ export default class API extends Emitter {
       }
       finalDate = hr + ":" + min + ampm;
     }
-    if (time !== today) {
+    if (dateString !== today) {
       var dd = String(date.getDate()).padStart(2, "0"); // day
       var mm = String(date.getMonth() + 1).padStart(2, "0"); // month - January is equal to 0!
       var yyyy = date.getFullYear(); // year
 
-      finalDate = yyyy + "/" + mm + "/" + dd;
+      finalDate = dd + "/" + mm + "/" + yyyy;
     }
     return finalDate;
   }
@@ -587,7 +693,13 @@ export default class API extends Emitter {
   }
 
   getOrderBook(market, side) {
-    this.send("allOpenOrders", [this.apiProvider.network, market]);
+    this.sendRequest("orders", "GET", {
+      chain_id: this.apiProvider.network,
+      market,
+      side: undefined,
+      page: undefined,
+      per_page: undefined,
+    });
   }
 
   submitOrder = async (
