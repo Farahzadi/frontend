@@ -58,7 +58,6 @@ jobs:
         port: ${{ secrets[format('{0}SSH_ACTION_PORT', needs.environment_step.outputs.prefix)] }}
         script: |
           cd /opt/docker/services/landing
-          # export SECRET_KEY=${{ secrets.SECRET_KEY }}
           echo ${{ secrets.Harbor_PASSWORD }} | docker login {{ secrets.Harbor_DOMAIN }}  -u ${{ secrets.Harbor_USERNAME }}  --password-stdin
           docker rmi -f {{ secrets.Harbor_DOMAIN }}/production/landing:latest || echo "Ok"
           docker pull {{ secrets.Harbor_DOMAIN }}/production/landing:latest
