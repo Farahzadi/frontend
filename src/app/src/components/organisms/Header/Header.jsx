@@ -119,7 +119,7 @@ export const Header = (props) => {
       {/* desktop header */}
       <div className="head_wrapper_desktop dex_h">
         <div className="nav_items">
-          <a href="https://nobitex.ir/" rel="noreferrer">
+          <a href="" rel="noreferrer">
             <img src={logo} alt="logo" />
           </a>
           <ul>
