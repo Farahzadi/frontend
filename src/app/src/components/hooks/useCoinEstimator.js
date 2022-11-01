@@ -1,30 +1,85 @@
-import { useMemo } from 'react'
-import { useSelector } from 'react-redux'
-import { lastPricesSelector } from 'lib/store/features/api/apiSlice'
-
-const USD_REGEX = /^([A-Z]?USD[A-Z]|FRAX)?$/i
+import { useMemo } from "react";
+import { useSelector } from "react-redux";
+import { lastPricesSelector } from "lib/store/features/api/apiSlice";
 
 export function useCoinEstimator() {
-    const pairPrices = useSelector(lastPricesSelector)
-    let prices = { DAI: 1, FRAX: 1 }
+  const stables = ["USDC", "USDT", "DAI", "FRAX"];
+  const pairPrices = useSelector(lastPricesSelector);
+  let prices = {};
 
-    return useMemo(() => {
-        Object.keys(pairPrices).forEach(pair => {
-            const [a, b] = pair.split('-').map(s => s.toUpperCase())
-            if (USD_REGEX.test(a)) {
-                prices[b] = pairPrices[pair].price
-            }
-            if (USD_REGEX.test(b)) {
-                prices[a] = pairPrices[pair].price
-            }
-        })
-        
-        if (!prices.WETH && prices.ETH) {
-            prices.WETH = prices.ETH
+  stables.forEach((stable) => {
+    prices[stable] = 1;
+  });
+
+  return useMemo(() => {
+    let priceArray = {};
+    let remaining = [];
+    if (pairPrices) {
+      remaining = Object.keys(pairPrices).filter(
+        (token) => !stables.includes(token)
+      );
+      Object.keys(pairPrices).forEach((pair) => {
+        const pairPrice = pairPrices[pair].price;
+        if (Number.isNaN(pairPrice) || !Number.isFinite(pairPrice)) return;
+
+        const [base, quote] = pair
+          .split("-")
+          .map((asset) => asset.toUpperCase());
+
+        // add prices form stable pairs
+        if (stables.includes(quote) && !stables.includes(base)) {
+          if (base in priceArray) {
+            const arr = priceArray[base];
+            arr.push(pairPrice);
+            priceArray[base] = arr;
+          } else {
+            priceArray[base] = [pairPrice];
+          }
+
+          const index = remaining.indexOf(base);
+          if (index > -1) {
+            remaining.splice(index, 1);
+          }
         }
+      });
+    }
     
-        return (token) => {
-            return parseFloat(prices && prices[token] ? prices[token] : 0).toFixed(2)
+    Object.keys(priceArray).forEach((token) => {
+      const sum = priceArray[token].reduce((pv, cv) => pv + cv, 0);
+      prices[token] = sum / priceArray[token].length;
+    });
+
+    // add prices from other pairs
+    priceArray = {};
+    remaining.forEach((pair) => {
+      let pairPrice = pairPrices[pair].price;
+      if (Number.isNaN(pairPrice) || !Number.isFinite(pairPrice)) return;
+      const [base, quote] = pair.split("-").map((s) => s.toUpperCase());
+
+      if (quote in prices && !stables.includes(base)) {
+        pairPrice *= prices[quote];
+        if (base in priceArray) {
+          const arr = priceArray[base];
+          arr.push(pairPrice);
+          priceArray[base] = arr;
+        } else {
+          priceArray[base] = [pairPrice];
         }
-    }, [pairPrices])
+      }
+    });
+
+    // get mid price of all pairs found with other pair
+    Object.keys(priceArray).forEach((token) => {
+      const sum = priceArray[token].reduce((pv, cv) => pv + cv, 0);
+      prices[token] = sum / priceArray[token].length;
+    });
+
+    if ("ETH" in prices && !("WETH" in prices)) prices.WETH = prices.ETH;
+    if ("WETH" in prices && !("ETH" in prices)) prices.ETH = prices.WETH;
+
+    return (token) => {
+      const t = token?.toUpperCase();
+      return parseFloat(prices && prices[t] ? prices[t] : 0).toFixed(2);
+    };
+  }, [pairPrices]);
 }
