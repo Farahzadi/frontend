@@ -18,6 +18,7 @@ p {
 body {
   height: 100vh;
   font-size: 0.9rem;
+  background-color: #100c22;
 }
 
 html {

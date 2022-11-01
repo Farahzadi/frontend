@@ -396,7 +396,7 @@ export default class API extends Emitter {
     return this.networks[this.getNetworkName(this.apiProvider.network)][2];
   };
 
-  approveSpendOfCurrency = async (currency) => {
+  approveSpendOfCurrency = async (currency, allowance = maxAllowance) => {
     const netContract = this.getNetworkContract();
     if (netContract) {
       const [account] = await this.web3.eth.getAccounts();
@@ -407,7 +407,7 @@ export default class API extends Emitter {
         contractAddress
       );
       await contract.methods
-        .approve(netContract, maxAllowance)
+        .approve(netContract, allowance)
         .send({ from: account });
     }
   };
