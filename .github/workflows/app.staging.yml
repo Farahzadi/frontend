@@ -53,5 +53,5 @@ jobs:
           docker pull reg.dexpresso.exchange/staging/app:latest
           docker-compose up -d --build
           docker cp .env.prod app:/app/.env.prod
-          docker exec -it app /bin/sh -c "cd /app; sh run.sh"
+          docker exec app /app/run.sh
           docker stop app
