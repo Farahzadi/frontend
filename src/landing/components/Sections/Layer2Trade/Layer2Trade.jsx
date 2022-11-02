@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import styles from './Layer2Trade.module.css';
 import sampImg from '/public/images/site-samp.svg';
+import Link from 'next/link';
 
 const Layer2Trade = () => {
   return (
@@ -20,9 +21,11 @@ const Layer2Trade = () => {
             of roughly ~10$. To do so head over to Dexpresso Bridge or zkSync
             bridge.
           </p>
-          <button className={styles.tradeBtn} type='button'>
-            TRAINING
-          </button>
+          <Link href={process.env.NEXT_PUBLIC_TRADE_APP_LINK}>
+            <button className={styles.tradeBtn} type='button'>
+              TRAINING
+            </button>
+          </Link>
         </div>
       </div>
     </section>
