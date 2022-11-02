@@ -6,6 +6,5 @@ COPY . .
 RUN yarn
 RUN export NODE_OPTIONS=--max_old_space_size=8192
 
-CMD [ "yarn", "build" ] 
-
+RUN chmod +x run.sh
 EXPOSE 3000
