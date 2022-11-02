@@ -32,7 +32,7 @@ jobs:
 
 
     - name: push docker image to package registry
-      run: docker push {{ secrets.Harbor_DOMAIN }}/staging/app:latest
+      run: docker push reg.dexpresso.exchange/production/app:latest
   
   deploy:
     runs-on: self-hosted
