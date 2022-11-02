@@ -24,6 +24,7 @@ import {
   liquiditySelector,
   currentMarketSelector,
   setCurrentMarket,
+  uuidSelector,
   resetData,
 } from "lib/store/features/api/apiSlice";
 import { userSelector } from "lib/store/features/auth/authSlice";
@@ -44,6 +45,7 @@ const TradePage = () => {
   const marketSummary = useSelector(marketSummarySelector);
   const marketInfo = useSelector(marketInfoSelector);
   const liquidity = useSelector(liquiditySelector);
+  const uuid = useSelector(uuidSelector);
   const dispatch = useDispatch();
   const lastPriceTableData = [];
   const markets = [];
@@ -59,28 +61,25 @@ const TradePage = () => {
   };
 
   useEffect(() => {
-    const sub = () => {
-      dispatch(resetData());
-      api.subscribeToMarket(currentMarket);
-      api.getOrderBook(currentMarket);
-      api.getConfig(currentMarket);
-      api.signIn(network);
-    };
+    if (!uuid) return;
 
-    if (api.ws.readyState === 0) {
-      api.on("open", sub);
-    } else {
-      sub();
-    }
+    const sub = () => api.subscribeToMarket(currentMarket);
+
+    if (api.ws.readyState !== WebSocket.OPEN) api.on("open", sub);
+    else sub();
+
+    api.getOrderBook(currentMarket);
+    api.getMarketInfo(currentMarket);
+    api.getMarketConfig(currentMarket);
 
     return () => {
-      if (api.ws.readyState !== 0) {
-        api.unsubscribeToMarket(currentMarket);
-      } else {
-        api.off("open", sub);
-      }
+      api.off("open");
     };
-  }, [currentMarket]);
+  }, [uuid, currentMarket]);
+
+  useEffect(() => {
+    if (uuid) api.signIn(network);
+  }, [uuid, network]);
 
   const updateMarketChain = (market) => {
     dispatch(setCurrentMarket(market));
@@ -152,11 +151,15 @@ const TradePage = () => {
 
   const activeOrderStatuses = ["o", "m", "b"];
 
-  const askBins = allOrders !== {} ?
-    Object.values(allOrders).filter(order => order.side === "s") : {};
+  const askBins =
+    allOrders !== {}
+      ? Object.values(allOrders).filter((order) => order.side === "s")
+      : [];
 
-  const bidBins = allOrders !== {} ?
-    Object.values(allOrders).filter(order => order.side === "b") : {};
+  const bidBins =
+    allOrders !== {}
+      ? Object.values(allOrders).filter((order) => order.side === "b")
+      : [];
 
   const activeLimitAndMarketOrdersCount = Object.values(userOrders).filter(
     (order) => activeOrderStatuses.includes(order.status) && order.type === "l"
@@ -368,29 +371,17 @@ const TradePage = () => {
                 {" "}
                 <ul>
                   <li className="head_social_link">
-                    <a
-                      target="_blank"
-                      rel="noreferrer"
-                      href="#"
-                    >
+                    <a target="_blank" rel="noreferrer" href="#">
                       <FaTwitter />
                     </a>
                   </li>
                   <li className="head_social_link">
-                    <a
-                      target="_blank"
-                      rel="noreferrer"
-                      href="#"
-                    >
+                    <a target="_blank" rel="noreferrer" href="#">
                       <FaTelegramPlane />
                     </a>
                   </li>
                   <li className="head_social_link">
-                    <a
-                      target="_blank"
-                      rel="noreferrer"
-                      href="#"
-                    >
+                    <a target="_blank" rel="noreferrer" href="#">
                       <FaDiscord />
                     </a>
                   </li>

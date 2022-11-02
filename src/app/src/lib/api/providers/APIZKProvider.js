@@ -181,7 +181,10 @@ export default class APIZKProvider extends APIProvider {
 
   signMessage = async () => {
     const message = "Login to Dexpresso";
-    if (sessionStorage.getItem("login") === null || this.api.changingWallet === true) {
+    if (
+      sessionStorage.getItem("login") === null ||
+      this.api.changingWallet === true
+    ) {
       try {
         const from = this.syncWallet.cachedAddress;
         this.signedMsg = await window.ethereum.request({
@@ -271,21 +274,6 @@ export default class APIZKProvider extends APIProvider {
     const nowUnix = (Date.now() / 1000) | 0;
     const validUntil = nowUnix + 24 * 3600;
 
-    if (sessionStorage.getItem("login") === null) {
-      toast.error("You are unauthorized, you should login first");
-      if (typeof window.ethereum !== "undefined") {
-        await this.signMessage();
-        if (this.signedMsg) {
-          this.api.send("login", [
-            this.network,
-            this.api._accountState.address,
-            this.signedMsg,
-          ]);
-          this.api.emit("signIn", this.api._accountState);
-        }
-      }
-    }
-
     if (currencies[0] === "USDC" || currencies[0] === "USDT") {
       amount = parseFloat(amount).toFixed(7).slice(0, -1);
     }
@@ -336,125 +324,18 @@ export default class APIZKProvider extends APIProvider {
       validUntil,
     });
 
-    if (feeType === "withNBX") {
-      this.api.send("submitorder", [
-        this.network,
-        order,
-        parsedQuantity.toString(),
-        product,
-        feeOrder,
-        orderType,
-      ]);
-    }
-    if (feeType !== "withNBX") {
-      this.api.send("submitorder", [
-        this.network,
-        order,
-        parsedQuantity.toString(),
-        product,
-        price,
-        orderType,
-      ]);
-    }
-    return order;
-  };
-
-  submitSwap = async (product, side, price, amount) => {
-    let tokenBuy,
-      tokenSell,
-      sellQuantity,
-      buyQuantity,
-      sellQuantityWithFee,
-      marketInfo,
-      fee,
-      tokenRatio = {},
-      priceWithFee = 0;
-
-    amount = parseFloat(amount);
-
-    const currencies = product.split("-");
-    const nowUnix = (Date.now() / 1000) | 0;
-    const validUntil = nowUnix + 60;
-
-    if (sessionStorage.getItem("login") === null) {
-      toast.error("You are unauthorized, you should login first");
-      if (typeof window.ethereum !== "undefined") {
-        await this.signMessage();
-        if (this.signedMsg) {
-          this.api.send("login", [
-            this.network,
-            this.api._accountState.address,
-            this.signedMsg,
-          ]);
-          this.api.emit("signIn", this.api._accountState);
-        }
-      }
-    }
-
-    if (currencies[0] === "USDC" || currencies[0] === "USDT") {
-      amount = parseFloat(amount).toFixed(7).slice(0, -1);
-    }
-
-    price = parseFloat(price).toPrecision(8);
-
-    if (!APIZKProvider.validSides.includes(side)) {
-      throw new Error("Invalid side");
-    }
-
-    if (side === "b") {
-      [tokenBuy, tokenSell] = currencies;
-      buyQuantity = parseFloat(amount);
-      sellQuantity = parseFloat(amount * price);
-    }
-
-    if (side === "s") {
-      [tokenSell, tokenBuy] = currencies;
-      buyQuantity = parseFloat(amount * price);
-      sellQuantity = parseFloat(amount);
-    }
-
-    marketInfo = await this.getMarketInfo(product);
-
-    if (side === "b") {
-      fee = marketInfo.quoteFee;
-      sellQuantityWithFee = sellQuantity + fee;
-      priceWithFee = parseFloat(
-        (sellQuantityWithFee / buyQuantity).toPrecision(6)
-      );
-    }
-
-    if (side === "s") {
-      fee = marketInfo.baseFee;
-      sellQuantityWithFee = sellQuantity + fee;
-      priceWithFee = parseFloat(
-        (buyQuantity / sellQuantityWithFee).toPrecision(6)
-      );
-    }
-
-    tokenRatio = this.getTokenRatio(product, 1, priceWithFee.toString());
-
-    const parsedSellQuantity = this.getParsedSellQuantity(
-      tokenSell,
-      sellQuantityWithFee
+    this.api.sendRequest(
+      "user/order",
+      "POST",
+      {
+        tx: order,
+        market: product,
+        amount: parsedQuantity.toString(),
+        price: price,
+        type: orderType,
+      },
+      true
     );
-    const packedSellQuantity =
-      zksync.utils.closestPackableTransactionAmount(parsedSellQuantity);
-
-    const ratio = zksync.utils.tokenRatio(tokenRatio);
-
-    if (sessionStorage.getItem("login") === null) {
-      return;
-    }
-
-    const order = await this.syncWallet.signOrder({
-      tokenSell,
-      tokenBuy,
-      amount: packedSellQuantity,
-      ratio,
-      validUntil,
-    });
-
-    this.api.send("submitswap", [this.network, order, product, fee]);
 
     return order;
   };
@@ -763,19 +644,6 @@ export default class APIZKProvider extends APIProvider {
     const transferReceipt = await transfer.awaitReceipt();
 
     return transferReceipt;
-  };
-
-  getMarketInfo = async (product) => {
-    let marketInfo;
-
-    if (!CHAIN_ID) throw new Error("can not found Chain id");
-    if (!MARKET_URL) throw new Error("can not found Market Url");
-
-    const url = `${MARKET_URL}/markets?id=${product}&chainid=${CHAIN_ID}`;
-    marketInfo = await fetch(url)
-      .then((result) => result.json())
-      .then((response) => response[0]);
-    return marketInfo;
   };
 
   getTokenRatio = (product, baseRatio, quoteRatio) => {

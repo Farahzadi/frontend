@@ -51,4 +51,6 @@ jobs:
           echo ${{ secrets.Harbor_PASSWORD }} | docker login reg.dexpresso.exchange  -u action --password-stdin
           docker rmi -f reg.dexpresso.exchange/staging/app:latest || echo "Ok"
           docker pull reg.dexpresso.exchange/staging/app:latest
-          docker-compose up -d
+          docker-compose up -d --build
+          chmod +x update.sh
+          ./update.sh

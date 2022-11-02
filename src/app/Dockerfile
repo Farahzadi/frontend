@@ -1,10 +1,10 @@
 # build environment
-FROM node:alpine as build
+FROM node:16.17.0 
+
 WORKDIR /app
 COPY . .
 RUN yarn
-RUN yarn build
+RUN export NODE_OPTIONS=--max_old_space_size=8192
 
-EXPOSE 3000
-RUN chmod +x nginx.sh
-RUN chmod +x robot.sh
+RUN chmod +x run.sh
+ENTRYPOINT ["tail", "-f", "/dev/null"]
