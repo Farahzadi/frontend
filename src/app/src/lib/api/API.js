@@ -1,4 +1,5 @@
 import Web3 from "web3";
+import Decimal from "decimal.js";
 import { createIcon } from "@download/blockies";
 import { toast } from "react-toastify";
 import Web3Modal from "web3modal";
@@ -577,8 +578,9 @@ export default class API extends Emitter {
 
   getOrderDetailsWithoutFee = (order) => {
     const side = order.side;
-    const baseQuantity = order.baseQuantity;
-    const quoteQuantity = order.price * order.baseQuantity;
+    const baseQuantity = new Decimal(order.baseQuantity);
+    const price = new Decimal(order.price);
+    const quoteQuantity = price.mul(baseQuantity);
     let fee = order.feeAmount ? order.feeAmount : 0;
     const remaining = isNaN(Number(order.remaining))
       ? order.baseQuantity
@@ -594,28 +596,29 @@ export default class API extends Emitter {
       if (orderType === "l") {
         baseQuantityWithoutFee = baseQuantity;
         remainingWithoutFee = Math.max(0, remaining);
-        priceWithoutFee = quoteQuantity / baseQuantity;
+        priceWithoutFee = quoteQuantity.dividedBy(baseQuantity);
         quoteQuantityWithoutFee = quoteQuantity;
       } else {
-        baseQuantityWithoutFee = baseQuantity - fee;
+        baseQuantityWithoutFee = baseQuantity.minus(fee);
         if (orderStatus === "o" || orderStatus === "c" || orderStatus === "m") {
-          remainingWithoutFee = baseQuantity - fee;
+          remainingWithoutFee = baseQuantity.minus(fee);
         } else {
           remainingWithoutFee = Math.max(0, remaining - fee);
         }
-        priceWithoutFee = quoteQuantity / baseQuantityWithoutFee;
-        quoteQuantityWithoutFee = priceWithoutFee * baseQuantityWithoutFee;
+        priceWithoutFee = quoteQuantity.dividedBy(baseQuantityWithoutFee);
+        quoteQuantityWithoutFee = priceWithoutFee.mul(baseQuantityWithoutFee);
       }
     } else {
       if (orderType === "l") {
         baseQuantityWithoutFee = baseQuantity;
         quoteQuantityWithoutFee = quoteQuantity;
-        priceWithoutFee = quoteQuantityWithoutFee / baseQuantity;
+        priceWithoutFee = quoteQuantityWithoutFee.dividedBy(baseQuantity);
         remainingWithoutFee = Math.min(baseQuantity, remaining);
       } else {
-        quoteQuantityWithoutFee = quoteQuantity - fee;
-        priceWithoutFee = quoteQuantityWithoutFee / baseQuantity;
-        baseQuantityWithoutFee = quoteQuantityWithoutFee / priceWithoutFee;
+        quoteQuantityWithoutFee = quoteQuantity.minus(fee);
+        priceWithoutFee = quoteQuantityWithoutFee.dividedBy(baseQuantity);
+        baseQuantityWithoutFee =
+          quoteQuantityWithoutFee.dividedBy(priceWithoutFee);
         if (orderStatus === "o" || orderStatus === "c" || orderStatus === "m") {
           remainingWithoutFee = baseQuantity;
         } else {
@@ -633,9 +636,9 @@ export default class API extends Emitter {
 
   getFillDetailsWithoutFee(fill) {
     const time = fill.insertTimestamp;
-    const price = parseFloat(fill.price);
+    const price = new Decimal(parseFloat(fill.price));
     let baseQuantity = fill.amount;
-    let quoteQuantity = fill.price * fill.amount;
+    let quoteQuantity = price.mul(fill.amount);
     const side = fill.side;
     let fee = fill.feeAmount ? fill.feeAmount : 0;
 
