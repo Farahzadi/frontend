@@ -1,5 +1,7 @@
 import { useMemo } from "react";
+import Decimal from "decimal.js";
 import { useSelector } from "react-redux";
+
 import { lastPricesSelector } from "lib/store/features/api/apiSlice";
 
 export function useCoinEstimator() {
@@ -43,21 +45,21 @@ export function useCoinEstimator() {
         }
       });
     }
-    
+
     Object.keys(priceArray).forEach((token) => {
-      const sum = priceArray[token].reduce((pv, cv) => pv + cv, 0);
-      prices[token] = sum / priceArray[token].length;
+      const sum = new Decimal(priceArray[token].reduce((pv, cv) => pv + cv, 0));
+      prices[token] = sum.dividedBy(priceArray[token].length);
     });
 
     // add prices from other pairs
     priceArray = {};
     remaining.forEach((pair) => {
-      let pairPrice = pairPrices[pair].price;
+      let pairPrice = new Decimal(pairPrices[pair].price);
       if (Number.isNaN(pairPrice) || !Number.isFinite(pairPrice)) return;
       const [base, quote] = pair.split("-").map((s) => s.toUpperCase());
 
       if (quote in prices && !stables.includes(base)) {
-        pairPrice *= prices[quote];
+        pairPrice.plus(prices[quote]);
         if (base in priceArray) {
           const arr = priceArray[base];
           arr.push(pairPrice);
@@ -70,8 +72,8 @@ export function useCoinEstimator() {
 
     // get mid price of all pairs found with other pair
     Object.keys(priceArray).forEach((token) => {
-      const sum = priceArray[token].reduce((pv, cv) => pv + cv, 0);
-      prices[token] = sum / priceArray[token].length;
+      const sum = new Decimal(priceArray[token].reduce((pv, cv) => pv + cv, 0));
+      prices[token] = sum.dividedBy(priceArray[token].length);
     });
 
     if ("ETH" in prices && !("WETH" in prices)) prices.WETH = prices.ETH;
