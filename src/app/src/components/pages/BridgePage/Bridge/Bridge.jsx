@@ -89,8 +89,12 @@ const Bridge = () => {
       if (user.address && api.apiProvider?.zksyncCompatible) {
         const usdFee = await api.apiProvider.changePubKeyFee();
         setUsdFee(usdFee);
-        if (currencyValue) {
-          setActivationFee((usdFee / currencyValue).toFixed(5));
+        if (Number.isFinite(usdFee / currencyValue)) {
+          if (currencyValue) {
+            setActivationFee((usdFee / currencyValue).toFixed(5));
+          } else {
+            setActivationFee(0);
+          }
         } else {
           setActivationFee(0);
         }
