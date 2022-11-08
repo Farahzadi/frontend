@@ -27,6 +27,7 @@
   border-bottom: 0.5px solid rgb(151 71 255 / 40%);
   padding: 1rem 1.6875rem;
   text-align: center;
+  background: var(--darkBG);
 }
 .item:last-child {
   border-bottom: none !important;
