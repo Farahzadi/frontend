@@ -163,7 +163,9 @@ export default class API extends Emitter {
     clearInterval(this.__pingServerTimeout);
     this.emit("close");
     if (!noRetry) {
-      toast.error("Connection to server closed. Please try again in a minute");
+      toast.error("Connection to server closed. Please try again in a minute", {
+        toastId: "running",
+      });
       // console.log("test socket close", noRetry);
       setTimeout(
         () => {
@@ -339,7 +341,7 @@ export default class API extends Emitter {
 
           signature = sessionStorage.getItem("login");
 
-          const api = this;
+          // const api = this;
           if (accountState && accountState.id) {
             this.sendRequest("login", "POST", {
               chain_id: network,

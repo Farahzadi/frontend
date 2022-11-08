@@ -45,7 +45,7 @@ const BridgeInputBox = styled.div`
   }
 
   .currencySelector {
-    width: 30%;
+    width: 37%;
     height: 52px;
     display: flex;
     align-items: center;
