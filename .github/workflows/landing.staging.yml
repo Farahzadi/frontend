@@ -52,5 +52,3 @@ jobs:
           docker rmi -f reg.dexpresso.exchange/staging/landing:latest || echo "Ok"
           docker pull reg.dexpresso.exchange/staging/landing:latest
           docker-compose up -d
-          chmod +x update.sh
-          ./update.sh
