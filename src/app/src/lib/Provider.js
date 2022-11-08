@@ -14,7 +14,7 @@ function Provider({ children }) {
         <PersistGate loading={null} persistor={persistor}>
           <ReduxProvider store={store}>
               {children}
-              <ToastContainer limit={3} position="bottom-right" theme="colored" />
+              <ToastContainer position="bottom-right" theme="colored" />
           </ReduxProvider>
         </PersistGate>
     </ThemeProvider>
