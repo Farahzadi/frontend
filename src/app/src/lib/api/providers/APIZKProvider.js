@@ -8,8 +8,8 @@ import Web3 from "web3";
 import { maxAllowance } from "../constants";
 import axios from "axios";
 
-// const CHAIN_ID = process.env.REACT_APP_CHAIN_ID;
-// const MARKET_URL = process.env.REACT_APP_MARKET_URL;
+const CHAIN_ID = process.env.REACT_APP_CHAIN_ID;
+const MARKET_URL = process.env.REACT_APP_MARKET_URL;
 
 export default class APIZKProvider extends APIProvider {
   static seedStorageKey = "@ZZ/ZKSYNC_SEEDS";
