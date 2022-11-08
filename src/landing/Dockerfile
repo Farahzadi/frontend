@@ -7,5 +7,6 @@ WORKDIR /landing
 COPY . .
 RUN yarn
 
-RUN chmod +x run.sh
 EXPOSE 3001
+
+CMD ["yarn", "up"]
