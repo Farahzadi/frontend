@@ -90,9 +90,11 @@ const Navbar = () => {
               <div className={styles.contactSection}>
                 <ContactBar />
               </div>
-              <button type='button' className={styles.tradeBtn}>
-                TRADE
-              </button>
+              <Link href={process.env.NEXT_PUBLIC_TRADE_APP_LINK}>
+                <button type='button' className={styles.tradeBtn}>
+                  TRADE
+                </button>
+              </Link>
             </div>
           </div>
         </div>
