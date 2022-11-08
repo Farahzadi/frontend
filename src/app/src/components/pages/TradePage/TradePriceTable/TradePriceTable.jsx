@@ -43,11 +43,12 @@ class TradePriceTable extends React.Component {
     if (this.props.latestTrades) {
       return null;
     }
+    const reversData = [...this.props.priceTableData].reverse()
     const newState = { ...this.state };
     newState.rengId = id;
     for (let i = 0; i <= id; i++) {
-      newRangeData += this.props.priceTableData[i].remaining;
-      selectedPrice = this.props.priceTableData[i].price;
+      newRangeData += reversData[i].remaining;
+      selectedPrice = reversData[i].price;
     }
     newState.rangedData = newRangeData.toPrecision(6);
     newState.selectedPrice = parseFloat(selectedPrice)

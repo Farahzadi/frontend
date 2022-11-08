@@ -3,9 +3,9 @@ import ReactDOM from "react-dom";
 import App from "./App";
 
 import reportWebVitals from "./reportWebVitals";
-import * as Sentry from '@sentry/browser';
+// import * as Sentry from '@sentry/browser';
 
-var DSN_ADDRESS;
+// var DSN_ADDRESS;
 
 // if (process.env.NODE_ENV || process.env.NODE_ENV === 'production') {
 //     DSN_ADDRESS = process.env.REACT_APP_DSN_ADDRESS 
