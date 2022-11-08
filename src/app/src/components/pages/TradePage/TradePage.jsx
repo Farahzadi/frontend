@@ -25,7 +25,7 @@ import {
   currentMarketSelector,
   setCurrentMarket,
   uuidSelector,
-  resetData,
+  // resetData,
 } from "lib/store/features/api/apiSlice";
 import { userSelector } from "lib/store/features/auth/authSlice";
 import "./style.css";
