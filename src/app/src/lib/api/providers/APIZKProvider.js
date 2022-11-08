@@ -253,12 +253,12 @@ export default class APIZKProvider extends APIProvider {
     fee,
     orderType
   ) => {
-    let feeOrder,
-      buyWithFee,
+    let buyWithFee,
       sellWithFee,
       tokenBuy,
       tokenSell,
       quantity,
+      // feeOrder,
       tokenRatio,
       priceWithFee = 0;
 
@@ -308,7 +308,8 @@ export default class APIZKProvider extends APIProvider {
     feeTokenRatio[tokenSell] = 1;
     feeTokenRatio["DAI"] = (0).toPrecision(6).toString();
     if (feeType === "withNBX") {
-      feeOrder = await this.syncWallet.signLimitOrder({
+      // feeOrder = await this.syncWallet.signLimitOrder({
+      await this.syncWallet.signLimitOrder({
         tokenSell: tokenSell,
         tokenBuy: "DAI",
         ratio: zksync.utils.tokenRatio(feeTokenRatio),
