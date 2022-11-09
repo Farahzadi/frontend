@@ -13,7 +13,7 @@
 
 .trade-price-btc-head div h2 {
     font-size: 1rem;
-    color: #94a2c9;
+    color: var(--dexpresssoTextPrimery);
     font-weight: 500;
 }
 

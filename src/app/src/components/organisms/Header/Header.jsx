@@ -6,7 +6,7 @@ import { Button, Dropdown, AccountDropdown, Menu, MenuItem } from "components";
 import { userSelector } from "lib/store/features/auth/authSlice";
 import { networkSelector } from "lib/store/features/api/apiSlice";
 import api from "lib/api";
-import logo from "assets/images/logo.png";
+import logo from "assets/images/LogoMarkCremeLight.svg";
 import menu from "assets/icons/menu.png";
 import darkPlugHead from "assets/icons/dark-plug-head.png";
 import "./Header.css";
@@ -122,7 +122,7 @@ export const Header = (props) => {
           <a href="#" rel="noreferrer">
             <img src={logo} alt="logo" />
           </a>
-          <ul>
+          <ul className="mx-0 px-0">
             <li>
               <NavLink exact to="/" activeClassName="active_link">
                 Trade

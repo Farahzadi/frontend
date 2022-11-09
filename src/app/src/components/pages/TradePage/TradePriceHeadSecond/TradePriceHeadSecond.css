@@ -19,7 +19,7 @@
 }
 
 .trade-price-head-2 span {
-    color: #94a2c9;
+    color: var(--dexpresssoTextPrimery);
 }
 
 .up_value {
