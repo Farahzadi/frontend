@@ -557,8 +557,9 @@ const Bridge = () => {
                   <div className=" bridge_coin_stat text-start mt-3">
                     <h5>Available balance</h5>
                     <span>
-                      {altBalances[swapDetails.currency] &&
-                        altBalances[swapDetails.currency].valueReadable}
+                      {altBalances[swapDetails.currency]?.valueReadable
+                        .toPrecision(6)
+                        .toString()}
                       {` ${swapDetails.currency}`}
                     </span>
                   </div>
