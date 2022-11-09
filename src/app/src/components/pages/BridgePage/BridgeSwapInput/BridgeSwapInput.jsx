@@ -4,7 +4,7 @@ import BridgeCurrencySelector from "../BridgeCurrencySelector/BridgeCurrencySele
 
 const BridgeInputBox = styled.div`
   display: flex;
-  border: 2px solid var(--purple) !important;
+  border: 2px solid var(--dexpressoPrimery) !important;
   flex-direction: row;
   align-items: center;
   background: #fff;

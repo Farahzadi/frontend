@@ -222,9 +222,10 @@ const NonceIncreasement = () => {
               <Button
                 loadin={connecting}
                 className="bg_btn mx-auto"
-                text="CONNECT"
                 onClick={connect}
-              />
+              >
+                CONNECT
+              </Button>
             </div>
           )}
         </div>
