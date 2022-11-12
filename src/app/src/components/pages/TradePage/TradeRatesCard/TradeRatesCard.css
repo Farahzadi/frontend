@@ -17,7 +17,7 @@
 
 .rates_box h2 {
     font-size: 0.8rem;
-    color: #94a2c9;
+    color: var(--dexpresssoTextPrimery);
 }
 
 .rates_box p {
@@ -30,7 +30,7 @@
 }
 
 .market p {
-    color: #94a2c9;
+    color: var(--dexpresssoTextPrimery);
 }
 
 .last_price h1 {
