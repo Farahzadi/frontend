@@ -13,25 +13,25 @@
   width: 100%;
   background-color: transparent;
   border-radius: 6px;
-  border: 1px solid #5e35b1;
+  border: 1px solid var(--dexpressoPrimery);
 }
 .btn-check:active + .btn-success:focus,
 .btn-check:checked + .btn-success:focus,
 .btn-success.active:focus,
 .btn-success:active:focus,
 .show > .btn-success.dropdown-toggle:focus {
-  box-shadow: 0 0 0 0.25rem rgb(100, 44, 177);
+  box-shadow: var(--dexpressoPrimery);
 }
 .btn-check:active + .btn-primary:focus,
 .btn-check:checked + .btn-primary:focus,
 .btn-primary.active:focus,
 .btn-primary:active:focus,
 .show > .btn-primary.dropdown-toggle:focus {
-  box-shadow: 0 0 0 0.25rem rgb(100, 44, 177);
+  box-shadow: var(--dexpressoPrimery);
 }
 .btn-check:focus + .btn-primary,
 .btn-primary:focus {
-  box-shadow: 0 0 0 0.25rem rgb(100, 44, 177);
+  box-shadow: var(--dexpressoPrimery);
 }
 .btn-check:active + .btn-primary,
 .btn-check:checked + .btn-primary,
@@ -39,11 +39,11 @@
 .btn-primary:active,
 .show > .btn-primary.dropdown-toggle {
   color: #fff;
-  background-color: #5e35b1;
-  border-color: #5e35b1;
+  background-color: var(--dexpressoPrimery);
+  border-color: var(--dexpressoPrimery);
 }
 .tl_select div:nth-child(1) {
-  border: 1px solid #5e35b1;
+  border: 1px solid var(--dexpressoPrimery);
   width: 240px;
   background-color: transparent;
   padding: 6px 15px;
@@ -54,17 +54,17 @@
   text-align: center;
   background-color: #100c22;
   border-radius: 0 0 10% 10%;
-  border: 1px solid #5e35b1;
+  border: 1px solid var(--dexpressoPrimery);
 }
 .dropdown-item.active,
 .dropdown-item:active {
   color: #fff;
   text-decoration: none;
-  background-color: #5e35b1;
+  background-color: var(--dexpressoPrimery);
 }
 .dropdown-item {
   color: #fff;
-  border-bottom: 1px solid #5e35b1;
+  border-bottom: 1px solid var(--dexpressoPrimery);
 }
 .dropdown-item:last-child {
   border-bottom: none ;
@@ -73,7 +73,7 @@
 .tl_select select {
   width: 100%;
   background-image: url("../../../../assets/icons/select-arrow.png");
-  color: #94a2c9;
+  color: var(--dexpresssoTextPrimery);
   border: none;
   display: flex;
   font-size: 0.8rem;

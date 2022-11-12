@@ -775,7 +775,7 @@ class SpotForm extends React.Component {
                 </div>
               </>
             ) : (
-              <div className="spf_btn">
+              <div className="spf_btn mt-3">
                 <Button
                   loadin={this.props.loading}
                   className="bg_btn"

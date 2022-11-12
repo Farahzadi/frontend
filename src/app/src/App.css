@@ -3,6 +3,13 @@
   padding: 0;
   box-sizing: border-box;
 }
+:root {
+  --dexpressoPrimery: #0a82b6;
+  --dexpressoHeader: #050f1e;
+  --dexpressoBackground: #071428;
+  --dexpressoTableBackground: #14243c;
+  --dexpresssoTextPrimery:#B2BFC7;
+}
 
 h1,
 h2,
@@ -33,7 +40,7 @@ html {
 }
 
 .trade-price-active-tab {
-  color: #5f36b2 !important;
+  color: var(--dexpressoPrimery) !important;
 }
 
 .zig-dropdown .rc-dropdown-menu > .rc-dropdown-menu-item {

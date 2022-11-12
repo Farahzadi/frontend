@@ -119,7 +119,7 @@ export const apiSlice = createSlice({
       state.marketinfo = payload.info[0];
     },
     _markets_stats_ws(state, { payload }) {
-      console.log("markets stats", payload);
+      // console.log("markets stats", payload);
       payload.map(translators.markets_stats).forEach((update) => {
         const { market, price, priceChange: change } = update;
         if (api.validMarkets[state.network].includes(market)) {
