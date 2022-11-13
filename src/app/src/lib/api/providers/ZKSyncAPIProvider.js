@@ -8,12 +8,12 @@ import Web3 from "web3";
 import { maxAllowance } from "../constants";
 import axios from "axios";
 
-const CHAIN_ID = process.env.REACT_APP_CHAIN_ID;
-const MARKET_URL = process.env.REACT_APP_MARKET_URL;
-
-export default class APIZKProvider extends APIProvider {
+export default class ZKSyncAPIProvider extends APIProvider {
   static seedStorageKey = "@ZZ/ZKSYNC_SEEDS";
   static validSides = ["b", "s"];
+
+  BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
+  ZK_NETWORK_NAME = "mainnet";
 
   ethWallet = null;
   syncWallet = null;
@@ -115,7 +115,7 @@ export default class APIZKProvider extends APIProvider {
   };
 
   changePubKey = async () => {
-    if (this.network === 1) {
+    if (this.network === "zksyncv1") {
       try {
         const { data } = await axios.post(
           "https://api.zksync.io/api/v0.2/fee",
@@ -141,7 +141,7 @@ export default class APIZKProvider extends APIProvider {
           `You need to sign a one-time transaction to activate your zksync account. The fee for this tx will be ~$2.5`
         );
       }
-    } else if (this.network === 1000) {
+    } else if (this.network === "zksyncv1_goerli") {
       toast.info(
         "You need to sign a one-time transaction to activate your zksync account."
       );
@@ -278,7 +278,7 @@ export default class APIZKProvider extends APIProvider {
       amount = parseFloat(amount).toFixed(7).slice(0, -1);
     }
 
-    if (!APIZKProvider.validSides.includes(side)) {
+    if (!ZKSyncAPIProvider.validSides.includes(side)) {
       throw new Error("Invalid side");
     }
 
@@ -342,6 +342,7 @@ export default class APIZKProvider extends APIProvider {
 
   getBalances = async () => {
     const account = await this.getAccountState();
+    console.log("accountState", account);
     const balances = {};
 
     Object.keys(this.api.currencies).forEach((ticker) => {
@@ -365,9 +366,9 @@ export default class APIZKProvider extends APIProvider {
   };
 
   getChainName = (chainId) => {
-    if (Number(chainId) === 1) {
+    if (Number(chainId) === "zksyncv1") {
       return "mainnet";
-    } else if (Number(chainId) === 1000) {
+    } else if (Number(chainId) === "zksyncv1_goerli") {
       return "goerli";
     } else {
       throw Error("Chain ID not understood");
@@ -522,12 +523,12 @@ export default class APIZKProvider extends APIProvider {
   signIn = async () => {
     try {
       this.syncProvider = await zksync.getDefaultProvider(
-        this.api.getNetworkName(this.network)
+        this.ZK_NETWORK_NAME
       );
     } catch (e) {
       toast.error(
         `Connection to zkSync network ${
-          this.network === 1000 ? "goerli" : "mainnet"
+          this.network === "zksyncv1_goerli" ? "goerli" : "mainnet"
         } is lost`
       );
       throw e;
@@ -570,7 +571,7 @@ export default class APIZKProvider extends APIProvider {
   getSeeds = () => {
     try {
       return JSON.parse(
-        window.localStorage.getItem(APIZKProvider.seedStorageKey) || "{}"
+        window.localStorage.getItem(ZKSyncAPIProvider.seedStorageKey) || "{}"
       );
     } catch {
       return {};
@@ -592,7 +593,7 @@ export default class APIZKProvider extends APIProvider {
         .split(",")
         .map((x) => +x);
       window.localStorage.setItem(
-        APIZKProvider.seedStorageKey,
+        ZKSyncAPIProvider.seedStorageKey,
         JSON.stringify(seeds)
       );
     }

@@ -6,7 +6,7 @@ import Web3 from "web3";
 import { maxAllowance } from "../constants";
 import axios from "axios";
 
-export default class APIEthProvider extends APIProvider {
+export default class EthAPIProvider extends APIProvider {
   static validSides = ["b", "s"];
   static ETH_CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 
@@ -65,7 +65,7 @@ export default class APIEthProvider extends APIProvider {
       this.api.changingWallet === true
     ) {
       try {
-        const from = this.syncWallet.cachedAddress;
+        const from = this.ethWallet.address;
         this.signedMsg = await window.ethereum.request({
           method: "personal_sign",
           params: [message, from],
@@ -80,7 +80,7 @@ export default class APIEthProvider extends APIProvider {
   verifyMessage = async () => {
     const message = "Login to Dexpresso";
     try {
-      const from = this.syncWallet.cachedAddress;
+      const from = this.ethWallet.address;
       new TextEncoder("utf-8").encode(message).toString("hex");
       const recoveredAddr = await Web3.eth.accounts.recover(
         message,
@@ -128,14 +128,14 @@ export default class APIEthProvider extends APIProvider {
       amount = parseFloat(amount).toFixed(7).slice(0, -1);
     }
 
-    if (!APIEthProvider.validSides.includes(side)) {
+    if (!EthAPIProvider.validSides.includes(side)) {
       throw new Error("Invalid side");
     }
 
     if (side === "s") {
       const allowance = await this.checkAllowance(
         this.wallet,
-        APIEthProvider.ETH_CONTRACT_ADDRESS,
+        EthAPIProvider.ETH_CONTRACT_ADDRESS,
         sellTokenAddress
       );
       if (allowance < amount) {
@@ -146,7 +146,7 @@ export default class APIEthProvider extends APIProvider {
     if (side === "b") {
       const allowance = await this.checkAllowance(
         this.wallet,
-        APIEthProvider.ETH_CONTRACT_ADDRESS,
+        EthAPIProvider.ETH_CONTRACT_ADDRESS,
         buyTokenAddress
       );
       if (allowance < amount) {
@@ -247,9 +247,9 @@ export default class APIEthProvider extends APIProvider {
   };
 
   getChainName = (chainId) => {
-    if (Number(chainId) === 1) {
+    if (Number(chainId) === "ethereum") {
       return "mainnet";
-    } else if (Number(chainId) === 1000) {
+    } else if (Number(chainId) === "ethereum_goerli") {
       return "goerli";
     } else {
       throw Error("Chain ID not understood");

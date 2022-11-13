@@ -77,7 +77,7 @@ const translators = {
 export const apiSlice = createSlice({
   name: "api",
   initialState: {
-    network: 1000,
+    network: "zksyncv1_goerli",
     userId: null,
     currentMarket: "ETH-DAI",
     config: {},
@@ -119,7 +119,7 @@ export const apiSlice = createSlice({
       state.marketinfo = payload.info[0];
     },
     _markets_stats_ws(state, { payload }) {
-      console.log("markets stats", payload);
+      // console.log("markets stats", payload);
       payload.map(translators.markets_stats).forEach((update) => {
         const { market, price, priceChange: change } = update;
         if (api.validMarkets[state.network].includes(market)) {
@@ -153,7 +153,7 @@ export const apiSlice = createSlice({
     //   });
     // },
     _fills_ws(state, { payload }) {
-      console.log("fills", payload);
+      // console.log("fills", payload);
       payload.map(translators.fills).forEach((fill) => {
         const fillid = fill.id;
         if (

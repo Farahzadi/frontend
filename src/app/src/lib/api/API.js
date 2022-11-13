@@ -13,8 +13,10 @@ import { maxAllowance } from "./constants";
 import axios from "axios";
 
 const chainMap = {
-  "0x1": 1,
-  "0x5": 1000,
+  "0x1": "zksyncv1",
+  "0x5": "zksyncv1_goerli",
+  // "0x1": "ethereum",
+  // "0x5": "ethereum_goerli",
 };
 
 export default class API extends Emitter {
@@ -42,12 +44,11 @@ export default class API extends Emitter {
     super();
 
     if (networks) {
-      Object.keys(networks).forEach((k) => {
-        this.networks[k] = [
-          networks[k][0],
-          new networks[k][1](this, networks[k][0]),
-          networks[k][2],
-        ];
+      Object.entries(networks).forEach(([networkName, network]) => {
+        this.networks[networkName] = {
+          provider: new network.apiProvider(this, networkName),
+          contract: network.contract,
+        };
       });
     }
 
@@ -59,37 +60,37 @@ export default class API extends Emitter {
 
     if (window.ethereum) {
       window.ethereum.on("accountsChanged", this.signOut);
-      this.setAPIProvider(chainMap[window.ethereum.chainId] || 1);
+      this.setAPIProvider(chainMap[window.ethereum.chainId] ?? "zksyncv1");
     } else {
-      this.setAPIProvider(this.networks.mainnet[0]);
+      this.setAPIProvider("zksyncv1");
     }
   }
 
   getAPIProvider = (network) => {
-    return this.networks[this.getNetworkName(network)][1];
+    return this.networks[network]?.provider;
   };
 
   setAPIProvider = (network) => {
-    const networkName = this.getNetworkName(network);
 
-    if (!networkName) {
+    if (!network) {
       this.signOut();
       return;
     }
 
     const apiProvider = this.getAPIProvider(network);
+    console.log("apiProvider:", network, apiProvider);
     this.apiProvider = apiProvider;
 
     if (this.isZksyncChain()) {
       this.web3 = new Web3(
         window.ethereum ||
           new Web3.providers.HttpProvider(
-            `https://${networkName}.infura.io/v3/${this.infuraId}`
+            `https://${network}.infura.io/v3/${this.infuraId}`
           )
       );
 
       this.web3Modal = new Web3Modal({
-        network: networkName,
+        network: network,
         cacheProvider: true,
         theme: "dark",
         providerOptions: {
@@ -274,10 +275,10 @@ export default class API extends Emitter {
     await this.signOut();
 
     switch (this.apiProvider.network) {
-      case 1:
+      case "zksyncv1":
         ethereumChainId = "0x1";
         break;
-      case 1000:
+      case "zksyncv1_goerli":
         ethereumChainId = "0x5";
         break;
       default:
@@ -497,7 +498,7 @@ export default class API extends Emitter {
   };
 
   getNetworkContract = () => {
-    return this.networks[this.getNetworkName(this.apiProvider.network)][2];
+    return this.apiProvider.BRIDGE_CONTRACT;
   };
 
   approveSpendOfCurrency = async (currency) => {
