@@ -7,7 +7,7 @@ const makeScope = (state) => `${state.network}-${state.userId}`;
 const translators = {
   // used for both initial orders and order updates
   userOrder: (o) => ({
-    chainId: o.chain_id,
+    chainId: o.network,
     id: o.id,
     market: o.market,
     side: o.side,
@@ -34,7 +34,7 @@ const translators = {
 
   // used for both initial fills and fill updates
   fills: (f) => ({
-    chainId: f.chain_id,
+    chainId: f.network,
     id: f.id,
     market: f.market,
     takerSide: f.taker_side,
