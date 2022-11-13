@@ -342,7 +342,7 @@ export default class API extends Emitter {
           const api = this;
           if (accountState && accountState.id) {
             this.sendRequest("login", "POST", {
-              chain_id: network,
+              network: network,
               address: accountState.address,
               signature: signature,
               user_data: true,
@@ -392,7 +392,7 @@ export default class API extends Emitter {
 
   subscribeToMarket = (market) => {
     this.sendRequest("markets/subscription", "POST", {
-      chain_id: this.apiProvider.network,
+      network: this.apiProvider.network,
       market: market,
       uuid: this.ws.uuid,
       clear: true,
@@ -401,7 +401,7 @@ export default class API extends Emitter {
 
   unsubscribeToMarket = (market) => {
     this.sendRequest("markets/subscription", "DELETE", {
-      chain_id: this.apiProvider.network,
+      network: this.apiProvider.network,
       market: market,
       uuid: this.ws.uuid,
     });
@@ -409,14 +409,14 @@ export default class API extends Emitter {
 
   getMarketConfig = (market) => {
     this.sendRequest("markets/config", "GET", {
-      chain_id: this.apiProvider.network,
+      network: this.apiProvider.network,
       markets: market,
     });
   };
 
   getMarketInfo = (market) => {
     this.sendRequest("markets/info", "GET", {
-      chain_id: this.apiProvider.network,
+      network: this.apiProvider.network,
       markets: market,
     });
   };
@@ -695,7 +695,7 @@ export default class API extends Emitter {
 
   getOrderBook(market, side) {
     this.sendRequest("orders", "GET", {
-      chain_id: this.apiProvider.network,
+      network: this.apiProvider.network,
       market,
       side: undefined,
       page: undefined,
