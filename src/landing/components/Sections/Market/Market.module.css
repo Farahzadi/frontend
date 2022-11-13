@@ -122,12 +122,12 @@
 }
 .mainContainerXS::before {
   margin: -5px;
-  background: linear-gradient(to bottom, #9648ff, #20c4ba);
+  background: linear-gradient(to bottom, rgba(var(--lighterMainRgb)), rgba(var(--mainRgba)));
 }
 .marketBtnXS {
   border: none;
   border-radius: 0;
-  border-bottom: 3px solid var(--secondaryColor);
+  border-bottom: 3px solid var(--lighterMainColor);
   background: none;
   font-size: 1.25rem;
   padding: 1rem;

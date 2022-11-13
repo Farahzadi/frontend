@@ -19,13 +19,11 @@ const FAQs = () => {
       <div className=''>
         {FAQList.map(({ question, answer }, index) => {
           return (
-            <div key={index} className={styles.item}>
-              <div
-                className={styles.itemHeader}
-                onClick={() => {
+            <div key={index} className={styles.item}  onClick={() => {
                   toggleDrawer(index);
-                }}
-              >
+                }}>
+              <div
+                className={styles.itemHeader}>
                 <h3>{question}</h3>
                 {/* <span>more</span> */}
               </div>
