@@ -38,12 +38,12 @@ export default function Home() {
             </Media>
             <GuideSection />
             <Users />
-            <Media lessThan='sm'>
+            {/* <Media lessThan='sm'>
               <MarketMobile />
             </Media>
             <Media greaterThanOrEqual='md'>
               <Market />
-            </Media>
+            </Media> */}
             <Decentralization />
             <NoFiat />
             <RoadMap />

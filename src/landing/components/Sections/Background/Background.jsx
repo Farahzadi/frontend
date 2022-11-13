@@ -13,7 +13,7 @@ import styles from './Background.module.css';
 import { BGContext } from '../../../contexts/BGContext.js';
 const NUMBER = 100;
 const RADIUS = 800;
-const CAMERA_RADIUS = 3000;
+const CAMERA_RADIUS = 1500;
 const DTHETA = 0.002;
 
 
@@ -22,6 +22,7 @@ function Background() {
   // let controls;
   let data = [];
   let objects = [];
+  var yNum = 100;
   const { isAnimated, setIsAnimated } = useContext(BGContext);
   useEffect(() => {
     if (!objects.length) {
@@ -77,7 +78,7 @@ function Background() {
     }
 
     renderer = new CSS3DRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(window.innerWidth * 2, window.innerHeight * 1.5);
     const container = document.getElementById('sphere');
     container?.appendChild(renderer.domElement);
 

@@ -1,7 +1,6 @@
 .section {
-  background: url(/images/lavender-stars.svg) no-repeat center center;
-  background-size: cover;
-
+  /* background: url(/images/lavender-stars.svg) no-repeat center center;
+  background-size: cover; */
 }
 .container {
   display: flex;
@@ -36,15 +35,16 @@
   height: 36px;
   font-size: 1rem;
   display: block;
-  background: linear-gradient(to right, #cba7ef 50%, #240233 50%);
+  background: linear-gradient(to right, #d0c1b5 50%, #BFA38A 50%);
   background-size: 200% 100%;
   background-position: right bottom;
   transition: all 0.5s ease-out;
   margin: 1.2rem auto 2.3rem;
+  color: var(--mainBGColor);
 }
 .tradeBtn:hover {
   background-position: left bottom;
-  color: #240233;
+  color: var(--mainBGColor);
 }
 
 @media (min-width: 640px) {
