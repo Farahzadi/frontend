@@ -13,7 +13,6 @@ export default class ZKSyncAPIProvider extends APIProvider {
   static validSides = ["b", "s"];
 
   BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
-  ZK_NETWORK_NAME = "mainnet";
 
   ethWallet = null;
   syncWallet = null;
@@ -84,7 +83,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
       _receipt,
       status,
     };
-    const subdomain = this.network === 1 ? "" : "goerli.";
+    const subdomain = this.network === "zksyncv1" ? "" : "goerli.";
     if (!_receipt) {
       return receipt;
     }
@@ -221,7 +220,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
   };
 
   getTransactionState = async (txHash) => {
-    // const subdomain = this.network === 1 ? "" : "goerli.";
+    // const subdomain = this.network === "zksyncv1" ? "" : "goerli.";
     const { data } = await axios.get(
       `https://api.zksync.io/api/v0.2/transactions/${txHash}`
     );
@@ -365,14 +364,8 @@ export default class ZKSyncAPIProvider extends APIProvider {
     return this.syncWallet ? this.syncWallet.getAccountState() : {};
   };
 
-  getChainName = (chainId) => {
-    if (Number(chainId) === "zksyncv1") {
-      return "mainnet";
-    } else if (Number(chainId) === "zksyncv1_goerli") {
-      return "goerli";
-    } else {
-      throw Error("Chain ID not understood");
-    }
+  getChainName = () => {
+    return "mainnet";
   };
 
   getZkSyncBaseUrl = (chainId) => {
@@ -476,8 +469,8 @@ export default class ZKSyncAPIProvider extends APIProvider {
     let statusReceipt = {};
     let statusReceipts = [];
 
-    if (this.network === 1) url = "https://api.zksync.io/api/v0.2";
-    url = "https://goerli-api.zksync.io/api/v0.2";
+    if (this.network === "zksyncv1") url = "https://api.zksync.io/api/v0.2";
+    else url = "https://goerli-api.zksync.io/api/v0.2";
 
     if (type === "deposit") statusReceipt.hash = receipt.ethTx.hash;
     if (type !== "deposit") statusReceipt.hash = receipt.txHash;
@@ -523,7 +516,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
   signIn = async () => {
     try {
       this.syncProvider = await zksync.getDefaultProvider(
-        this.ZK_NETWORK_NAME
+        this.getChainName()
       );
     } catch (e) {
       toast.error(

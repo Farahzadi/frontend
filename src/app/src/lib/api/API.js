@@ -85,12 +85,12 @@ export default class API extends Emitter {
       this.web3 = new Web3(
         window.ethereum ||
           new Web3.providers.HttpProvider(
-            `https://${network}.infura.io/v3/${this.infuraId}`
+            `https://${this.apiProvider.getChainName()}.infura.io/v3/${this.infuraId}`
           )
       );
 
       this.web3Modal = new Web3Modal({
-        network: network,
+        network: this.apiProvider.getChainName(),
         cacheProvider: true,
         theme: "dark",
         providerOptions: {
