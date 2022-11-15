@@ -33,11 +33,11 @@
 .thead {
     position: sticky;
     top: 0;
-    background-color: #171c28;
+    background-color: var(--dexpressoTableBackground);
 }
 
 .trade_page_market table th {
-    color: #94a2c9;
+    color: var(--dexpresssoTextPrimery);
     font-weight: 400;
     text-align: center;
     padding: 0 20px;
@@ -48,7 +48,7 @@
 }
 
 .trade_page_market table tbody tr.selected {
-    background-color: #232833;
+    background-color: var(--dexpressoBackground);
 }
 
 .trade_page_market table tbody tr {
@@ -63,7 +63,7 @@
 }
 
 .trade_page_market table td span {
-    color: #94a2c9;
+    color: var(--dexpresssoTextPrimery);
 }
 
 .trade_page_market table td:nth-child(1) {

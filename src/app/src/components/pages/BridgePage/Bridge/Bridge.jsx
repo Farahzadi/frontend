@@ -89,8 +89,12 @@ const Bridge = () => {
       if (user.address && api.apiProvider?.zksyncCompatible) {
         const usdFee = await api.apiProvider.changePubKeyFee();
         setUsdFee(usdFee);
-        if (currencyValue) {
-          setActivationFee((usdFee / currencyValue).toFixed(5));
+        if (Number.isFinite(usdFee / currencyValue)) {
+          if (currencyValue) {
+            setActivationFee((usdFee / currencyValue).toFixed(5));
+          } else {
+            setActivationFee(0);
+          }
         } else {
           setActivationFee(0);
         }
@@ -261,7 +265,7 @@ const Bridge = () => {
               </p>
               <p>
                 <b className="text-dark">
-                  {transfer.type === "withdraw"
+                  {transfer.type !== "withdraw"
                     ? ethLayer1HeaderDetails
                     : zkSyncLayer2HeaderDetails}
                 </b>
@@ -274,7 +278,7 @@ const Bridge = () => {
               </p>
               <p>
                 <b className="text-dark">
-                  {transfer.type !== "withdraw"
+                  {transfer.type === "withdraw"
                     ? ethLayer1HeaderDetails
                     : zkSyncLayer2HeaderDetails}
                 </b>
@@ -553,8 +557,9 @@ const Bridge = () => {
                   <div className=" bridge_coin_stat text-start mt-3">
                     <h5>Available balance</h5>
                     <span>
-                      {altBalances[swapDetails.currency] &&
-                        altBalances[swapDetails.currency].valueReadable}
+                      {altBalances[swapDetails.currency]?.valueReadable
+                        .toPrecision(6)
+                        .toString()}
                       {` ${swapDetails.currency}`}
                     </span>
                   </div>
@@ -587,7 +592,7 @@ const Bridge = () => {
                 </p>
                 <p>
                   <b className="text-dark">
-                    {transfer.type === "withdraw"
+                    {transfer.type !== "withdraw"
                       ? ethLayer1HeaderDetails
                       : zkSyncLayer2HeaderDetails}
                   </b>
@@ -600,7 +605,7 @@ const Bridge = () => {
                 </p>
                 <p>
                   <b className="text-dark">
-                    {transfer.type !== "withdraw"
+                    {transfer.type === "withdraw"
                       ? ethLayer1HeaderDetails
                       : zkSyncLayer2HeaderDetails}
                   </b>

@@ -1,5 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
+import Decimal from "decimal.js";
 
 import "./Footer.css";
 import loadingGif from "assets/icons/loading.svg";
@@ -311,9 +312,9 @@ class Footer extends React.Component {
             const fillid = fill.id;
             const market = fill.market;
             const isTaker = fill.isTaker;
-            const side = (fill.takerSide === "b") ^ !isTaker ? "b" : "s";
             let price = fill.price;
-            let amount = fill.amount;
+            let amount = new Decimal(fill.amount);
+            const side = (fill.takerSide === "b") ^ !isTaker ? "b" : "s";
             const fillstatus = fill.status;
             const baseCurrency = fill.market.split("-")[0];
             const quoteCurrency = fill.market.split("-")[1];
@@ -321,9 +322,11 @@ class Footer extends React.Component {
             const sideClassName = side === "b" ? "up_value" : "down_value";
             const txHash = fill.txHash;
             const time = fill.insertTimestamp;
-            const fee =
-              (isTaker ? fill.takerFee : fill.makerFee) *
-              (side === "b" ? amount * price : amount);
+            const quantity = amount.mul(price);
+
+            let fee = new Decimal(isTaker ? fill.takerFee : fill.makerFee);
+            fee.mul(side === "b" ? quantity : amount);
+
             const feeCurrency = side === "b" ? quoteCurrency : baseCurrency;
 
             date = api.hasOneDayPassed(time);
