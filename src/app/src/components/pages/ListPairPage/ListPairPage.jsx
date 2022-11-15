@@ -349,7 +349,7 @@ export default function ListPairPage() {
                 {...model(zigZagChainId, setZigZagChainId)}
                 name={"zigzagChainId"}
                 label={"Network"}
-                items={[{name: "zkSync - Mainnet", id: 1}, {name: "zkSync - Goerli", id: 1000}]}
+                items={[{name: "zkSync - Mainnet", id: "zksyncv1"}, {name: "zkSync - Goerli", id: "zksyncv1_goerli"}]}
                 validate={required}
                 rightOfLabel={<TooltipHelper>zkSync network on which the pair will be listed</TooltipHelper>}
               />
