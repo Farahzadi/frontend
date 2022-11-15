@@ -6,24 +6,29 @@ import {
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
 import * as TWEEN from '@tweenjs/tween.js';
 import { useContext, useEffect } from 'react';
+import * as ReactDOMServer from 'react-dom/server';
 import { Object3D } from 'three';
 import { CameraHelper } from 'three';
 import { icons, addresses } from './icons.js';
 import styles from './Background.module.css';
 import { BGContext } from '../../../contexts/BGContext.js';
+import * as coins from '../../Icons/Coins.js';
 const NUMBER = 100;
 const RADIUS = 800;
-const CAMERA_RADIUS = 1500;
-const DTHETA = 0.002;
+const CAMERA_RADIUS = 2500;
+const CAMERA_RADIUS_ZOOM = 2100;
+const DTHETA = 1;
+const DTHETAX = 0.5;
 
 
 function Background() {
-  var renderer, camera, scene, cameraHelper, sphereRig;
+  var renderer, camera, scene, cameraHelper, sphereRig, sphereParent;
   // let controls;
   let data = [];
   let objects = [];
   var yNum = 100;
   const { isAnimated, setIsAnimated } = useContext(BGContext);
+  const coinsArray = [...Object.values(coins) ];
   useEffect(() => {
     if (!objects.length) {
       init();
@@ -39,6 +44,7 @@ function Background() {
     );
     camera.position.z = CAMERA_RADIUS;
     cameraHelper = new CameraHelper(camera);
+    sphereParent = new THREE.Group();
     sphereRig = new THREE.Group();
     scene = new THREE.Scene();
     scene.add(cameraHelper);
@@ -54,19 +60,26 @@ function Background() {
     //   element.style.backgroundColor = `rgba(255, 255,255, ${
     //     Math.random() * 0.5 * 0.25
     //   })`;
-      const img = document.createElement('img');
-      img.src = addresses[Math.round(Math.random() * (addresses.length - 1))];
-      img.width = 150;
-      img.height = 75;
-      element.appendChild(img);
+      // const img = document.createElement('img');
+      // img.src = addresses[Math.round(Math.random() * (addresses.length - 1))];
+      const parent = document.createElement('div');
+      parent.className = styles.element;
+      const RandomCoin = coinsArray[Math.round(Math.random() * (coinsArray.length - 1))];
+      let randomCoinOpac = Math.random().toFixed(3);
+      randomCoinOpac += randomCoinOpac === 0 ?  0.1 : 0;
+      parent.innerHTML = ReactDOMServer.renderToStaticMarkup(<RandomCoin fill='#23344d' stroke='#23344d' opacity={randomCoinOpac} />);
+      // img.width = 150;
+      // img.height = 75;
+      element.appendChild(parent);
       const objectCSS = new CSS3DObject(element);
       objectCSS.position.x = Math.random() * 4000 - 2000;
       objectCSS.position.y = Math.random() * 4000 - 2000;
       objectCSS.position.z = Math.random() * 4000 - 2000;
       objects.push(objectCSS);
       sphereRig.add(objectCSS);
-      scene.add(objectCSS);
-      scene.add(sphereRig);
+      // scene.add(objectCSS);
+      sphereParent.add(sphereRig);
+      scene.add(sphereParent);
 
       const phi = Math.acos(-1 + (2 * i) / l);
       const theta = Math.sqrt(l * Math.PI) * phi;
@@ -78,7 +91,7 @@ function Background() {
     }
 
     renderer = new CSS3DRenderer();
-    renderer.setSize(window.innerWidth * 2, window.innerHeight * 1.5);
+    renderer.setSize(window.innerWidth, window.innerHeight);
     const container = document.getElementById('sphere');
     container?.appendChild(renderer.domElement);
 
@@ -115,9 +128,11 @@ function Background() {
 
     const chains = [];
     let theta = 0;
-    while(theta < 1) {
+    let thetaX = 0;
+    while(thetaX < 360) {
       theta += DTHETA;
-      chains.push(createTween(theta));
+      thetaX += DTHETAX;
+      chains.push(createTween(theta, thetaX));
     }
     chains.forEach((val, index) => {
       if (index === chains.length - 1) {
@@ -127,6 +142,7 @@ function Background() {
 
       }
     });
+    zoomInCamera().start(2500);
     chains[0].start(1000);
 
     new TWEEN.Tween(this)
@@ -137,15 +153,25 @@ function Background() {
       });
   }
 
-  function createTween(theta) {
-    return new TWEEN.Tween(camera.position)
+  function zoomInCamera() {
+    return new TWEEN.Tween(sphereParent.position).to(
+      {
+        x: window.innerWidth / 1.5,
+        y: 0,
+        z: CAMERA_RADIUS_ZOOM
+      }, 10500
+    ).easing(TWEEN.Easing.Linear.None);
+  }
+
+  function createTween(theta, thetaX) {
+    return new TWEEN.Tween(sphereRig.rotation)
     .to(
       {
-        x: CAMERA_RADIUS * Math.sin(2 * Math.PI * theta),
+        x: thetaX,
         y: 0,
-        z: CAMERA_RADIUS * Math.cos(2 * Math.PI * theta),
+        z: theta,
       },
-      100000 * DTHETA
+      10000 * DTHETA
     )
     .onUpdate(() => {
       camera.lookAt(0, 0, 0);
@@ -174,7 +200,7 @@ function Background() {
   }
 
   return (
-    <div id='sphere' className={styles.container}></div>
+    <div id='sphere' className={`${styles.container}`}></div>
   );
 }
 

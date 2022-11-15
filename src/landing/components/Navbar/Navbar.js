@@ -19,7 +19,6 @@ const Navbar = () => {
   const { isAnimated } = useContext(BGContext);
   const [visible, setIsVisible] = useState(false);
   const route = useRouter();
-  console.log(route);
   useEffect(() => {
     if (route.pathname !== '/') {
       setIsVisible(true);
