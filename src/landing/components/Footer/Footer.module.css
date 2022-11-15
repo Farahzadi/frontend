@@ -7,12 +7,19 @@
   align-items: center;
   flex-flow: column;
   color: var(--grey) !important;
-  border-top: 3px solid #9747ff;
+  border-top: 3px solid var(--mainColor);
   padding: 1.875rem 1.875rem 5rem;
 }
 .footerHeader {
   margin-top: .7rem;
   margin-bottom: 1.3rem;
+  display: flex;
+  justify-content: center;
+  flex-flow: column;
+  opacity: .35;
+}
+.brandName {
+  margin-top: .8rem;
 }
 .footerBottom {
   margin-top: 0.7rem;
@@ -45,7 +52,7 @@
 .itemTitle p {
   font-size: 1.25rem;
   margin-bottom: 0.2rem;
-  color: #9291a1 !important;
+  color: var(--mainColor) !important;
   letter-spacing: 0.2rem;
 }
 .fullWidthXS {
@@ -53,7 +60,7 @@
   order: 1;
 }
 .itemBody p {
-  color: #9291a1 !important;
+  /* color: #9291a1 !important; */
   font-size: 1.05rem;
   line-height: 140%;
   display: none;

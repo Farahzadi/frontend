@@ -357,7 +357,7 @@
     grid-row: 2 / 3;
     height: 101px;
     width: 115px;
-    background-image: url('/images/roadmap-1.svg');
+    background-image: url('/images/roadmp-1.svg');
 
   }
   .roadMapItem:nth-child(8) {
@@ -365,33 +365,33 @@
     grid-row: 2 / 3;
     height: 98px;
     width: 119px;
-    background-image: url('/images/roadmap-2.svg');
+    background-image: url('/images/roadmp-2.svg');
   }
   .roadMapItem:nth-child(9) {
     grid-column: 3 / span 1;
     grid-row: 2 / 3;
     height: 95px;
     width: 113px;
-    background-image: url('/images/roadmap-3.svg');
+    background-image: url('/images/roadmp-3.svg');
   }
   .roadMapItem:nth-child(10) {
     grid-column: 4 / span 1;
     grid-row: 2 / 3;
     height: 87px;
     width: 113px;
-    background-image: url('/images/roadmap-4.svg');
+    background-image: url('/images/roadmp-4.svg');
   }
   .roadMapItem:nth-child(11) {
     grid-column: 5 / span 1;
     grid-row: 2 / 3;
     height: 76px;
     width: 113px;
-    background-image: url('/images/roadmap-5.svg');
+    background-image: url('/images/roadmp-5.svg');
   }
   .roadMapItem:nth-child(12) {
     height: 78px;
     width: 175px;
-    background-image: url('/images/roadmap-6.svg');
+    background-image: url('/images/roadmp-6.svg');
     grid-column: 6 / span 2;
     grid-row: 2 / 3;
     justify-content: flex-start;

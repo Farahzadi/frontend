@@ -50,7 +50,7 @@
   right: 0;
   z-index: -1;
   margin: -2.5px;
-  background: linear-gradient(to right, #9648ff, #20c4ba);
+  background: linear-gradient(to right, rgba(var(--lighterMainRgb), 1), rgba(var(--mainRgba), 1));
   border-radius: inherit;
 }
 .cardBG:first-child::before {

@@ -13,15 +13,15 @@ const Decentralization = () => {
               <div className={styles.imgContainer}>
                 <Image src={Decenteral_bg} width={300} height={542} alt="" />
               </div>
-              <div className={styles.bulbImgContainer}>
+              {/* <div className={styles.bulbImgContainer}>
                   <Image src={moon} height={34} width={34} alt="" />
                   <Image src={planet} height={110} width={148} alt="" />
-                </div>
+              </div> */}
               <div className={styles.txtBody}>
 
                 <h1>Decentralization, matters! </h1>
                 <p>
-                  Dexpresso is a decentralized non-custodial order book exchange, 
+                  Dexpresso is a decentralized non-custodial order book exchange,
                   powered by zk-rollups. This allows our users to seamlessly and
                   securely trade with near-zero fees all while providing
                   centralized exchange like quotes on all size trades. We also
