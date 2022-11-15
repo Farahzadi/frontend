@@ -14,9 +14,9 @@ export const networkQueryParam = "network"
 export const mainnetChainName = "zksync"
 export const goerliChainName = "goerli"
 export const getMarketChainFromId = (chainId) => {
-  if (chainId === 1) {
+  if (chainId === "zksyncv1") {
     return mainnetChainName
-  } else if (chainId === 1000) {
+  } else if (chainId === "zksyncv1_goerli") {
     return goerliChainName
   } else {
     return null
@@ -24,9 +24,9 @@ export const getMarketChainFromId = (chainId) => {
 }
 export const getChainIdFromMarketChain = (chainName) => {
   if (chainName === mainnetChainName) {
-    return 1
+    return "zksyncv1"
   } else if (chainName === goerliChainName) {
-    return 1000
+    return "zksyncv1_goerli"
   } else {
     return null
   }

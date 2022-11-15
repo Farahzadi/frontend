@@ -9,9 +9,11 @@ import { toast } from "react-toastify";
 import { toBaseUnit } from "lib/utils";
 import APIProvider from "./APIProvider";
 import { maxAllowance } from "../constants";
-export default class APIZKProvider extends APIProvider {
+export default class ZKSyncAPIProvider extends APIProvider {
   static seedStorageKey = "@ZZ/ZKSYNC_SEEDS";
   static validSides = ["b", "s"];
+
+  BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
 
   ethWallet = null;
   syncWallet = null;
@@ -82,7 +84,7 @@ export default class APIZKProvider extends APIProvider {
       _receipt,
       status,
     };
-    const subdomain = this.network === 1 ? "" : "goerli.";
+    const subdomain = this.network === "zksyncv1" ? "" : "goerli.";
     if (!_receipt) {
       return receipt;
     }
@@ -113,7 +115,7 @@ export default class APIZKProvider extends APIProvider {
   };
 
   changePubKey = async () => {
-    if (this.network === 1) {
+    if (this.network === "zksyncv1") {
       try {
         const { data } = await axios.post(
           "https://api.zksync.io/api/v0.2/fee",
@@ -139,7 +141,7 @@ export default class APIZKProvider extends APIProvider {
           `You need to sign a one-time transaction to activate your zksync account. The fee for this tx will be ~$2.5`
         );
       }
-    } else if (this.network === 1000) {
+    } else if (this.network === "zksyncv1_goerli") {
       toast.info(
         "You need to sign a one-time transaction to activate your zksync account."
       );
@@ -219,7 +221,7 @@ export default class APIZKProvider extends APIProvider {
   };
 
   getTransactionState = async (txHash) => {
-    // const subdomain = this.network === 1 ? "" : "goerli.";
+    // const subdomain = this.network === "zksyncv1" ? "" : "goerli.";
     const { data } = await axios.get(
       `https://api.zksync.io/api/v0.2/transactions/${txHash}`
     );
@@ -277,7 +279,7 @@ export default class APIZKProvider extends APIProvider {
       amount = amount.toFixed(7).slice(0, -1);
     }
 
-    if (!APIZKProvider.validSides.includes(side)) {
+    if (!ZKSyncAPIProvider.validSides.includes(side)) {
       throw new Error("Invalid side");
     }
 
@@ -341,6 +343,7 @@ export default class APIZKProvider extends APIProvider {
 
   getBalances = async () => {
     const account = await this.getAccountState();
+    console.log("accountState", account);
     const balances = {};
 
     Object.keys(this.api.currencies).forEach((ticker) => {
@@ -365,14 +368,8 @@ export default class APIZKProvider extends APIProvider {
     return this.syncWallet ? this.syncWallet.getAccountState() : {};
   };
 
-  getChainName = (chainId) => {
-    if (Number(chainId) === 1) {
-      return "mainnet";
-    } else if (Number(chainId) === 1000) {
-      return "goerli";
-    } else {
-      throw Error("Chain ID not understood");
-    }
+  getChainName = () => {
+    return "mainnet";
   };
 
   getZkSyncBaseUrl = (chainId) => {
@@ -476,8 +473,8 @@ export default class APIZKProvider extends APIProvider {
     let statusReceipt = {};
     let statusReceipts = [];
 
-    if (this.network === 1) url = "https://api.zksync.io/api/v0.2";
-    url = "https://goerli-api.zksync.io/api/v0.2";
+    if (this.network === "zksyncv1") url = "https://api.zksync.io/api/v0.2";
+    else url = "https://goerli-api.zksync.io/api/v0.2";
 
     if (type === "deposit") statusReceipt.hash = receipt.ethTx.hash;
     if (type !== "deposit") statusReceipt.hash = receipt.txHash;
@@ -525,12 +522,12 @@ export default class APIZKProvider extends APIProvider {
   signIn = async () => {
     try {
       this.syncProvider = await zksync.getDefaultProvider(
-        this.api.getNetworkName(this.network)
+        this.getChainName()
       );
     } catch (e) {
       toast.error(
         `Connection to zkSync network ${
-          this.network === 1000 ? "goerli" : "mainnet"
+          this.network === "zksyncv1_goerli" ? "goerli" : "mainnet"
         } is lost`
       );
       throw e;
@@ -573,7 +570,7 @@ export default class APIZKProvider extends APIProvider {
   getSeeds = () => {
     try {
       return JSON.parse(
-        window.localStorage.getItem(APIZKProvider.seedStorageKey) || "{}"
+        window.localStorage.getItem(ZKSyncAPIProvider.seedStorageKey) || "{}"
       );
     } catch {
       return {};
@@ -595,7 +592,7 @@ export default class APIZKProvider extends APIProvider {
         .split(",")
         .map((x) => +x);
       window.localStorage.setItem(
-        APIZKProvider.seedStorageKey,
+        ZKSyncAPIProvider.seedStorageKey,
         JSON.stringify(seeds)
       );
     }

@@ -1,6 +1,8 @@
 import API from "./API";
-// import APIStarknetProvider from './providers/APIStarknetProvider'
-import APIZKProvider from "./providers/APIZKProvider";
+import EthAPIProvider from "./providers/EthAPIProvider";
+import EthGoerliAPIProvider from "./providers/EthGoerliAPIProvider";
+import ZKSyncAPIProvider from "./providers/ZKSyncAPIProvider";
+import ZKSyncGoerliAPIProvider from "./providers/ZKSyncGoerliAPIProvider";
 
 const NODE_ENV = process.env.NODE_ENV;
 const INFURA_ID = process.env.REACT_APP_INFURA_ID;
@@ -16,9 +18,22 @@ const api = new API({
   websocketUrl: WEBSOCKET_URL,
   apiUrl: API_URL,
   networks: {
-    mainnet: [1, APIZKProvider, "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF"],
-    goerli: [1000, APIZKProvider, "0x5c56FC5757259c52747AbB7608F8822e7cE51484"],
-    // starknet: [1001, APIStarknetProvider],
+    zksyncv1: {
+      apiProvider: ZKSyncAPIProvider,
+      contract: "0x0000000000000000000000000000000000000000",
+    },
+    zksyncv1_goerli: {
+      apiProvider: ZKSyncGoerliAPIProvider,
+      contract: "0x0000000000000000000000000000000000000000",
+    },
+    ethereum: {
+      apiProvider: EthAPIProvider,
+      contract: "0x0000000000000000000000000000000000000000",
+    },
+    ethereum_goerli: {
+      apiProvider: EthGoerliAPIProvider,
+      contract: "0x0000000000000000000000000000000000000000",
+    },
   },
   currencies: {
     ETH: {
@@ -26,17 +41,19 @@ const api = new API({
       name: "Ethereum",
       decimals: 18,
       chain: {
-        1: {
+        zksyncv1: {
           tokenId: 0,
-          contractAddress: "0x0000000000000000000000000000000000000000",
+          contract: "0x0000000000000000000000000000000000000000",
         },
-        1000: {
+        zksyncv1_goerli: {
           tokenId: 0,
-          contractAddress: "0x0000000000000000000000000000000000000000",
+          contract: "0x0000000000000000000000000000000000000000",
         },
-        1001: {
-          contractAddress:
-            "0x06a75fdd9c9e376aebf43ece91ffb315dbaa753f9c0ddfeb8d7f3af0124cd0b6",
+        ethereum: {
+          contract: "0x0000000000000000000000000000000000000000",
+        },
+        ethereum_goerli: {
+          contract: "0x0000000000000000000000000000000000000000",
         },
       },
       gasFee: 0.0003,
@@ -46,17 +63,19 @@ const api = new API({
       name: "USDC",
       decimals: 6,
       chain: {
-        1: {
+        zksyncv1: {
           tokenId: 2,
-          contractAddress: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+          contract: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
         },
-        1000: {
+        zksyncv1_goerli: {
           tokenId: 3,
-          contractAddress: "0xd35CCeEAD182dcee0F148EbaC9447DA2c4D449c4",
+          contract: "0xd35CCeEAD182dcee0F148EbaC9447DA2c4D449c4",
         },
-        1001: {
-          contractAddress:
-            "0x0545d006f9f53169a94b568e031a3e16f0ea00e9563dc0255f15c2a1323d6811",
+        ethereum: {
+          contract: "0x0000000000000000000000000000000000000000",
+        },
+        ethereum_goerli: {
+          contract: "0x0000000000000000000000000000000000000000",
         },
       },
       gasFee: 1,
@@ -66,13 +85,15 @@ const api = new API({
       name: "USDT",
       decimals: 6,
       chain: {
-        1: {
+        zksyncv1: {
           tokenId: 4,
-          contractAddress: "0xdac17f958d2ee523a2206206994597c13d831ec7",
+          contract: "0xdac17f958d2ee523a2206206994597c13d831ec7",
         },
-        1001: {
-          contractAddress:
-            "0x03d3af6e3567c48173ff9b9ae7efc1816562e558ee0cc9abc0fe1862b2931d9a",
+        ethereum: {
+          contract: "0x0000000000000000000000000000000000000000",
+        },
+        ethereum_goerli: {
+          contract: "0x0000000000000000000000000000000000000000",
         },
       },
       gasFee: 1,
@@ -82,13 +103,19 @@ const api = new API({
       name: "DAI",
       decimals: 18,
       chain: {
-        1: {
+        zksyncv1: {
           tokenId: 1,
-          contractAddress: "0x6b175474e89094c44da98b954eedeac495271d0f",
+          contract: "0x6b175474e89094c44da98b954eedeac495271d0f",
         },
-        1000: {
+        zksyncv1_goerli: {
           tokenId: 4,
-          contractAddress: "0x5C221E77624690fff6dd741493D735a17716c26B",
+          contract: "0x5C221E77624690fff6dd741493D735a17716c26B",
+        },
+        ethereum: {
+          contract: "0x0000000000000000000000000000000000000000",
+        },
+        ethereum_goerli: {
+          contract: "0x0000000000000000000000000000000000000000",
         },
       },
       gasFee: 1,
@@ -98,9 +125,15 @@ const api = new API({
       name: "Bitcoin",
       decimals: 8,
       chain: {
-        1: {
+        zksyncv1: {
           tokenId: 15,
-          contractAddress: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+          contract: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+        },
+        ethereum: {
+          contract: "0x0000000000000000000000000000000000000000",
+        },
+        ethereum_goerli: {
+          contract: "0x0000000000000000000000000000000000000000",
         },
       },
       gasFee: 0.00003,
@@ -110,9 +143,15 @@ const api = new API({
       name: "Frax Shares",
       decimals: 18,
       chain: {
-        1: {
+        zksyncv1: {
           tokenId: 120,
-          contractAddress: "0x3432b6a60d23ca0dfca7761b7ab56459d9c964d0",
+          contract: "0x3432b6a60d23ca0dfca7761b7ab56459d9c964d0",
+        },
+        ethereum: {
+          contract: "0x0000000000000000000000000000000000000000",
+        },
+        ethereum_goerli: {
+          contract: "0x0000000000000000000000000000000000000000",
         },
       },
       gasFee: 0.1,
@@ -122,9 +161,15 @@ const api = new API({
       name: "Frax",
       decimals: 18,
       chain: {
-        1: {
+        zksyncv1: {
           tokenId: 92,
-          contractAddress: "0x853d955acef822db058eb8505911ed77f175b99e",
+          contract: "0x853d955acef822db058eb8505911ed77f175b99e",
+        },
+        ethereum: {
+          contract: "0x0000000000000000000000000000000000000000",
+        },
+        ethereum_goerli: {
+          contract: "0x0000000000000000000000000000000000000000",
         },
       },
       gasFee: 1,
@@ -134,17 +179,22 @@ const api = new API({
       name: "Wrapped Ether",
       decimals: 18,
       chain: {
-        1: {
+        zksyncv1: {
           tokenId: 61,
-          contractAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+          contract: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+        },
+        ethereum: {
+          contract: "0x0000000000000000000000000000000000000000",
+        },
+        ethereum_goerli: {
+          contract: "0x0000000000000000000000000000000000000000",
         },
       },
       gasFee: 0.0003,
     },
   },
   validMarkets: {
-    // zkSync Mainnet
-    1: [
+    zksyncv1: [
       "ETH-USDT",
       "ETH-USDC",
       "ETH-DAI",
@@ -159,11 +209,8 @@ const api = new API({
       "FXS-FRAX",
       "ETH-FRAX",
     ],
-    // zkSync Goerli
-    1000: ["ETH-USDC", "ETH-DAI", "DAI-USDC"],
-
-    // Starknet Alpha
-    1001: ["ETH-USDT", "ETH-USDC"],
+    zksyncv1_goerli: ["ETH-USDC", "ETH-DAI", "DAI-USDC"],
+    ethereum: ["ETH-USDC", "ETH-DAI", "DAI-USDC"],
   },
 });
 
