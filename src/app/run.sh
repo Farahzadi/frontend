@@ -1,2 +1,2 @@
 #!/bin/bash -e
-yarn up
+yarn build:prod

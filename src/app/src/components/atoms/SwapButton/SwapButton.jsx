@@ -9,7 +9,7 @@ const StyledSwapButton = styled.button`
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #5E35B1;
+    background: var(--dexpressoPrimery);
 
     > svg {
         transition: all 0.2s ease-in-out;
