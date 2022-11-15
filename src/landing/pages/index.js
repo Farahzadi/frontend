@@ -29,6 +29,7 @@ export default function Home() {
         <div className='stars-bg'>
           <div className='stars-blend'>
             <IntroSection />
+            <Users />
             <div className='contact-bar'>
               <ContactBar />
             </div>
@@ -37,13 +38,12 @@ export default function Home() {
               <Mobile />
             </Media>
             <GuideSection />
-            <Users />
-            <Media lessThan='sm'>
+            {/* <Media lessThan='sm'>
               <MarketMobile />
             </Media>
             <Media greaterThanOrEqual='md'>
               <Market />
-            </Media>
+            </Media> */}
             <Decentralization />
             <NoFiat />
             <RoadMap />

@@ -2,7 +2,7 @@
   display: flex;
   justify-content: center;
   z-index: 5;
-  border: 1px solid var(--themeColor);
+  border: 2.5px solid var(--mainColor);
   padding: 17px 21px;
   border-radius: 20px;
   backdrop-filter: blur(1px);
