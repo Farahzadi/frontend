@@ -1,6 +1,5 @@
 .section {
   padding: 2.3rem 2rem;
-  min-height: 800px;
 }
 .container {
   display: flex;
@@ -49,6 +48,9 @@
   display: none;
 }
 @media (min-width: 640px) {
+  .section {
+    min-height: 800px;
+  }
   .imgContainer {
     display: block;
   }

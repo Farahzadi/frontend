@@ -1,3 +1,6 @@
+.container {
+  min-height: 350px;
+}
 .counters {
   display: flex;
   align-items: center;
@@ -46,6 +49,9 @@
 }
 
 @media (min-width: 769px) {
+  .container {
+    min-height: 500px;
+  }
   .mainBody {
     flex-direction: row;
     border-radius: 43px;

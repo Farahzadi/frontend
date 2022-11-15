@@ -24,8 +24,8 @@ const Users = () => {
             start={100000}
             end={800000000}
             duration={20}
-            enableScrollSpy
-            scrollSpyOnce
+            enableScrollSpy={true}
+            scrollSpyOnce={true}
             separator=','
             prefix='$'
           />
