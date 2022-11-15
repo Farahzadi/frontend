@@ -9,8 +9,6 @@ import { toast } from "react-toastify";
 import { toBaseUnit } from "lib/utils";
 import APIProvider from "./APIProvider";
 import { maxAllowance } from "../constants";
-import axios from "axios";
-
 export default class ZKSyncAPIProvider extends APIProvider {
   static seedStorageKey = "@ZZ/ZKSYNC_SEEDS";
   static validSides = ["b", "s"];
