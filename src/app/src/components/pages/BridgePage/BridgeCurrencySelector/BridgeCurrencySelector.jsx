@@ -295,7 +295,7 @@ const BridgeCurrencySelector = ({
               <div className="currencyName">{ticker}</div>
               {balances[ticker] && (
                 <div className="currencyBalance">
-                  <strong>{balances[ticker].valueReadable}</strong>
+                  <strong>{balances[ticker].valueReadable.toString()}</strong>
                   <small>
                     $
                     {formatUSD(
