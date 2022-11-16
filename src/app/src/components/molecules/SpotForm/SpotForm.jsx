@@ -94,11 +94,13 @@ class SpotForm extends React.Component {
   }
 
   async buySellHandler(e) {
-    if (Object.keys(this.props.userOrders).length > 0) {
-      for (var key in this.props.userOrders) {
+    const { userOrders } = this.props;
+
+    if (Object.keys(userOrders).length > 0) {
+      for (let key in userOrders) {
         if (
-          this.props.userOrders[key].status === "o" &&
-          this.props.userOrders[key].side !== this.props.side
+          userOrders[key].status === "o" &&
+          userOrders[key].side !== this.props.side
         ) {
           toast.error("Your limit order(s) should fill first");
           return;
@@ -113,43 +115,36 @@ class SpotForm extends React.Component {
 
     if (typeof this.state.amount === "string") {
       if (this.props.rangePrice > 0) {
-        amount = parseFloat(this.props.rangePrice.replace(",", "."));
+        amount = Number(this.props.rangePrice.replace(",", "."));
       } else {
-        amount = parseFloat(this.state.amount.replace(",", "."));
+        amount = Number(this.state.amount.replace(",", "."));
       }
     } else {
       amount = this.state.amount;
     }
     if (isNaN(amount)) {
-      toast.error("The amount is not defined");
+      toast.error("Invalid amount");
       return;
     }
-    // await this.hideModal();
+
     if (sessionStorage.getItem("test") === null) {
       toast.warning(
-        " Dear user, there is no guarantee from us for your definite performance"
+        "Dear user, there is no guarantee from us for your definite performance"
       );
       sessionStorage.setItem("test", true);
     }
-    const baseCurrency = this.props.currentMarket.split("-")[0];
-    const quoteCurrency = this.props.currentMarket.split("-")[1];
-    amount = parseFloat(amount.toFixed(api.currencies[baseCurrency].decimals));
+    const [baseCurrency, quoteCurrency] = this.props.currentMarket.split("-");
+    amount = Number(amount.toFixed(api.currencies[baseCurrency].decimals));
     if (this.props.activeLimitAndMarketOrdersCount > 0) {
       if (this.props.orderType === "market") {
         toast.error("Your limit or market order should fill first");
         return;
       }
     }
-    if (this.props.activeSwapOrdersCount > 0) {
-      if (this.props.orderType === "market") {
-        toast.error("Your swap order should fill first");
-        return;
-      }
-    }
 
     if (this.props.user.id) {
-      baseBalance = parseFloat(this.getBaseBalance());
-      quoteBalance = parseFloat(this.getQuoteBalance());
+      baseBalance = Number(this.getBaseBalance());
+      quoteBalance = Number(this.getQuoteBalance());
     } else {
       baseBalance = 0;
       quoteBalance = 0;
@@ -161,7 +156,7 @@ class SpotForm extends React.Component {
       price = this.marketPrice();
     } else {
       if (this.props.selectedPrice) {
-        price = parseFloat(this.props.selectedPrice)
+        price = Number(this.props.selectedPrice)
           .toFixed(1)
           .replace(/([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, "$1");
       } else {
@@ -170,7 +165,7 @@ class SpotForm extends React.Component {
     }
     if (!price) {
       if (this.props.orderType === "limit") {
-        toast.error("The price is not defined");
+        toast.error("Invalid price");
         return;
       } else {
         toast.error(
@@ -198,7 +193,7 @@ class SpotForm extends React.Component {
     }
     if (amount < this.props.marketInfo.min_order_size) {
       toast.error(
-        `Minimum order size is ${parseFloat(
+        `Minimum order size is ${Number(
           this.props.marketInfo.min_order_size
         )} ${baseCurrency}`
       );
@@ -221,42 +216,28 @@ class SpotForm extends React.Component {
     newstate.orderButtonDisabled = true;
     this.setState(newstate);
 
-    if (api.isZksyncChain()) {
-      orderPendingToast = toast.info(
-        "Order pending. Sign or Cancel to continue..."
-      );
-    }
+    orderPendingToast = toast.info(
+      "Order pending. Sign or Cancel to continue..."
+    );
+
     // send feeType for limit order (fee method)
     try {
-      if (
-        this.props.orderType === "limit" ||
-        this.props.orderType === "marketOrder"
-      ) {
-        await api.submitOrder(
-          this.props.currentMarket,
-          this.props.side,
-          price,
-          amount,
-          feeType,
-          this.props.config.takerFee,
-          orderType
-        );
-      } else if (this.props.orderType === "market") {
-        await api.submitSwap(
-          this.props.currentMarket,
-          this.props.side,
-          price,
-          amount
-        );
-      }
+      await api.submitOrder(
+        this.props.currentMarket,
+        this.props.side,
+        price,
+        amount,
+        feeType,
+        this.props.config.takerFee,
+        orderType
+      );
     } catch (e) {
       console.log(e);
       toast.error(e.message);
     }
 
-    if (api.isZksyncChain()) {
-      toast.dismiss(orderPendingToast);
-    }
+    toast.dismiss(orderPendingToast);
+
     newstate = { ...this.state };
     newstate.orderButtonDisabled = false;
     this.setState(newstate);
@@ -423,7 +404,7 @@ class SpotForm extends React.Component {
     const quoteBalance = this.getQuoteBalance();
     const quoteCurrency = this.props.currentMarket.split("-")[1];
 
-    var newstate = { ...this.state };
+    let newstate = { ...this.state };
 
     if (val === 100) {
       newstate.maxSizeSelected = true;
@@ -775,7 +756,7 @@ class SpotForm extends React.Component {
                 </div>
               </>
             ) : (
-              <div className="spf_btn">
+              <div className="spf_btn mt-3">
                 <Button
                   loadin={this.props.loading}
                   className="bg_btn"

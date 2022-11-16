@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import Image from 'next/image';
 import styles from './NoFiat.module.css';
-import no_more_fiat from '/public/images/No-more-fiat.svg';
+import no_more_fiat from '/public/images/No-more-fiat_2.svg';
 
 const NoFiat = () => {
   const benefits = [

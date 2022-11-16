@@ -17,7 +17,7 @@
 }
 .coverImg {
     margin-bottom: 1.0625rem;
-    background-color: #05092c;
+    background-color: rgba(var(--mainRgba), 0.4);
 }
 .excerpt {
     text-align: start;

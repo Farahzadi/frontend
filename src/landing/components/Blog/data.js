@@ -1,6 +1,6 @@
 const BLOG = {
   id: 1,
-  imgUrl: '/images/Logo.svg',
+  imgUrl: '/images/logo/Dexpresso_logo.svg',
   title: 'Dex Blog',
   tags: [],
   excerpt:

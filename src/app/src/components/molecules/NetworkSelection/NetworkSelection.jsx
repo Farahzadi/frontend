@@ -14,7 +14,7 @@ const NetworkSelection = () => {
     api.refreshNetwork().catch((err) => {
       console.log(err);
     });
-    if (id === 1000) {
+    if (id === "zksync_goerli") {
       return setNetwokName("zkSync(V1) - Goerli");
     }
     setNetwokName("zkSync(V1) - Mainnet");
@@ -36,14 +36,14 @@ const NetworkSelection = () => {
         <Dropdown.Menu className="dropdown-menu "> 
           <Dropdown.Item
             onClick={() => {
-              selectNetwork(1000);
+              selectNetwork("zksyncv1_goerli");
             }}
           >
             zkSync(V1) - Goerli
           </Dropdown.Item>
           <Dropdown.Item
             onClick={() => {
-              selectNetwork(1);
+              selectNetwork("zksyncv1");
             }}
           >
             zkSync(V1) - Mainnet

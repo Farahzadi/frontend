@@ -68,14 +68,14 @@ const BridgeCurrencyOptions = styled.ul`
   transform: rotate(180deg) translateY(20px);
   cursor: pointer;
   .border-side {
-    border-left: 1px solid #5e35b1;
-    border-right: 1px solid #5e35b1;
+    border-left: 1px solid var(--dexpressoPrimery);
+    border-right: 1px solid var(--dexpressoPrimery);
   }
   .border-top {
-    border-top: 1px solid #5e35b1 !important;
+    border-top: 1px solid var(--dexpressoPrimery)!important;
   }
   .border-bottom {
-    border-bottom: 1px solid #5e35b1 !important;
+    border-bottom: 1px solid var(--dexpressoPrimery) !important;
   }
 
   .input-box {
@@ -136,8 +136,8 @@ const BridgeCurrencyOptions = styled.ul`
     background: #100c22;
     flex-direction: row;
     align-items: center;
-    border-left: 1px solid #5e35b1;
-    border-right: 1px solid #5e35b1;
+    border-left: 1px solid #0A82B6 ;
+    border-right: 1px solid #0A82B6 ;
 
     &:first-child {
       border-top-left-radius: 15px;
@@ -295,7 +295,7 @@ const BridgeCurrencySelector = ({
               <div className="currencyName">{ticker}</div>
               {balances[ticker] && (
                 <div className="currencyBalance">
-                  <strong>{balances[ticker].valueReadable}</strong>
+                  <strong>{balances[ticker].valueReadable.toString()}</strong>
                   <small>
                     $
                     {formatUSD(

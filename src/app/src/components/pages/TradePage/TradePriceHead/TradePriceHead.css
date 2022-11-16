@@ -40,7 +40,7 @@
 }
 
 .tph_r option {
-    color: #94a2c9;
+    color: var(--dexpresssoTextPrimery);
     text-align: center;
 }
 

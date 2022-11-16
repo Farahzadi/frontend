@@ -70,10 +70,10 @@ class TradePriceTable extends React.Component {
       api.emit("selectedPrice", this.state.selectedPrice);
       this.updateOrderType("limit");
       if (this.props.itsAsks) {
-        api.emit("orderSide", true);
+        api.emit("orderSide", false);
       }
       if (this.props.itsBids) {
-        api.emit("orderSide", false);
+        api.emit("orderSide", true);
       }
     }
   }
@@ -140,7 +140,7 @@ class TradePriceTable extends React.Component {
               let rowStyle;
               if (this.props.useGradient) {
                 rowStyle = {
-                  backgroundImage: `linear-gradient(to left, ${color}, ${color} ${breakpoint}%, #171c28 0%)`,
+                  backgroundImage: `linear-gradient(to left, ${color}, ${color} ${breakpoint}%, #14243C 0%)`,
                 };
               } else {
                 rowStyle = {};
@@ -187,7 +187,7 @@ class TradePriceTable extends React.Component {
               let rowStyle;
               if (this.props.useGradient) {
                 rowStyle = {
-                  backgroundImage: `linear-gradient(to left, ${color}, ${color} ${breakpoint}%, #171c28 0%)`,
+                  backgroundImage: `linear-gradient(to left, ${color}, ${color} ${breakpoint}%, #14243C 0%)`,
                 };
               } else {
                 rowStyle = {};

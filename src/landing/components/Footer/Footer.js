@@ -2,7 +2,8 @@ import React from 'react';
 import Link from 'next/link';
 import styles from './Footer.module.css';
 import ContactBar from '../ContactBar/ContactBar';
-import { Logo } from '../Icons/Logo';
+import logo from '../../public/images/logo/Dexpresso_logo_theme.svg';
+import Image from 'next/image';
 const Footer = () => {
   const description = `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`;
   const items = [
@@ -21,7 +22,8 @@ const Footer = () => {
     <footer className={styles.footer}>
       <div className={styles.mainContainer}>
         <div className={styles.footerHeader}>
-          <Logo fill='#414055b3' width={200} height={100} />
+          <Image src={logo} width={65} height={105} alt='dexpresso' />
+          <div className={`brand-name ${styles.brandName}`}>Dexpresso</div>
         </div>
         <div className={styles.footerCols}>
           {items.map((val, index) => (

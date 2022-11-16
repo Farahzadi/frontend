@@ -282,13 +282,13 @@ class Footer extends React.Component {
   renderFillTable(fills) {
     let baseExplorerUrl;
     switch (api.apiProvider.network) {
-      case 1001:
-        baseExplorerUrl = "https://goerli.voyager.online/tx/";
-        break;
-      case 1000:
+      // case 1001:
+      //   baseExplorerUrl = "https://goerli.voyager.online/tx/";
+      //   break;
+      case "zksyncv1_goerli":
         baseExplorerUrl = "https://goerli.zkscan.io/explorer/transactions/";
         break;
-      case 1:
+      case "zksyncv1":
       default:
         baseExplorerUrl = "https://zkscan.io/explorer/transactions/";
     }
@@ -572,13 +572,14 @@ class Footer extends React.Component {
 
   render() {
     let explorerLink;
+    console.log(api);
     switch (api.apiProvider.network) {
-      case 1000:
+      case "zksyncv1_goerli":
         explorerLink =
           "https://goerli.zkscan.io/explorer/accounts/" +
           this.props.user.address;
         break;
-      case 1:
+      case "zksyncv1":
       default:
         explorerLink =
           "https://zkscan.io/explorer/accounts/" + this.props.user.address;

@@ -23,8 +23,8 @@ jobs:
     runs-on: self-hosted
     steps:
     - name: pull latest code
-      uses: actions/checkout@v2
-    
+      uses: actions/checkout@v3    
+      
     - name: build step
       run: cd src/app; docker build -t reg.dexpresso.exchange/staging/app:latest .
 
