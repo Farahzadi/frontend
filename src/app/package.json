@@ -67,6 +67,7 @@
     "jest-watch-typeahead": "0.6.1",
     "lodash": "^4.17.21",
     "mini-css-extract-plugin": "0.11.3",
+    "moment": "^2.29.4",
     "optimize-css-assets-webpack-plugin": "5.0.4",
     "pnp-webpack-plugin": "1.6.4",
     "postcss-flexbugs-fixes": "4.2.1",
@@ -120,8 +121,8 @@
   "scripts": {
     "start": "node scripts/start.js",
     "start:prod": "env-cmd -f .env.prod node scripts/start.js",
-    "build:local": "node scripts/build.js",
-    "build:prod": "env-cmd -f .env.prod node scripts/build.js"
+    "build:local": "node ./update-build-date.js && scripts/build.js",
+    "build:prod": "env-cmd -f .env.prod node ./update-build-date.js && scripts/build.js"
   },
   "eslintConfig": {
     "extends": [
@@ -212,5 +213,6 @@
       "babel-plugin-styled-components",
       "@babel/plugin-proposal-nullish-coalescing-operator"
     ]
-  }
+  },
+  "buildDate": ""
 }
