@@ -14,14 +14,14 @@ const NetworkSelection = () => {
     api.refreshNetwork().catch((err) => {
       console.log(err);
     });
-    if (id === "zksync_goerli") {
+    if (id === "zksyncv1_goerli") {
       return setNetwokName("zkSync(V1) - Goerli");
     }
     setNetwokName("zkSync(V1) - Mainnet");
   };
 
   useEffect(() => {
-    if (network === 1000) {
+    if (network === "zksyncv1_goerli") {
       return setNetwokName("zkSync(V1) - Goerli");
     }
     setNetwokName("zkSync(V1) - Mainnet");
