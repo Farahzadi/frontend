@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 import Box from "@mui/material/Box";
 import Backdrop from "@mui/material/Backdrop";
 
-import Modal from "@mui/material/Modal";
+import { Modal } from "../../atoms/Modal";
 
 const style = {
   position: "absolute",
@@ -87,41 +87,16 @@ const NonceIncreasement = () => {
     <>
       <DefaultTemplate>
         <Modal
-          aria-labelledby="spring-modal-title"
-          aria-describedby="spring-modal-description"
-          open={open}
-          onClose={handleClose}
-          closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
+          show={open}
+          closeText='No'
+          actionText='Yes'
+          alert='Do you agree with all the changes?'
+          onSubmit={() => {
+            handleClose();
+            increaseWalletNonce();
           }}
+          onClose={handleClose}
         >
-          <Box sx={style}>
-            <h5 className="text-center">Do you agree with all the changes?</h5>
-
-            <div className="mt-5">
-              <div className="d-flex w-100 text-center justify-content-around">
-                <Button
-                  size="lg"
-                  variant="outline-success "
-                  onClick={() => {
-                    handleClose();
-                    increaseWalletNonce();
-                  }}
-                >
-                  Yes
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline-danger "
-                  onClick={handleClose}
-                >
-                  No
-                </Button>
-              </div>
-            </div>
-          </Box>
         </Modal>
         <div className="nonce-bg">
           <h2 className="mt-2">change nonce setting</h2>

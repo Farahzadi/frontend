@@ -1,37 +1,53 @@
-import React, { useEffect } from "react";
-import ReactDOM from "react-dom";
-import { CSSTransition } from "react-transition-group";
-import "./Modal.css";
+import React, { useEffect } from 'react';
+import ReactDOM from 'react-dom';
+import { CSSTransition } from 'react-transition-group';
+import { Button } from '../Button';
+import './Modal.css';
 
-export const Modal = (props) => {
-  const closeOnEscapeKeyDown = e => {
+export const Modal = ({
+  show,
+  title,
+  alert,
+  closeText = 'Cancel',
+  actionText,
+  children,
+  onClose,
+  onSubmit,
+}) => {
+  const closeOnEscapeKeyDown = (e) => {
     if ((e.charCode || e.keyCode) === 27) {
-      props.onClose()
+      onClose();
     }
-  }
+  };
 
   useEffect(() => {
-    document.body.addEventListener("keydown", closeOnEscapeKeyDown);
+    document.body.addEventListener('keydown', closeOnEscapeKeyDown);
     return function cleanup() {
-      document.body.removeEventListener("keydown", closeOnEscapeKeyDown);
-    }
-  }, [])
+      document.body.removeEventListener('keydown', closeOnEscapeKeyDown);
+    };
+  }, []);
 
   return ReactDOM.createPortal(
-    <CSSTransition
-      in={props.show}
-      unmountOnExit
-      timeout={{ enter: 0, exit: 300 }}
-    >
-      <div className="zig_modal" onClick={props.onClose}>
-        <div className="zig_modal_content" onClick={e => e.stopPropagation()}>
-          <div className="zig_modal_header">
-            <h4 className="zig_modal_title">{props.title}</h4>
+    <CSSTransition in={show} unmountOnExit timeout={{ enter: 0, exit: 300 }}>
+      <div className='dex_modal' onClick={onClose}>
+        <div className='dex_modal_content' onClick={(e) => e.stopPropagation()}>
+         {title && <div className='dex_modal_header'>
+            <h4 className='dex_modal_title'>{title}</h4>
+          </div>}
+          {}
+          <div className='dex_modal_body'>
+            { alert && <p className='dex_alert'>{alert}</p>}
+            {children}
           </div>
-          <div className="zig_modal_body">{props.children}</div>
+          {onSubmit && (
+            <div className='dex_modal_action_footer'>
+              <Button className={'btn_danger normal_btn'} text={closeText} onClick={onClose}></Button>
+              <Button className={'btn_success normal_btn'} text={actionText} onClick={onSubmit}></Button>
+            </div>
+          )}
         </div>
       </div>
     </CSSTransition>,
-    document.getElementById("root")
-  )
-}
+    document.getElementById('root')
+  );
+};
