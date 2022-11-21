@@ -20,7 +20,7 @@
   transition: all 0.2s linear;
   height: 42px;
   padding: 4px 30px;
-  background: linear-gradient(to right top, #5f36b2, #6f41c5, #7e4cd8, #8f57eb, #9f63ff);
+  background: linear-gradient(to right top, rgba(10,181,255,1) 0%, rgba(3,95,135,1) 100%);
   border: none;
   border-radius: 5px;
   width: 100%;

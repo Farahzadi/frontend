@@ -5,7 +5,7 @@ import { GoGlobe } from 'react-icons/go'
 import { NavLink } from 'react-router-dom'
 import { networkSelector } from 'lib/store/features/api/apiSlice'
 import api from 'lib/api'
-import logo from 'assets/images/logo.png'
+import logo from 'assets/images/LogoMarkCremeLight.svg'
 import './Header.css'
 
 export const HeaderBridge = (props) => {
@@ -14,12 +14,12 @@ export const HeaderBridge = (props) => {
 
   const [, bridgeLink] = useMemo(() => {
     switch (network) {
-      case 1:
+      case "zksyncv1":
         return [
           'https://wallet.zksync.io/',
           '/bridge'
         ]
-      case 1000:
+      case "zksyncv1_goerli":
         return [
           'https://Goerli.zksync.io/',
           '/bridge'
@@ -60,15 +60,15 @@ export const HeaderBridge = (props) => {
                 id="networkSelector"
                 value={network.toString()}
                 onChange={(e) => {
-                  api.setAPIProvider(parseInt(e.target.value))
+                  api.setAPIProvider(e.target.value)
                   api.refreshNetwork().catch(err => {
                     console.log(err)
                   })
               }}
               >
                 {/* uncomment this for mainnet test */}
-                {/* <option value="1">zkSync - Mainnet</option> */}
-                <option value="1000">zkSync - Goerli</option>
+                {/* <option value="zksyncv1">zkSync - Mainnet</option> */}
+                <option value="zksyncv1_goerli">zkSync - Goerli</option>
               </select>
               <BiChevronDown className="eu_caret" />
             </label>

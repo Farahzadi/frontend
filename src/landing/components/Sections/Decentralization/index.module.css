@@ -1,6 +1,5 @@
 .section {
   padding: 2.3rem 2rem;
-  min-height: 800px;
 }
 .container {
   display: flex;
@@ -26,11 +25,12 @@
   position: relative;
 }
 .txtBody {
-  border: 1px solid var(--borderColor);
+  border: 2px solid rgba(var(--mainColorRgb));
   border-radius: 30px;
   z-index: 2;
   position: relative;
   padding: 1.25rem;
+  background-color: var(--darkBG);
 }
 .txtBody h1 {
   font-size: 1.25rem;
@@ -49,13 +49,15 @@
   display: none;
 }
 @media (min-width: 640px) {
+  .section {
+    min-height: 800px;
+  }
   .imgContainer {
     display: block;
   }
   .txtBody {
     width: calc(100% - 100px);
     /* margin-left: 100px; */
-    border: 1px solid var(--borderColor);
     border-radius: 30px;
     z-index: 2;
     position: relative;

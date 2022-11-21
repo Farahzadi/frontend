@@ -37,7 +37,8 @@ class TradePriceTable extends React.Component {
   };
 
   rangeUi(id) {
-    let selectedPrice, newRangeData = 0.0;
+    let selectedPrice,
+      newRangeData = 0.0;
 
     if (this.props.latestTrades) {
       return null;
@@ -69,10 +70,10 @@ class TradePriceTable extends React.Component {
       api.emit("selectedPrice", this.state.selectedPrice);
       this.updateOrderType("limit");
       if (this.props.itsAsks) {
-        api.emit("orderSide", true);
+        api.emit("orderSide", false);
       }
       if (this.props.itsBids) {
-        api.emit("orderSide", false);
+        api.emit("orderSide", true);
       }
     }
   }
@@ -139,7 +140,7 @@ class TradePriceTable extends React.Component {
               let rowStyle;
               if (this.props.useGradient) {
                 rowStyle = {
-                  backgroundImage: `linear-gradient(to left, ${color}, ${color} ${breakpoint}%, #171c28 0%)`,
+                  backgroundImage: `linear-gradient(to left, ${color}, ${color} ${breakpoint}%, #14243C 0%)`,
                 };
               } else {
                 rowStyle = {};
@@ -148,11 +149,9 @@ class TradePriceTable extends React.Component {
                 typeof data.price === "number"
                   ? data.price.toPrecision(6)
                   : Number(data.price).toPrecision(6);
-              const amount =
-                typeof data.remaining === "number"
-                  ? data.remaining.toFixed(5)
-                  : Number(data.remaining).toFixed(5);
-              const total = (Number(data.price) * Number(data.remaining)).toFixed(5);
+              const total = (
+                Number(data.price) * Number(data.remaining)
+              ).toFixed(5);
               const time = data.time;
               return (
                 <div
@@ -169,9 +168,7 @@ class TradePriceTable extends React.Component {
                 >
                   <div>{time}</div>
                   <div
-                    className={
-                      data.side === "b" ? "up_value" : "down_value"
-                    }
+                    className={data.side === "b" ? "up_value" : "down_value"}
                   >
                     {price}
                   </div>
@@ -190,7 +187,7 @@ class TradePriceTable extends React.Component {
               let rowStyle;
               if (this.props.useGradient) {
                 rowStyle = {
-                  backgroundImage: `linear-gradient(to left, ${color}, ${color} ${breakpoint}%, #171c28 0%)`,
+                  backgroundImage: `linear-gradient(to left, ${color}, ${color} ${breakpoint}%, #14243C 0%)`,
                 };
               } else {
                 rowStyle = {};
@@ -203,8 +200,9 @@ class TradePriceTable extends React.Component {
                 typeof data.remaining === "number"
                   ? data.remaining.toFixed(5)
                   : Number(data.remaining).toFixed(5);
-              const total = (Number(data.price) * Number(data.remaining)).toFixed(5);
-              const time = data.time;
+              const total = (
+                Number(data.price) * Number(data.remaining)
+              ).toFixed(5);
               return (
                 <Tooltip
                   arrow
@@ -235,9 +233,7 @@ class TradePriceTable extends React.Component {
                     onMouseLeave={() => this.rangeUi(-1)}
                   >
                     <div
-                      className={
-                        data.side === "b" ? "up_value" : "down_value"
-                      }
+                      className={data.side === "b" ? "up_value" : "down_value"}
                     >
                       {price}
                     </div>

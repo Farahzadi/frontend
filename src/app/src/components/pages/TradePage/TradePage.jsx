@@ -24,7 +24,8 @@ import {
   liquiditySelector,
   currentMarketSelector,
   setCurrentMarket,
-  resetData,
+  uuidSelector,
+  // resetData,
 } from "lib/store/features/api/apiSlice";
 import { userSelector } from "lib/store/features/auth/authSlice";
 import "./style.css";
@@ -44,6 +45,7 @@ const TradePage = () => {
   const marketSummary = useSelector(marketSummarySelector);
   const marketInfo = useSelector(marketInfoSelector);
   const liquidity = useSelector(liquiditySelector);
+  const uuid = useSelector(uuidSelector);
   const dispatch = useDispatch();
   const lastPriceTableData = [];
   const markets = [];
@@ -59,28 +61,25 @@ const TradePage = () => {
   };
 
   useEffect(() => {
-    const sub = () => {
-      dispatch(resetData());
-      api.subscribeToMarket(currentMarket);
-      api.getOrderBook(currentMarket);
-      api.getConfig(currentMarket);
-      api.signIn(network);
-    };
+    if (!uuid) return;
 
-    if (api.ws.readyState === 0) {
-      api.on("open", sub);
-    } else {
-      sub();
-    }
+    const sub = () => api.subscribeToMarket(currentMarket);
+
+    if (api.ws.readyState !== WebSocket.OPEN) api.on("open", sub);
+    else sub();
+
+    api.getOrderBook(currentMarket);
+    api.getMarketInfo(currentMarket);
+    api.getMarketConfig(currentMarket);
 
     return () => {
-      if (api.ws.readyState !== 0) {
-        api.unsubscribeToMarket(currentMarket);
-      } else {
-        api.off("open", sub);
-      }
+      api.off("open");
     };
-  }, [currentMarket]);
+  }, [uuid, currentMarket]);
+
+  useEffect(() => {
+    if (uuid) api.signIn(network);
+  }, [uuid, network]);
 
   const updateMarketChain = (market) => {
     dispatch(setCurrentMarket(market));
@@ -152,11 +151,15 @@ const TradePage = () => {
 
   const activeOrderStatuses = ["o", "m", "b"];
 
-  const askBins = allOrders !== {} ?
-    Object.values(allOrders).filter(order => order.side === "s") : {};
+  const askBins =
+    allOrders !== {}
+      ? Object.values(allOrders).filter((order) => order.side === "s")
+      : [];
 
-  const bidBins = allOrders !== {} ?
-    Object.values(allOrders).filter(order => order.side === "b") : {};
+  const bidBins =
+    allOrders !== {}
+      ? Object.values(allOrders).filter((order) => order.side === "b")
+      : [];
 
   const activeLimitAndMarketOrdersCount = Object.values(userOrders).filter(
     (order) => activeOrderStatuses.includes(order.status) && order.type === "l"
@@ -191,7 +194,7 @@ const TradePage = () => {
                 <div className="trade_right ">
                   <div className="row mt-1 my-lg-0 mx-0 w-100">
                     <div className="trade-price-container mt-1 my-lg-0  trade-tables-left col-12 col-lg-6 px-0 px-lg-1">
-                      <div className="trades-details boredr-purple d-none d-lg-block mb-1 bg_pannel">
+                      <div className="trades-details dexpresso-border d-none d-lg-block mb-1 bg_pannel">
                         <div className="trade-price ">
                           {/* <TradePriceBtcHead /> */}
                           <TradePriceBtcTable
@@ -202,9 +205,9 @@ const TradePage = () => {
                         </div>
                       </div>
 
-                      <div className=" spot_box_table boredr-purple bg_pannel">
+                      <div className=" spot_box_table dexpresso-border bg_pannel">
                         <SpotBox
-                          className="boredr-purple"
+                          className="dexpresso-border"
                           lastPrice={marketSummary.price}
                           loading={isLoading}
                           rangePrice={rangePrice}
@@ -319,14 +322,14 @@ const TradePage = () => {
                 </div>
               </div>
               <div className="col-12 col-lg-7 px-0  trade-tables-right">
-                <div className="trade_left bg_pannel">
+                <div className="trade_left dexpresso-border bg_pannel">
                   <div>
                     {/* Trade Chart */}
                     <TradeChart currentMarket={tradingViewMarket} />
                   </div>
                 </div>
                 {/* order table  */}
-                <div className="m-auto user-info-container order boredr-purple mt-1 bg_pannel  orders_table_lg">
+                <div className="m-auto user-info-container order dexpresso-border mt-1 bg_pannel  orders_table_lg">
                   <Footer
                     userFills={userFills}
                     userOrders={userOrders}
@@ -337,7 +340,7 @@ const TradePage = () => {
               </div>
             </div>
 
-            <div className="m-auto user-info-container order boredr-purple mt-1 bg_pannel orders_table_mobile ">
+            <div className="m-auto user-info-container order dexpresso-border mt-1 bg_pannel orders_table_mobile ">
               <Footer
                 userFills={userFills}
                 userOrders={userOrders}
@@ -368,29 +371,17 @@ const TradePage = () => {
                 {" "}
                 <ul>
                   <li className="head_social_link">
-                    <a
-                      target="_blank"
-                      rel="noreferrer"
-                      href="#"
-                    >
+                    <a target="_blank" rel="noreferrer" href="#">
                       <FaTwitter />
                     </a>
                   </li>
                   <li className="head_social_link">
-                    <a
-                      target="_blank"
-                      rel="noreferrer"
-                      href="#"
-                    >
+                    <a target="_blank" rel="noreferrer" href="#">
                       <FaTelegramPlane />
                     </a>
                   </li>
                   <li className="head_social_link">
-                    <a
-                      target="_blank"
-                      rel="noreferrer"
-                      href="#"
-                    >
+                    <a target="_blank" rel="noreferrer" href="#">
                       <FaDiscord />
                     </a>
                   </li>

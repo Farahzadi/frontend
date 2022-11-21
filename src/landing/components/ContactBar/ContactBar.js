@@ -4,23 +4,24 @@ import styles from './ContactBar.module.css'
 import youtube from "/public/images/social/youtube.svg";
 import twitter from "/public/images/social/twitter.svg";
 import chat from "/public/images/social/chat.svg";
-import whatsApp from "/public/images/social/WhatsApp.svg";
+import discord from "/public/images/social/discord.svg";
 import github from "/public/images/social/github.svg";
 import telegram from "/public/images/social/telegram.svg";
+import { Discord, Github, Telegram, Twitter, Youtube } from '../Icons/Icons';
 
 const ContactBar = () => {
   const socialMedias = [
-    {src: twitter, alt: 'twitter', href:''},
-    {src: github, alt: 'github', href:'' },
-    {src: youtube, alt: 'youtube', href:''},
-    {src: telegram, alt: 'telegram', href:''},
-    {src: whatsApp, alt: 'whatsapp', href:''},
+    {Comp: Twitter, alt: 'twitter', href:''},
+    {Comp: Github, alt: 'github', href:'' },
+    {Comp: Youtube, alt: 'youtube', href:''},
+    {Comp: Telegram, alt: 'telegram', href:''},
+    {Comp: Discord, alt: 'discord', href:''},
   ];
     return(
         <div className={styles.sideMenu}>
-        {socialMedias.map(({src, alt, href}, index) => (
+        {socialMedias.map(({Comp, alt, href}, index) => (
           <a key={index} href={href}>
-            <Image src={src} width={24} height={24} alt={alt} />
+            <Comp width={24} height={24} />
           </a>
 
         ))}

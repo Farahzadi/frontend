@@ -1,5 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
+import Decimal from "decimal.js";
 
 import "./Footer.css";
 import loadingGif from "assets/icons/loading.svg";
@@ -8,7 +9,7 @@ import {
   currentMarketSelector,
   unbroadcastedSelector,
   lastPricesSelector,
-  userIdSelector
+  userIdSelector,
 } from "lib/store/features/api/apiSlice";
 import { Button } from "react-bootstrap";
 
@@ -281,13 +282,13 @@ class Footer extends React.Component {
   renderFillTable(fills) {
     let baseExplorerUrl;
     switch (api.apiProvider.network) {
-      case 1001:
-        baseExplorerUrl = "https://goerli.voyager.online/tx/";
-        break;
-      case 1000:
+      // case 1001:
+      //   baseExplorerUrl = "https://goerli.voyager.online/tx/";
+      //   break;
+      case "zksyncv1_goerli":
         baseExplorerUrl = "https://goerli.zkscan.io/explorer/transactions/";
         break;
-      case 1:
+      case "zksyncv1":
       default:
         baseExplorerUrl = "https://zkscan.io/explorer/transactions/";
     }
@@ -311,9 +312,9 @@ class Footer extends React.Component {
             const fillid = fill.id;
             const market = fill.market;
             const isTaker = fill.isTaker;
-            const side = (fill.takerSide === "b") ^ !isTaker ? "b" : "s";
             let price = fill.price;
-            let amount = fill.amount;
+            let amount = new Decimal(fill.amount);
+            const side = (fill.takerSide === "b") ^ !isTaker ? "b" : "s";
             const fillstatus = fill.status;
             const baseCurrency = fill.market.split("-")[0];
             const quoteCurrency = fill.market.split("-")[1];
@@ -321,19 +322,20 @@ class Footer extends React.Component {
             const sideClassName = side === "b" ? "up_value" : "down_value";
             const txHash = fill.txHash;
             const time = fill.insertTimestamp;
-            const fee = (isTaker ? fill.takerFee : fill.makerFee) * (side === "b" ? amount * price : amount);
+            const quantity = amount.mul(price);
+
+            let fee = new Decimal(isTaker ? fill.takerFee : fill.makerFee);
+            fee.mul(side === "b" ? quantity : amount);
+
             const feeCurrency = side === "b" ? quoteCurrency : baseCurrency;
 
-            date = new Date(time);
-            date = api.hasOneDayPassed(date.toLocaleDateString(), date);
+            date = api.hasOneDayPassed(time);
 
             let feeText;
 
-            if (!api.isZksyncChain())
-              feeText = "0 " + baseCurrency;
-            else
-              feeText = fee.toPrecision(3) + " " + feeCurrency;
-            
+            if (!api.isZksyncChain()) feeText = "0 " + baseCurrency;
+            else feeText = fee.toPrecision(3) + " " + feeCurrency;
+
             const fillWithoutFee = api.getFillDetailsWithoutFee(fill);
             if (api.isZksyncChain()) {
               price = fillWithoutFee.price;
@@ -448,8 +450,7 @@ class Footer extends React.Component {
             const sidetext = side === "s" ? "sell" : "buy";
             const sideClassName = side === "b" ? "up_value" : "down_value";
 
-            date = new Date(time);
-            date = api.hasOneDayPassed(date.toLocaleDateString(), date);
+            date = api.hasOneDayPassed(time);
 
             const orderWithoutFee = api.getOrderDetailsWithoutFee(order);
             if (api.isZksyncChain()) {
@@ -571,13 +572,14 @@ class Footer extends React.Component {
 
   render() {
     let explorerLink;
+    console.log(api);
     switch (api.apiProvider.network) {
-      case 1000:
+      case "zksyncv1_goerli":
         explorerLink =
           "https://goerli.zkscan.io/explorer/accounts/" +
           this.props.user.address;
         break;
-      case 1:
+      case "zksyncv1":
       default:
         explorerLink =
           "https://zkscan.io/explorer/accounts/" + this.props.user.address;
@@ -589,9 +591,7 @@ class Footer extends React.Component {
       classNameHistory = "";
     switch (this.state.tab) {
       case "orders":
-        footerContent = this.renderOrderTable(
-          this.getUserOrders()
-        );
+        footerContent = this.renderOrderTable(this.getUserOrders());
         classNameOrders = "selected";
         break;
       case "fills":

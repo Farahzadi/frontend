@@ -1,6 +1,6 @@
 :root {
    --gray: #74777f;
-   --liteBlue: #94a2c9;
+   --liteBlue: var(--dexpresssoTextPrimery);
 }
 
 .spot_form {
@@ -68,7 +68,7 @@
 }
 
 .spf_input_box .spf_desc_text {
-    color: #94a2c9;
+    color: var(--dexpresssoTextPrimery);
 }
 
 .spf_range {
@@ -108,12 +108,12 @@
 }
 
 .buy_btn:hover {
-    filter: brightness(85%);
+    filter: brightness(120%);
 }
 
 
 .sell_btn:hover {
-    filter: brightness(85%);
+    filter: brightness(120%);
 }
 
 .btn_fix {

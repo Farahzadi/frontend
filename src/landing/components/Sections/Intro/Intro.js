@@ -3,8 +3,7 @@ import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import styles from './Intro.module.css';
 
-import backgroundImg from '/public/images/landing-logo.png';
-import logo from '/public/images/Logo.svg';
+import logo from '/public/images/logo/Dexpresso_logo.svg';
 import ClientPortal from '../../ClientPortal/ClientPortal';
 const IntroSection = () => {
   return (
@@ -24,19 +23,14 @@ const IntroSection = () => {
         </p>
       </div>
       <div className={styles.background}>
-        <Image
+        {/* <Image
           src={backgroundImg}
           layout={'responsive'}
           width={800}
           height={570}
           alt='3D-logo'
-        />
+        /> */}
       </div>
-      <ClientPortal selector={'__next'}>
-        <button type='button' className={styles.tradeBtn}>
-          START TRADING
-        </button>
-      </ClientPortal>
     </section>
   );
 };

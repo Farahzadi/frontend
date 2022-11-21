@@ -3,9 +3,11 @@ import Image from 'next/image';
 import React, { useState, useEffect, useContext } from 'react';
 import styles from './Navbar.module.css';
 import ContactBar from '../ContactBar/ContactBar';
-import logo from '../../public/images/Logo.svg';
+import logo from '../../public/images/logo/Dexpresso_logo_theme.svg';
 import { Arrow } from '../Icons/Icons';
 import { BGContext } from '../../contexts/BGContext';
+import { useRouter } from 'next/router';
+import ClientPortal from '../ClientPortal/ClientPortal';
 
 const Navbar = () => {
   const links = [
@@ -15,6 +17,15 @@ const Navbar = () => {
     { label: 'Docs', href: '' },
   ];
   const { isAnimated } = useContext(BGContext);
+  const [visible, setIsVisible] = useState(false);
+  const route = useRouter();
+  useEffect(() => {
+    if (route.pathname !== '/') {
+      setIsVisible(true);
+    } else if (isAnimated) {
+      setIsVisible(true);
+    }
+  }, [isAnimated, route])
   function onScroll() {
     if (
       document.body.scrollTop > 150 ||
@@ -51,9 +62,9 @@ const Navbar = () => {
     window.addEventListener('scroll', onScroll);
   }
   return (
-    <div className={isAnimated ? 'is-visible' : 'is-hidden'}>
+    <>
       <nav
-        className={`${
+        className={` ${visible ? 'is-visible' : 'is-hidden'} ${
           !isTop && !isExpanded ? `${styles.blurBG} ${styles.nav}` : styles.nav
         }`}
       >
@@ -63,7 +74,7 @@ const Navbar = () => {
               className={styles.logoImg}
               src={logo}
               height={43}
-              width={110}
+              width={30}
               alt='Logo'
             />
             <span className={styles.brandName}>DEXPRESSO</span>
@@ -90,9 +101,11 @@ const Navbar = () => {
               <div className={styles.contactSection}>
                 <ContactBar />
               </div>
-              <button type='button' className={styles.tradeBtn}>
-                TRADE
-              </button>
+              <Link href={process.env.NEXT_PUBLIC_TRADE_APP_LINK}>
+                <button type='button' className={styles.tradeBtn}>
+                  TRADE
+                </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -107,7 +120,12 @@ const Navbar = () => {
           <div className={styles.rect}></div>
         </div>
       </nav>
-    </div>
+      <ClientPortal selector={'__next'}>
+        <button type='button' className={styles.fixedTradeBtn}>
+          START TRADING
+        </button>
+      </ClientPortal>
+      </>
   );
 };
 

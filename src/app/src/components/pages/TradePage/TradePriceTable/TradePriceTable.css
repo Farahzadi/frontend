@@ -72,7 +72,7 @@
   top: 0;
   display: table;
   width: 100%;
-  background-color: #171c28;
+  background-color: var(--dexpressoTableBackground);
 }
 
 .trade-price-table th {
