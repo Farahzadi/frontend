@@ -502,7 +502,7 @@ export default class API extends Emitter {
     return this.apiProvider.BRIDGE_CONTRACT;
   };
 
-  approveSpendOfCurrency = async (currency) => {
+  approveSpendOfCurrency = async (currency, allowance = maxAllowance) => {
     const netContract = this.getNetworkContract();
     if (netContract) {
       const [account] = await this.web3.eth.getAccounts();
@@ -513,7 +513,7 @@ export default class API extends Emitter {
         contractAddress
       );
       await contract.methods
-        .approve(netContract, maxAllowance)
+        .approve(netContract, allowance)
         .send({ from: account });
     }
   };
