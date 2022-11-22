@@ -58,6 +58,10 @@ export default class API extends Emitter {
     this.apiUrl = apiUrl;
     this.currencies = currencies;
     this.validMarkets = validMarkets;
+    this.axiosInstance = axios.create({
+      baseURL: apiUrl,
+      timeout: 2000,
+    });
 
     if (window.ethereum) {
       window.ethereum.on("accountsChanged", this.signOut);
@@ -79,7 +83,6 @@ export default class API extends Emitter {
     }
 
     const apiProvider = this.getAPIProvider(network);
-    console.log("apiProvider:", network, apiProvider);
     this.apiProvider = apiProvider;
 
     if (this.isZksyncChain()) {
@@ -729,4 +732,10 @@ export default class API extends Emitter {
   submitSwap = async (product, side, price, amount) => {
     await this.apiProvider.submitSwap(product, side, price, amount);
   };
+
+  getNetworks = () => {
+    this.axiosInstance.get('/networks').then(res => {
+      this.emit('setNetworkList', res.data.networks);
+    })
+  }
 }

@@ -19,6 +19,7 @@ import apiReducer, {
   setOrderSide,
   setSelectedPrice,
   clearUuid,
+  setNetworkList,
 } from "lib/store/features/api/apiSlice";
 import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 import api from "lib/api";
@@ -116,4 +117,7 @@ api.on("close", () => {
   store.dispatch(clearUuid());
 });
 
+api.on('setNetworkList', (networks) => {
+  store.dispatch(setNetworkList(networks));
+})
 export default store;
