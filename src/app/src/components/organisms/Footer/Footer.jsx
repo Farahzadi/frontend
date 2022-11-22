@@ -16,7 +16,7 @@ import { Button } from "react-bootstrap";
 import Box from "@mui/material/Box";
 import Backdrop from "@mui/material/Backdrop";
 
-import Modal from "@mui/material/Modal";
+import { Modal } from "../../atoms/Modal";
 
 const style = {
   position: "absolute",
@@ -656,43 +656,17 @@ class Footer extends React.Component {
     return (
       <>
         <Modal
-          aria-labelledby="spring-modal-title"
-          aria-describedby="spring-modal-description"
-          open={this.state.openModal}
+          show={this.state.openModal}
+          actionText='Yes'
+          closeText='No'
+          alert={'Are you sure you want to delete all orders?'}
           onClose={this.handleClose}
-          closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
+          onSubmit={() => {
+            this.handleClose();
+            api.cancelAllOrders();
           }}
         >
-          <Box sx={style}>
-            <h5 className="text-center py-3">
-              Are you sure you want to delete all orders?
-            </h5>
-
-            <div className="d-flex w-100 text-center justify-content-around">
-              <Button
-                size="lg"
-                variant="outline-success "
-                onClick={() => {
-                  this.handleClose();
-                  api.cancelAllOrders();
-                }}
-              >
-                Yes
-              </Button>
-              <Button
-                size="lg"
-                variant="outline-danger "
-                onClick={() => this.handleClose()}
-              >
-                No
-              </Button>
-            </div>
-          </Box>
         </Modal>
-        \
         <div className="user-info">
           <div className="user-info-container ">
             <hr />

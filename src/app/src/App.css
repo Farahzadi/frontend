@@ -9,6 +9,9 @@
   --dexpressoBackground: #071428;
   --dexpressoTableBackground: #14243c;
   --dexpresssoTextPrimery:#B2BFC7;
+  --dangerColor: 140, 41, 32;
+  --successColor: 0, 123, 95;
+  --neutralColor: 252, 245, 237;
 }
 
 h1,
@@ -25,6 +28,7 @@ p {
 body {
   height: 100vh;
   font-size: 0.9rem;
+  color: rgba( var(--neutralColor), 1);
   background-color: #100c22;
 }
 
