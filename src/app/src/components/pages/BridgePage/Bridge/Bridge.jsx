@@ -584,7 +584,7 @@ const Bridge = () => {
         </div>
 
         <div className="bridge_box_right">
-          <div className="bridge_box_right_content">
+          <div className="bridge_box_right_content bright-bg">
             <div className="row">
               <div className="col-6-border">
                 <p>

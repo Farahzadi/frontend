@@ -5,7 +5,7 @@ import "./TradePriceTable.css";
 import { connect } from "react-redux";
 import { numStringToSymbol } from "lib/utils";
 import api from "lib/api";
-import Tooltip from "@mui/material/Tooltip";
+import Tooltip from "@material-ui/core/Tooltip";
 import {
   setOrderType,
   orderTypeSelector,
@@ -157,7 +157,7 @@ class TradePriceTable extends React.Component {
                 <div
                   key={i}
                   style={rowStyle}
-                  className={` ${i <= this.state.rengId ? "bg-range" : ""} 
+                  className={` ${i <= this.state.rengId ? "bg-range" : ""}
                  table-section`}
                   onClick={() => {
                     onClickRow(data);
@@ -223,7 +223,7 @@ class TradePriceTable extends React.Component {
                   <div
                     key={i}
                     style={rowStyle}
-                    className={` ${i <= this.state.rengId ? "bg-range" : ""} 
+                    className={` ${i <= this.state.rengId ? "bg-range" : ""}
                   table-section`}
                     onClick={() => {
                       onClickRow(data);

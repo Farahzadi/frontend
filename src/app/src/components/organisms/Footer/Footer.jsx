@@ -13,8 +13,8 @@ import {
 } from "lib/store/features/api/apiSlice";
 import { Button } from "react-bootstrap";
 
-import Box from "@mui/material/Box";
-import Backdrop from "@mui/material/Backdrop";
+import Box from "@material-ui/core/Box";
+import Backdrop from "@material-ui/core/Backdrop";
 
 import { Modal } from "../../atoms/Modal";
 
