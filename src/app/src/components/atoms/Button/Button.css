@@ -30,6 +30,10 @@
   font-size: 0.9rem;
   outline: none;
 }
+.bg_btn:disabled {
+  background: gray;
+  cursor: not-allowed;
+}
 .normal_btn {
   max-width: 50%;
   min-width: 175px;

@@ -29,6 +29,7 @@ body {
   height: 100vh;
   font-size: 0.9rem;
   color: rgba( var(--neutralColor), 1);
+  background-color: #100c22;
 }
 
 html {

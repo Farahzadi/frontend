@@ -18,8 +18,11 @@ on:
 
 
 jobs:
-  build_and_push:
+
+  environment_step:
     runs-on: self-hosted
+    outputs:
+      prefix: ${{ steps.env_step.outputs.env_prefix }}
     steps:
     - name: pull latest code
       uses: actions/checkout@v3
