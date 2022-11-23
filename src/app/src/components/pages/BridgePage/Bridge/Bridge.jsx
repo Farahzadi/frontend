@@ -142,7 +142,7 @@ const Bridge = () => {
       }
     };
 
-    if (api.apiProvider.syncWallet && transfer.type === "withdraw") {
+    if (api.apiProvider?.syncWallet && transfer.type === "withdraw") {
       setFee(null);
       api
         .withdrawL2Fee(details.currency)
