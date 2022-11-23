@@ -26,16 +26,19 @@ import {
   setCurrentMarket,
   uuidSelector,
   resetData,
+  providerStateSelector,
 } from "lib/store/features/api/apiSlice";
 import { userSelector } from "lib/store/features/auth/authSlice";
 import "./style.css";
 import api from "lib/api";
+import APIProvider from "lib/api/providers/APIProvider";
 
 const TradePage = () => {
   const [marketDataTab, updateMarketDataTab] = useState("pairs");
   const [rangePrice, setRangePrice] = useState(0);
   const user = useSelector(userSelector);
   const network = useSelector(networkSelector);
+  const providerState = useSelector(providerStateSelector);
   const currentMarket = useSelector(currentMarketSelector);
   const userOrders = useSelector(userOrdersSelector);
   const userFills = useSelector(userFillsSelector);
@@ -78,8 +81,8 @@ const TradePage = () => {
   }, [uuid, currentMarket]);
 
   useEffect(() => {
-    if (uuid) api.signIn(network);
-  }, [uuid, network]);
+    if (uuid && providerState === APIProvider.State.CONNECTED) api.signIn(network);
+  }, [uuid, network, providerState]);
 
   const updateMarketChain = (market) => {
     dispatch(setCurrentMarket(market));
