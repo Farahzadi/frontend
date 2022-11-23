@@ -77,7 +77,11 @@ const translators = {
 export const apiSlice = createSlice({
   name: "api",
   initialState: {
-    network: "zksyncv1_goerli",
+    network: {
+      name: "zksyncv1_goerli",
+      hasBridge: false,
+      providerState: "DISCONNECTED",
+    },
     userId: null,
     currentMarket: "ETH-DAI",
     config: {},
@@ -119,10 +123,11 @@ export const apiSlice = createSlice({
       state.marketinfo = payload.info[0];
     },
     _markets_stats_ws(state, { payload }) {
+      if (!payload) return;
       // console.log("markets stats", payload);
       payload.map(translators.markets_stats).forEach((update) => {
         const { market, price, priceChange: change } = update;
-        if (api.validMarkets[state.network].includes(market)) {
+        if (api.validMarkets[state.network.name].includes(market)) {
           state.lastPrices[market] = {
             price,
             change,
@@ -158,7 +163,7 @@ export const apiSlice = createSlice({
         const fillid = fill.id;
         if (
           fill.market === state.currentMarket &&
-          fill.chainId === state.network
+          fill.chainId === state.network.name
         ) {
           state.marketFills[fillid] = fill;
         }
@@ -168,7 +173,7 @@ export const apiSlice = createSlice({
       console.log("user fills", payload);
       payload
         .map(translators.fills)
-        .filter((fill) => fill.chainId === state.network)
+        .filter((fill) => fill.chainId === state.network.name)
         .forEach((fill) => {
           state.userFills[fill.id] = {
             ...fill,
@@ -198,7 +203,7 @@ export const apiSlice = createSlice({
       if (!state.userId) return;
       payload
         .map(translators.userOrder)
-        .filter((order) => order.chainId === state.network)
+        .filter((order) => order.chainId === state.network.name)
         .forEach((order) => {
           if (order.userId === state.userId.toString()) {
             state.userOrders[order.id] = order;
@@ -381,7 +386,10 @@ export const apiSlice = createSlice({
       state.userId = payload;
     },
     setNetwork(state, { payload }) {
-      state.network = payload;
+      state.network.name = payload;
+    },
+    setProviderState(state, { payload }) {
+      state.network.providerState = payload;
     },
     rangePrice(state, { payload }) {
       state.rangePrice = payload;
@@ -481,6 +489,7 @@ export const apiSlice = createSlice({
 
 export const {
   setNetwork,
+  setProviderState,
   clearBridgeReceipts,
   setBalances,
   setUserId,
@@ -498,7 +507,8 @@ export const {
 } = apiSlice.actions;
 
 export const configSelector = (state) => state.api.config;
-export const networkSelector = (state) => state.api.network;
+export const networkSelector = (state) => state.api.network.name;
+export const providerStateSelector = (state) => state.api.network.providerState;
 export const userOrdersSelector = (state) => state.api.userOrders;
 export const userFillsSelector = (state) => state.api.userFills;
 export const allOrdersSelector = (state) => state.api.orders;
