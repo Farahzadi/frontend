@@ -14,7 +14,7 @@ export default function Document() {
                 <meta property='og:type' content='website' />
                 <meta property='og:site_name' content='Dexpresso exchange' />
                 <meta property='og:description' content='Dexpresso is a decentralized exchange' />
-                <meta property='og:image' content='/images/logo/Dexpresso_horizontal.png' />
+                <meta property='og:image' content='https://dexpresso.exchange/images/logo/Dexpresso_horizontal.png' />
                 <meta property="og:image:type" content="image/png" />
                 <meta property="og:image:width" content="400" />
                 <meta property="og:image:height" content="300" />
