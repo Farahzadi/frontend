@@ -50,7 +50,7 @@ const BridgeInputBox = styled.div`
     display: flex;
     align-items: center;
     margin-left: 15px;
-    border-right: 2px solid #5832a6;
+    border-right: 2px solid var(--dexpressoPrimery);
   }
 `;
 
