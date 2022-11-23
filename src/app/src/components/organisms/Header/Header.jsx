@@ -21,7 +21,7 @@ export const Header = (props) => {
   const history = useHistory();
   const location = useLocation();
 
-  const hasBridge = api.isImplemented("depositL2");
+  const hasBridge = ["zksyncv1", "zksyncv1_goerli"].includes(network);
 
   const handleMenu = ({ key }) => {
     switch (key) {
