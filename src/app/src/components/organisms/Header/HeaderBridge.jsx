@@ -59,12 +59,10 @@ export const HeaderBridge = (props) => {
               <select
                 id="networkSelector"
                 value={network.toString()}
-                onChange={(e) => {
-                  api.setAPIProvider(e.target.value)
-                  api.refreshNetwork().catch(err => {
-                    console.log(err)
-                  })
-              }}
+                onChange={async (e) => {
+                  const network = e.target.value;
+                  await api.setNetwork(network);
+                }}
               >
                 {/* uncomment this for mainnet test */}
                 {/* <option value="zksyncv1">zkSync - Mainnet</option> */}
