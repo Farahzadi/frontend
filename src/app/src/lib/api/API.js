@@ -1,35 +1,31 @@
-import Web3 from "web3";
 import { createIcon } from "@download/blockies";
-import { toast } from "react-toastify";
-import Web3Modal from "web3modal";
 import Emitter from "tiny-emitter";
 import { ethers } from "ethers";
-import WalletConnectProvider from "@walletconnect/web3-provider";
 
 import { getENSName } from "lib/ens";
 import { formatAmount } from "lib/utils";
 import erc20ContractABI from "lib/contracts/ERC20.json";
 import { maxAllowance } from "./constants";
 import axios from "axios";
+import { toast } from "react-toastify";
 
-const chainMap = {
-  "0x1": "zksyncv1",
-  "0x5": "zksyncv1_goerli",
-  // "0x1": "ethereum",
-  // "0x5": "ethereum_goerli",
-};
+const DEFAULT_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK;
+
+// class APIBackendState {
+//   static DISCONNECTED = 1;
+//   static CONNECTED = 3;
+//   static LOGIN = 4;
+// }
 
 export default class API extends Emitter {
   networks = {};
+  network = DEFAULT_NETWORK || "zksyncv1_goerli";
   ws = null;
   apiProvider = null;
-  ethersProvider = null;
   currencies = null;
   websocketUrl = null;
   _signInProgress = null;
-  signedMessage = null;
   _profiles = {};
-  _accountState = null;
   changingWallet = false;
   lastSocketOpenState = false;
 
@@ -40,13 +36,14 @@ export default class API extends Emitter {
     networks,
     currencies,
     validMarkets,
+    signInMessage,
   }) {
     super();
 
     if (networks) {
       Object.entries(networks).forEach(([networkName, network]) => {
         this.networks[networkName] = {
-          provider: new network.apiProvider(this, networkName),
+          provider: new network.apiProvider(this, this.onProviderStateChange),
           contract: network.contract,
         };
       });
@@ -57,58 +54,68 @@ export default class API extends Emitter {
     this.apiUrl = apiUrl;
     this.currencies = currencies;
     this.validMarkets = validMarkets;
-
-    if (window.ethereum) {
-      window.ethereum.on("accountsChanged", this.signOut);
-      this.setAPIProvider(chainMap[window.ethereum.chainId] ?? "zksyncv1");
-    } else {
-      this.setAPIProvider("zksyncv1");
-    }
+    this.signInMessage = signInMessage ?? "Login to Dexpresso";
   }
+
+  setNetwork = async (network) => {
+    if (this.apiProvider?.NETWORK === network) return;
+    await this.signOut();
+    this.network = network;
+    this.emit("networkChange", network);
+  };
+
+  connectWallet = async () => {
+    if (!this.network) return;
+    await this.signOut();
+    await this.setAPIProvider(this.network);
+    await this.signIn();
+  };
+
+  disconnectWallet = async () => {
+    await this.signOut();
+  };
+
+  onProviderStateChange = (state) => {
+    this.emit("providerStateChange", state);
+  };
 
   getAPIProvider = (network) => {
     return this.networks[network]?.provider;
   };
 
-  setAPIProvider = (network) => {
+  setAPIProvider = async (network) => {
+    if (this.apiProvider?.NETWORK === network) return;
+    this.apiProvider?.stop();
 
     if (!network) {
-      this.signOut();
+      this.apiProvider = null;
       return;
     }
 
-    const apiProvider = this.getAPIProvider(network);
-    console.log("apiProvider:", network, apiProvider);
-    this.apiProvider = apiProvider;
+    this.apiProvider = this.getAPIProvider(network);
 
-    if (this.isZksyncChain()) {
-      this.web3 = new Web3(
-        window.ethereum ||
-          new Web3.providers.HttpProvider(
-            `https://${this.apiProvider.getChainName()}.infura.io/v3/${this.infuraId}`
-          )
-      );
+    // console.log("apiProvider:", network, this.apiProvider);
 
-      this.web3Modal = new Web3Modal({
-        network: this.apiProvider.getChainName(),
-        cacheProvider: true,
-        theme: "dark",
-        providerOptions: {
-          walletconnect: {
-            package: WalletConnectProvider,
-            options: {
-              infuraId: this.infuraId,
-            },
-          },
-        },
-      });
+    let result;
+    try {
+      result = await this.apiProvider.start();
+    } catch (err) {
+      console.error("Error on connecting to provider:", err);
     }
 
-    this.getAccountState().catch((err) => {
-      console.log("Failed to switch providers", err);
-    });
+    if (result === "accountNotFound") {
+      const isBrige = !/^\/bridge(\/.*)?$/.test(window.location.pathname);
+      if (!isBrige)
+        toast.error(
+          "Account not found. Please use the bridge to deposit funds before trying again."
+        );
+    }
 
-    this.emit("providerChange", network);
+    this.apiProvider.onAccountChange(this.signOut);
+  };
+
+  clearAPIProvider = () => {
+    this.setAPIProvider(null);
   };
 
   getProfile = async (address) => {
@@ -163,7 +170,7 @@ export default class API extends Emitter {
     clearInterval(this.__pingServerTimeout);
     this.emit("close");
     if (!noRetry) {
-      toast.error("Connection to server closed. Please try again in a minute");
+      // toast.error("Connection to server closed. Please try again in a minute");
       // console.log("test socket close", noRetry);
       setTimeout(
         () => {
@@ -221,7 +228,7 @@ export default class API extends Emitter {
       token = sessionStorage.getItem("access_token");
       if (!token) return;
     }
-    console.log(url, method, data, isPrivate);
+    console.log(url, method, data);
 
     const fullUrl = this.apiUrl + "/" + url;
     const hasBody = ["post", "put"].includes(method);
@@ -268,91 +275,48 @@ export default class API extends Emitter {
       });
   };
 
-  refreshNetwork = async () => {
-    if (!window.ethereum) return;
-    let ethereumChainId;
-
-    await this.signOut();
-
-    switch (this.apiProvider.network) {
-      case "zksyncv1":
-        ethereumChainId = "0x1";
-        break;
-      case "zksyncv1_goerli":
-        ethereumChainId = "0x5";
-        break;
-      default:
-        return;
-    }
-
-    await window.ethereum.request({ method: "eth_requestAccounts" });
-
-    await window.ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: ethereumChainId }],
-    });
-  };
-
   signIn = async (network, ...args) => {
-    // console.log("login ATTEMPT");
     let accountState;
-    let signature;
     const { uuid } = this.ws;
+    if (!this.apiProvider) return;
+    console.log("login ATTEMPT", uuid, this.apiProvider?.state.get());
     if (!uuid) return;
     if (!this._signInProgress) {
-      // console.log("starting login", uuid)
       this._signInProgress = Promise.resolve()
         .then(async () => {
-          const apiProvider = this.apiProvider;
+          const networkKey = `login:${network || this.apiProvider?.NETWORK}`;
 
-          if (network) {
-            this.apiProvider = this.getAPIProvider(network);
+          let signature = sessionStorage.getItem(networkKey);
+
+          const shouldSign = this.changingWallet || !signature;
+
+          if (network) await this.setNetwork(network);
+
+          const address = await this.apiProvider.getAddress();
+
+          if (shouldSign) {
+            sessionStorage.removeItem(networkKey);
+            signature = await this.apiProvider.signMessage(this.signInMessage);
+            sessionStorage.setItem(networkKey, signature);
           }
 
-          await this.refreshNetwork();
-          if (this.isZksyncChain()) {
-            const web3Provider = await this.web3Modal.connect();
-            this.web3.setProvider(web3Provider);
-            this.ethersProvider = new ethers.providers.Web3Provider(
-              web3Provider
-            );
-          }
+          this.sendRequest("login", "POST", {
+            network: network,
+            address: address,
+            signature: signature,
+            user_data: true,
+            uuid,
+          });
 
           try {
-            accountState = await apiProvider.signIn(...args);
+            accountState = await this.getAccountState();
           } catch (err) {
             await this.signOut();
             throw err;
           }
 
-          if (
-            this.changingWallet === true ||
-            sessionStorage.getItem("login") === null
-          ) {
-            sessionStorage.clear("login");
-            if (typeof window.ethereum !== "undefined") {
-              await this.apiProvider
-                .signMessage()
-                .then((r) => (this.signedMessage = r));
-            }
-          }
-
-          signature = sessionStorage.getItem("login");
-
-          const api = this;
-          if (accountState && accountState.id) {
-            this.sendRequest("login", "POST", {
-              network: network,
-              address: accountState.address,
-              signature: signature,
-              user_data: true,
-              uuid,
-            });
-          }
-
           this.emit("signIn", accountState);
           this._accountState = accountState;
-
           return accountState;
         })
         .finally(() => {
@@ -372,27 +336,18 @@ export default class API extends Emitter {
     } else if (this.web3Modal) {
       this.web3Modal.clearCachedProvider();
     }
-
-    this.web3 = null;
-    this.web3Modal = null;
-    this.ethersProvider = null;
     this._accountState = null;
     this.changingWallet = true;
-    this.setAPIProvider(this.apiProvider.network);
+    this.clearAPIProvider();
     this.emit("balanceUpdate", "wallet", {});
-    this.emit("balanceUpdate", this.apiProvider.network, {});
+    this.emit("balanceUpdate", this.network, {});
     this.emit("accountState", {});
     this.emit("signOut");
   };
 
-  getNetworkName = (network) => {
-    const keys = Object.keys(this.networks);
-    return keys[keys.findIndex((key) => network === this.networks[key][0])];
-  };
-
   subscribeToMarket = (market) => {
     this.sendRequest("markets/subscription", "POST", {
-      network: this.apiProvider.network,
+      network: this.network,
       market: market,
       uuid: this.ws.uuid,
       clear: true,
@@ -401,7 +356,7 @@ export default class API extends Emitter {
 
   unsubscribeToMarket = (market) => {
     this.sendRequest("markets/subscription", "DELETE", {
-      network: this.apiProvider.network,
+      network: this.network,
       market: market,
       uuid: this.ws.uuid,
     });
@@ -409,20 +364,20 @@ export default class API extends Emitter {
 
   getMarketConfig = (market) => {
     this.sendRequest("markets/config", "GET", {
-      network: this.apiProvider.network,
+      network: this.network,
       markets: market,
     });
   };
 
   getMarketInfo = (market) => {
     this.sendRequest("markets/info", "GET", {
-      network: this.apiProvider.network,
+      network: this.network,
       markets: market,
     });
   };
 
   isZksyncChain = () => {
-    return !!this.apiProvider.zksyncCompatible;
+    return true;
   };
 
   cancelOrder = (orderId) => {
@@ -505,8 +460,7 @@ export default class API extends Emitter {
     const netContract = this.getNetworkContract();
     if (netContract) {
       const [account] = await this.web3.eth.getAccounts();
-      const { contractAddress } =
-        this.currencies[currency].chain[this.apiProvider.network];
+      const { contractAddress } = this.currencies[currency].chain[this.network];
       const contract = new this.web3.eth.Contract(
         erc20ContractABI,
         contractAddress
@@ -518,10 +472,9 @@ export default class API extends Emitter {
   };
 
   getBalanceOfCurrency = async (currency) => {
-    const { contractAddress } =
-      this.currencies[currency].chain[this.apiProvider.network];
+    const { contractAddress } = this.currencies[currency].chain[this.network];
     let result = { balance: 0, allowance: maxAllowance };
-    if (!this.ethersProvider || !contractAddress) return result;
+    if (/* !this.ethersProvider || */ !contractAddress) return result;
 
     try {
       const netContract = this.getNetworkContract();
@@ -560,10 +513,14 @@ export default class API extends Emitter {
 
       this.emit("balanceUpdate", "wallet", { ...balances });
     };
-
-    const tickers = Object.keys(this.currencies).filter(
-      (ticker) => this.currencies[ticker].chain[this.apiProvider.network]
-    );
+    let tickers;
+    try {
+      tickers = Object.keys(this.currencies).filter(
+        (ticker) => this.currencies[ticker].chain[this.network]
+      );
+    } catch (err) {
+      return null;
+    }
 
     await Promise.all(tickers.map((ticker) => getBalance(ticker)));
 
@@ -571,8 +528,9 @@ export default class API extends Emitter {
   };
 
   getBalances = async () => {
+    if (!this.apiProvider) return null;
     const balances = await this.apiProvider.getBalances();
-    this.emit("balanceUpdate", this.apiProvider.network, balances);
+    this.emit("balanceUpdate", this.network, balances);
     return balances;
   };
 
@@ -695,7 +653,7 @@ export default class API extends Emitter {
 
   getOrderBook(market, side) {
     this.sendRequest("orders", "GET", {
-      network: this.apiProvider.network,
+      network: this.network,
       market,
       side: undefined,
       page: undefined,
