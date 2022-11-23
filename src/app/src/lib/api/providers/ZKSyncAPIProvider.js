@@ -14,6 +14,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
   NETWORK = "zksyncv1";
   NETWORK_NAME = "mainnet";
   BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
+  HAS_BRIDGE = true;
   ZKSYNC_BASE_URL = "https://api.zksync.io/api/v0.2";
 
   syncWallet = null;
@@ -68,7 +69,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
     }
 
     const web3Modal = new Web3Modal({
-      network: this.NETWORK,
+      network: "any",
       cacheProvider: true,
       providerOptions,
       theme: "dark",
@@ -79,16 +80,15 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
     this.provider = new ethers.providers.Web3Provider(provider);
 
-    // console.log("prov", this.NETWORK, provider, this.provider);
+    const networkChanged = await this.switchNetwork();
 
-    await this.switchNetwork();
+    if (networkChanged) return await this.start();
 
     const signer = this.provider.getSigner();
-    const address = await signer.getAddress();
+    
+    // const address = await signer.getAddress();
 
-    const network = await this.provider.getNetwork();
-
-    // console.log("datas", this.NETWORK, signer, address, network, this.provider.network.chainId);
+    // const network = await this.provider.getNetwork();
 
     this.wallet = signer;
 
@@ -121,12 +121,12 @@ export default class ZKSyncAPIProvider extends APIProvider {
     let result;
     const accountState = await this.getAccountState();
     if (!accountState.id) {
-      result = "accountNotFound";
+      result = "redirectToBridge";
     } else {
       const isActivated = await this.syncWallet.isSigningKeySet();
       if (!isActivated) await this.activateAccount(accountState);
     }
-    
+
     // console.log("here3", Date.now() % 10000);
 
     this.state.set(APIProvider.State.CONNECTED);
@@ -134,7 +134,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
   };
 
   stop = async () => {
-    this.web3Modal.clearCachedProvider();
+    // this.web3Modal.clearCachedProvider();
     this.state.set(APIProvider.State.DISCONNECTED);
   };
 
@@ -162,7 +162,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
       const signedAddress = ethers.utils.verifyMessage(message, signature);
       return signedAddress.toLowerCase() === address.toLowerCase();
     } catch (err) {
-      console.error(err);
+      console.error("Error on verifying signature:", err);
       return false;
     }
   };
@@ -670,16 +670,22 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
   switchNetwork = async () => {
     const chainId = this.networkToChainId(this.NETWORK);
-    if (!chainId) return;
-    if (
-      ethers.utils.hexZeroPad(this.provider.getNetwork().chainId ?? 0) ===
-      chainId
-    )
-      return;
-    await this.provider.provider.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId }],
-    });
+    if (!chainId) return false;
+    try {
+      const currentChainId = ethers.utils.hexStripZeros(
+        (await this.provider.getNetwork())?.chainId ?? 0
+      );
+      if (currentChainId === chainId) return false;
+
+      await this.provider.provider.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId }],
+      });
+    } catch (err) {
+      console.error("Error on switching network!", err);
+      return false;
+    }
+    return true;
   };
 
   networkToChainId = (network) => {

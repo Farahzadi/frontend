@@ -57,12 +57,6 @@ const TradePage = () => {
   const history = useHistory();
   const location = useLocation();
 
-  const pushToBridgeMaybe = (state) => {
-    if (!state.id && !/^\/bridge(\/.*)?/.test(location.pathname)) {
-      history.push("/bridge");
-    }
-  };
-
   useEffect(() => {
     if (!uuid) return;
 
@@ -80,9 +74,10 @@ const TradePage = () => {
     };
   }, [uuid, currentMarket]);
 
-  useEffect(() => {
-    if (uuid && providerState === APIProvider.State.CONNECTED) api.signIn(network);
-  }, [uuid, network, providerState]);
+  // useEffect(() => {
+  //   if (uuid && providerState === APIProvider.State.CONNECTED)
+  //     api.connectWallet();
+  // }, [uuid, network, providerState]);
 
   const updateMarketChain = (market) => {
     dispatch(setCurrentMarket(market));
@@ -218,10 +213,7 @@ const TradePage = () => {
                           signInHandler={() => {
                             setIsLoading(true);
                             api
-                              .signIn(network)
-                              .then((state) => {
-                                pushToBridgeMaybe(state);
-                              })
+                              .connectWallet()
                               .finally(() => setIsLoading(false));
                           }}
                           user={user}

@@ -38,6 +38,8 @@ export default class APIProvider {
   NETWORK_NAME = "mainnet";
   // address of smart contract used for bridge functionality
   BRIDGE_CONTRACT = "0x0000000000000000000000000000000000000000";
+  // either we supports a bridge for this network
+  HAS_BRIDGE = false;
 
   state = new APIProvider.State();
 
@@ -45,8 +47,6 @@ export default class APIProvider {
 
   start = notImplemented("start");
   stop = notImplemented("stop");
-  signIn = notImplemented("signIn");
-  signOut = notImplemented("signOut");
   getAccountState = notImplemented("getAccountState");
   submitOrder = notImplemented("submitOrder");
   submitSwap = notImplemented("submitSwap");
@@ -59,6 +59,8 @@ export default class APIProvider {
 
   signMessage = notImplemented("signMessage");
   verifyMessage = notImplemented("verifyMessage");
+  
+  // returns true if the network did switch and false if it didn't (or didn't need to)
   switchNetwork = notImplemented("switchNetwork");
 
   onAccountChange = notImplemented("onAccountChange");

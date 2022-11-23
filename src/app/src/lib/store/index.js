@@ -93,8 +93,8 @@ api.on("signOut", () => {
   store.dispatch(signOut());
 });
 
-api.on("networkChange", (network) => {
-  store.dispatch(setNetwork(network));
+api.on("networkChange", (payload) => {
+  store.dispatch(setNetwork(payload));
 });
 
 api.on("providerStateChange", (state) => {

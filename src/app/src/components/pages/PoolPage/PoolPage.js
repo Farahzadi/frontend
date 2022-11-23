@@ -1,14 +1,16 @@
 import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux';
-import { networkSelector } from 'lib/store/features/api/apiSlice';
+import { networkConfigSelector } from 'lib/store/features/api/apiSlice';
 import { DefaultTemplate } from 'components';
 import Pool from './Pool/Pool.jsx'
 import PoolIncompatible from './Pool/PoolIncompatible'
 import './PoolPage.style.css'
 
 export default function BridgePage() {
-  const network = useSelector(networkSelector);
-  const hasBridge = ["zksyncv1", "zksyncv1_goerli"].includes(network);
+  const networkConfig = useSelector(networkConfigSelector);
+  const network = networkConfig.name;
+
+  const hasBridge = networkConfig.hasBridge;
   const isPoolCompatible = useMemo(() => network && hasBridge, [network])
 
   return (

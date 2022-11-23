@@ -8,14 +8,10 @@ import erc20ContractABI from "lib/contracts/ERC20.json";
 import { maxAllowance } from "./constants";
 import axios from "axios";
 import { toast } from "react-toastify";
+import APIProvider from "./providers/APIProvider";
 
 const DEFAULT_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK;
 
-// class APIBackendState {
-//   static DISCONNECTED = 1;
-//   static CONNECTED = 3;
-//   static LOGIN = 4;
-// }
 
 export default class API extends Emitter {
   networks = {};
@@ -58,17 +54,23 @@ export default class API extends Emitter {
   }
 
   setNetwork = async (network) => {
-    if (this.apiProvider?.NETWORK === network) return;
+    if (this.network === network) return;
     await this.signOut();
     this.network = network;
-    this.emit("networkChange", network);
+    const hasBridge = this.getAPIProvider(network).HAS_BRIDGE;
+    this.emit("networkChange", { name: network, hasBridge });
   };
 
   connectWallet = async () => {
     if (!this.network) return;
     await this.signOut();
-    await this.setAPIProvider(this.network);
-    await this.signIn();
+    try {
+      await this.setAPIProvider(this.network);
+      await this.signIn();
+    } catch (err) {
+      console.log("Wallet connection failed with error, disconnecting.");
+      await this.clearAPIProvider();
+    }
   };
 
   disconnectWallet = async () => {
@@ -94,28 +96,29 @@ export default class API extends Emitter {
 
     this.apiProvider = this.getAPIProvider(network);
 
-    // console.log("apiProvider:", network, this.apiProvider);
-
     let result;
     try {
       result = await this.apiProvider.start();
     } catch (err) {
       console.error("Error on connecting to provider:", err);
+      throw err;
     }
 
-    if (result === "accountNotFound") {
+    if (result === "redirectToBridge") {
       const isBrige = !/^\/bridge(\/.*)?$/.test(window.location.pathname);
-      if (!isBrige)
+      if (!isBrige) {
+        // window.history.pushState("/bridge");
         toast.error(
           "Account not found. Please use the bridge to deposit funds before trying again."
         );
+      }
     }
 
     this.apiProvider.onAccountChange(this.signOut);
   };
 
-  clearAPIProvider = () => {
-    this.setAPIProvider(null);
+  clearAPIProvider = async () => {
+    await this.setAPIProvider(null);
   };
 
   getProfile = async (address) => {
@@ -275,28 +278,38 @@ export default class API extends Emitter {
       });
   };
 
-  signIn = async (network, ...args) => {
-    let accountState;
+  signIn = async () => {
+    const { network } = this;
     const { uuid } = this.ws;
-    if (!this.apiProvider) return;
-    console.log("login ATTEMPT", uuid, this.apiProvider?.state.get());
-    if (!uuid) return;
+    let accountState;
+    if (!(this.apiProvider?.state.get() === APIProvider.State.CONNECTED))
+      throw new Error("SignIn Error: wallet not connected");
+    if (!uuid) throw new Error("SignIn Error: UUID not set");
     if (!this._signInProgress) {
       this._signInProgress = Promise.resolve()
         .then(async () => {
-          const networkKey = `login:${network || this.apiProvider?.NETWORK}`;
+          const address = await this.apiProvider.getAddress();
+
+          const networkKey = `login:${network}`;
 
           let signature = sessionStorage.getItem(networkKey);
 
-          const shouldSign = this.changingWallet || !signature;
-
-          if (network) await this.setNetwork(network);
-
-          const address = await this.apiProvider.getAddress();
+          const shouldSign =
+            this.changingWallet ||
+            !signature ||
+            !(await this.apiProvider.verifyMessage(
+              this.signInMessage,
+              signature
+            ));
 
           if (shouldSign) {
             sessionStorage.removeItem(networkKey);
             signature = await this.apiProvider.signMessage(this.signInMessage);
+            if (!signature) {
+              const err = new Error("Signing failed.");
+              console.error("Error on signing message:", err);
+              throw err;
+            }
             sessionStorage.setItem(networkKey, signature);
           }
 
@@ -338,6 +351,7 @@ export default class API extends Emitter {
     }
     this._accountState = null;
     this.changingWallet = true;
+    sessionStorage.removeItem("access_token");
     this.clearAPIProvider();
     this.emit("balanceUpdate", "wallet", {});
     this.emit("balanceUpdate", this.network, {});

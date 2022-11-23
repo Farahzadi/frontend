@@ -12,7 +12,7 @@ function* handleHydration({ payload, key }) {
 
       if (user?.id) {
         try {
-          yield apply(api, api.signIn, [payload.network.name]);
+          yield apply(api, api.connectWallet, []);
         } catch (err) {
           console.log("There was an error reauthenticating", err);
         }

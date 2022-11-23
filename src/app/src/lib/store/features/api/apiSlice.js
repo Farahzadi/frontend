@@ -80,8 +80,8 @@ export const apiSlice = createSlice({
     network: {
       name: "zksyncv1_goerli",
       hasBridge: false,
-      providerState: "DISCONNECTED",
     },
+    providerState: "DISCONNECTED",
     userId: null,
     currentMarket: "ETH-DAI",
     config: {},
@@ -386,10 +386,11 @@ export const apiSlice = createSlice({
       state.userId = payload;
     },
     setNetwork(state, { payload }) {
-      state.network.name = payload;
+      state.network.name = payload.name;
+      state.network.hasBridge = payload.hasBridge;
     },
     setProviderState(state, { payload }) {
-      state.network.providerState = payload;
+      state.providerState = payload;
     },
     rangePrice(state, { payload }) {
       state.rangePrice = payload;
@@ -508,7 +509,8 @@ export const {
 
 export const configSelector = (state) => state.api.config;
 export const networkSelector = (state) => state.api.network.name;
-export const providerStateSelector = (state) => state.api.network.providerState;
+export const networkConfigSelector = (state) => state.api.network;
+export const providerStateSelector = (state) => state.api.providerState;
 export const userOrdersSelector = (state) => state.api.userOrders;
 export const userFillsSelector = (state) => state.api.userFills;
 export const allOrdersSelector = (state) => state.api.orders;
