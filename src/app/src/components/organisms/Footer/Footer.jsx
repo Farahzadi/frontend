@@ -572,7 +572,6 @@ class Footer extends React.Component {
 
   render() {
     let explorerLink;
-    console.log(api);
     switch (api.apiProvider.network) {
       case "zksyncv1_goerli":
         explorerLink =

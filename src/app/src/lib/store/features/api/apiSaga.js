@@ -1,3 +1,4 @@
+import { ethers } from "ethers";
 import api from "lib/api";
 import { takeEvery, put, all, select, delay, apply } from "redux-saga/effects";
 import { setUserAddress, resetData } from "./apiSlice";
@@ -17,7 +18,8 @@ function* delegateAuthChangeSaga({ type, payload }) {
   }
 
   if (type === "auth/signIn" || type === "auth/signOut") {
-    yield put(setUserAddress((payload && payload.id) || null));
+    console.log("test auth", payload);
+    yield put(setUserAddress((payload?.address && ethers.utils.getAddress(payload?.address)) || null));
   }
 }
 
