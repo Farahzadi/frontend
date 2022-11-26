@@ -13,7 +13,6 @@ import APIProvider from "./providers/APIProvider";
 
 const DEFAULT_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK;
 
-
 export default class API extends Emitter {
   networks = {};
   network = DEFAULT_NETWORK || "zksyncv1_goerli";
@@ -689,7 +688,9 @@ export default class API extends Emitter {
     fee,
     orderType
   ) => {
-    await this.apiProvider.submitOrder(
+    if (!this.isSignedIn()) return;
+
+    const data = await this.apiProvider.submitOrder(
       product,
       side,
       price,
@@ -698,9 +699,26 @@ export default class API extends Emitter {
       fee,
       orderType
     );
+
+    this.sendRequest(
+      "user/order",
+      "POST",
+      {
+        tx: data.tx,
+        market: data.market,
+        amount: data.amount,
+        price: data.price,
+        type: orderType,
+      },
+      true
+    );
   };
 
   submitSwap = async (product, side, price, amount) => {
     await this.apiProvider.submitSwap(product, side, price, amount);
+  };
+
+  isSignedIn = () => {
+    return sessionStorage.getItem("access_token") !== null;
   };
 }
