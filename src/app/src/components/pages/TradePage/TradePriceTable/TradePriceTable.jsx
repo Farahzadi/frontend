@@ -5,7 +5,7 @@ import "./TradePriceTable.css";
 import { connect } from "react-redux";
 import { numStringToSymbol } from "lib/utils";
 import api from "lib/api";
-import Tooltip from "@material-ui/core/Tooltip";
+import Tooltip from "@mui/material/Tooltip";
 import {
   setOrderType,
   orderTypeSelector,

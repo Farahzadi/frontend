@@ -1,22 +1,31 @@
-import { createTheme } from '@material-ui/core/styles';
+import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
-    typography: {
-        fontFamily: ['Inter', 'sans-serif'].join(','),
-      },
-      palette: {
-        primary: {
-          light: '#FCF5ED',
-          main: '#0a82b6',
-          dark: '#23344D',
-        },
-      },
-  overrides: {
-
+  typography: {
+    fontFamily: ['Inter', 'sans-serif'].join(','),
+  },
+  palette: {
+    primary: {
+      light: '#FCF5ED',
+      main: '#0a82b6',
+      dark: '#23344D',
+    },
+    secondary: {
+      main: '#071428',
+      dark: '#050f1e',
+      light: '#14243c'
+    }
+  },
+  components: {
     MuiPaper: {
-      root: {
-        backgroundColor: '#23344D',
-        color: '#fff',
+      styleOverrides: {
+        root: {
+          backgroundColor: '#050f1e',
+          color: '#fff',
+          border: '1px solid #0a82b6',
+          borderBottomLeftRadius: '13px',
+          borderBottomRightRadius: '13px',
+        },
       },
     },
     MuiPopover: {
@@ -25,12 +34,28 @@ const theme = createTheme({
       },
     },
     MuiMenuItem: {
-      root: {},
+      styleOverrides: {
+        root: {
+          justifyContent: 'center',
+          borderBottom: '1px solid #0a82b6',
+          '&:hover': {
+            backgroundColor: '#23344D'
+          },
+          '&:last-child': {
+            borderBottom: 'none'
+          }
+
+        },
+      }
     },
     MuiList: {
-      root: {
-        backgroundColor: '#23344D',
-      },
+      styleOverrides: {
+        root: {
+          paddingTop: '0',
+          paddingBottom: '0'
+        },
+      }
+
     },
     MuiListItem: {
       root: {
@@ -40,40 +65,59 @@ const theme = createTheme({
       },
     },
     MuiInput: {
-        underline: {
-            '&::after': {
-                borderBottom: 'none'
-            }
-        }
-    },
-    MuiInputBase: {
-      root: {
-        color: '#fff',
-      },
-      '& .MuiOutlinedInput': {
-        root: {},
-      },
-      input: {
-        color: '#fff',
+      underline: {
+        '&::after': {
+          borderBottom: 'none',
+        },
       },
     },
-    MuiSelect: {
-      root: {
-        color: '#fff',
-      },
-      icon: {
-        color: '#fff',
-      },
-      select: {
-        '&:focus': {
-
+    MuiInputAdornment: {
+      styleOverrides: {
+        root: {
+          color: '#fff'
         }
       }
     },
-    MuiSvgIcon: {
-      root: {
-        '& .MuiSelectIcon-root': {
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          color: '#fff'
+        },
+
+        '& .MuiOutlinedInput': {
+          root: {},
+        },
+        input: {
           color: '#fff',
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        notchedOutline: {
+          border: 'none'
+        }
+      }
+    },
+    MuiSelect: {
+      styleOverrides: {
+        root: {
+          color: '#fff',
+        },
+        icon: {
+          color: '#fff',
+        },
+        select: {
+          '&:focus': {},
+        },
+      },
+    },
+    MuiSvgIcon: {
+      styleOverrides: {
+        root: {
+          '& .MuiSelectIcon-root': {
+            color: '#fff',
+          },
         },
       },
     },

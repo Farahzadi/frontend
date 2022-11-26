@@ -60,7 +60,7 @@ export default class API extends Emitter {
     this.validMarkets = validMarkets;
     this.axiosInstance = axios.create({
       baseURL: apiUrl,
-      timeout: 2000,
+      timeout: 3000,
     });
 
     if (window.ethereum) {

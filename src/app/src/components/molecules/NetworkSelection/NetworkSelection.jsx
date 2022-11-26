@@ -11,20 +11,28 @@ import {
   InputAdornment,
   MenuItem,
   TextField,
-} from '@material-ui/core';
-import { withStyles } from '@material-ui/core/styles';
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
 
-const NetFormControl = withStyles(({ palette }) => ({
-  root: {
-    border: `2px solid ${palette.primary.main}`,
+const NetFormControl = styled(FormControl)(({ theme }) => ({
+    border: `2px solid ${theme.palette.primary.main}`,
     borderRadius: '5px',
     minWidth: '200px',
     textAlign: 'center',
-    paddingInlineStart: '0.5rem',
-    marginInlineEnd: '1rem'
-  },
-}))(FormControl);
+    paddingInlineStart: '0',
+    marginInlineEnd: '1rem',
+    '&:focus': {
+      backgroundColor: theme.palette.primary.main,
 
+    }
+}));
+const NetInput = styled(TextField)(({theme}) => ({
+
+}
+));
+const GlobAdornment = styled(InputAdornment)(() => ({
+    position: 'absolute'
+}))
 const NetworkSelection = () => {
   const networks = useSelector(networkListSelector);
   const network = useSelector(networkSelector);
@@ -50,15 +58,16 @@ const NetworkSelection = () => {
   return (
     <>
       <NetFormControl>
-        <TextField
+        <NetInput
+          size='small'
           value={selectedNet}
           select
           onChange={(e) => handleChangeNetwork(e.target.value)}
           InputProps={{
             startAdornment: (
-              <InputAdornment position='start'>
+              <GlobAdornment position='start'>
                 <GoGlobe />
-              </InputAdornment>
+              </GlobAdornment>
             ),
           }}
         >
@@ -67,7 +76,7 @@ const NetworkSelection = () => {
               {transformNetName(network)}
             </MenuItem>
           ))}
-        </TextField>
+        </NetInput>
       </NetFormControl>
     </>
   );
