@@ -409,7 +409,8 @@ export const apiSlice = createSlice({
         //‌This is for addresses that have not yet been activated
         state.bridgeReceipts.unshift(payload);
         toast.info("Your wallet address is going to be activate!");
-      } else if (state.userAddress.toString() === userAddress.toString()) {
+      }
+      if (state.userAddress === userAddress) {
         state.bridgeReceipts.unshift(payload);
       } else {
         return {};
