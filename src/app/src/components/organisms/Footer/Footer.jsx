@@ -1,5 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
+import Decimal from "decimal.js";
 
 import "./Footer.css";
 import loadingGif from "assets/icons/loading.svg";
@@ -16,7 +17,7 @@ import { Button } from "react-bootstrap";
 import Box from "@mui/material/Box";
 import Backdrop from "@mui/material/Backdrop";
 
-import Modal from "@mui/material/Modal";
+import { Modal } from "../../atoms/Modal";
 
 const style = {
   position: "absolute",
@@ -312,9 +313,9 @@ class Footer extends React.Component {
             const fillid = fill.id;
             const market = fill.market;
             const isTaker = fill.isTaker;
-            const side = (fill.takerSide === "b") ^ !isTaker ? "b" : "s";
             let price = fill.price;
-            let amount = fill.amount;
+            let amount = new Decimal(fill.amount);
+            const side = (fill.takerSide === "b") ^ !isTaker ? "b" : "s";
             const fillstatus = fill.status;
             const baseCurrency = fill.market.split("-")[0];
             const quoteCurrency = fill.market.split("-")[1];
@@ -322,9 +323,11 @@ class Footer extends React.Component {
             const sideClassName = side === "b" ? "up_value" : "down_value";
             const txHash = fill.txHash;
             const time = fill.insertTimestamp;
-            const fee =
-              (isTaker ? fill.takerFee : fill.makerFee) *
-              (side === "b" ? amount * price : amount);
+            const quantity = amount.mul(price);
+
+            let fee = new Decimal(isTaker ? fill.takerFee : fill.makerFee);
+            fee.mul(side === "b" ? quantity : amount);
+
             const feeCurrency = side === "b" ? quoteCurrency : baseCurrency;
 
             date = api.hasOneDayPassed(time);
@@ -653,43 +656,17 @@ class Footer extends React.Component {
     return (
       <>
         <Modal
-          aria-labelledby="spring-modal-title"
-          aria-describedby="spring-modal-description"
-          open={this.state.openModal}
+          show={this.state.openModal}
+          actionText='Yes'
+          closeText='No'
+          alert={'Are you sure you want to delete all orders?'}
           onClose={this.handleClose}
-          closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
+          onSubmit={() => {
+            this.handleClose();
+            api.cancelAllOrders();
           }}
         >
-          <Box sx={style}>
-            <h5 className="text-center py-3">
-              Are you sure you want to delete all orders?
-            </h5>
-
-            <div className="d-flex w-100 text-center justify-content-around">
-              <Button
-                size="lg"
-                variant="outline-success "
-                onClick={() => {
-                  this.handleClose();
-                  api.cancelAllOrders();
-                }}
-              >
-                Yes
-              </Button>
-              <Button
-                size="lg"
-                variant="outline-danger "
-                onClick={() => this.handleClose()}
-              >
-                No
-              </Button>
-            </div>
-          </Box>
         </Modal>
-        \
         <div className="user-info">
           <div className="user-info-container ">
             <hr />

@@ -22,7 +22,7 @@ const useStyles = makeStyles(() => ({
             left: "50%",
             top: "50%",
             transform: "translate(-50%,-50%)",
-            backgroundColor: "#171c28",
+            backgroundColor: "var(--dexpressoTableBackground)",
             content: "",
             width: "10px",
             height: "10px",

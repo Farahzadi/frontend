@@ -19,7 +19,7 @@ import darkPlugHead from "assets/icons/dark-plug-head.png";
 import zkLogo from "assets/images/zk.jpg";
 import BridgeSwapInput from "../BridgeSwapInput/BridgeSwapInput";
 import { networks } from "./utils";
-import ShowTransferModal from "components/atoms/ShowMessageModal/ShowTransferModal";
+import { Modal } from "components/atoms/Modal";
 
 const defaultTransfer = {
   type: "deposit",
@@ -89,8 +89,12 @@ const Bridge = () => {
       if (user.address && api.apiProvider?.zksyncCompatible) {
         const usdFee = await api.apiProvider.changePubKeyFee();
         setUsdFee(usdFee);
-        if (currencyValue) {
-          setActivationFee((usdFee / currencyValue).toFixed(5));
+        if (Number.isFinite(usdFee / currencyValue)) {
+          if (currencyValue) {
+            setActivationFee((usdFee / currencyValue).toFixed(5));
+          } else {
+            setActivationFee(0);
+          }
         } else {
           setActivationFee(0);
         }
@@ -252,16 +256,16 @@ const Bridge = () => {
 
   return (
     <>
-      <ShowTransferModal show={showModal} onHide={() => setShowModal(false)}>
-        <div className="bridge_box_right_content container bg-white">
+    <Modal show={showModal} onClose={() => setShowModal(false)}>
+      <div className="bridge_box_right_content container">
           <div className="row">
             <div className="col-6-border">
               <p>
                 <small>Source Network :</small>
               </p>
               <p>
-                <b className="text-dark">
-                  {transfer.type === "withdraw"
+                <b>
+                  {transfer.type !== "withdraw"
                     ? ethLayer1HeaderDetails
                     : zkSyncLayer2HeaderDetails}
                 </b>
@@ -273,8 +277,8 @@ const Bridge = () => {
                 <small>Destination Network:</small>
               </p>
               <p>
-                <b className="text-dark">
-                  {transfer.type !== "withdraw"
+                <b>
+                  {transfer.type === "withdraw"
                     ? ethLayer1HeaderDetails
                     : zkSyncLayer2HeaderDetails}
                 </b>
@@ -286,7 +290,7 @@ const Bridge = () => {
                 <small>Source coin:</small>
               </p>
               <p>
-                <b className="text-dark">{swapDetails.currency}</b>
+                <b>{swapDetails.currency}</b>
                 <i class="fa-solid fa-arrow-right" />
               </p>
             </div>
@@ -295,7 +299,7 @@ const Bridge = () => {
                 <small> Destination coin:</small>
               </p>
               <p>
-                <b className="text-dark">{swapDetails.currency}</b>
+                <b>{swapDetails.currency}</b>
               </p>
             </div>
             <hr />
@@ -392,7 +396,7 @@ const Bridge = () => {
                 </span>
               </div>
             ) : (
-              <div className="bridge_connected_as text-black">
+              <div className="bridge_connected_as">
                 <span className="bridge_bubble_disconnected" />
                 Disconnected
               </div>
@@ -456,8 +460,8 @@ const Bridge = () => {
               🔗 &nbsp;Please connect your wallet
             </div>
           )}
-        </div>
-      </ShowTransferModal>
+      </div>
+    </Modal>
       <div className="bridge_lables-btn">
         <button
           onClick={() => setShowBridge(true)}
@@ -506,7 +510,7 @@ const Bridge = () => {
                     <h5>Available balance</h5>
                     <span>
                       {balances[swapDetails.currency] &&
-                        balances[swapDetails.currency].valueReadable}
+                        balances[swapDetails.currency].valueReadable.toString()}
                       {` ${swapDetails.currency}`}
                     </span>
                   </div>
@@ -553,8 +557,9 @@ const Bridge = () => {
                   <div className=" bridge_coin_stat text-start mt-3">
                     <h5>Available balance</h5>
                     <span>
-                      {altBalances[swapDetails.currency] &&
-                        altBalances[swapDetails.currency].valueReadable}
+                      {altBalances[
+                        swapDetails.currency
+                      ]?.valueReadable.toString()}
                       {` ${swapDetails.currency}`}
                     </span>
                   </div>
@@ -587,7 +592,7 @@ const Bridge = () => {
                 </p>
                 <p>
                   <b className="text-dark">
-                    {transfer.type === "withdraw"
+                    {transfer.type !== "withdraw"
                       ? ethLayer1HeaderDetails
                       : zkSyncLayer2HeaderDetails}
                   </b>
@@ -600,7 +605,7 @@ const Bridge = () => {
                 </p>
                 <p>
                   <b className="text-dark">
-                    {transfer.type !== "withdraw"
+                    {transfer.type === "withdraw"
                       ? ethLayer1HeaderDetails
                       : zkSyncLayer2HeaderDetails}
                   </b>

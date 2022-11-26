@@ -192,7 +192,7 @@ const TradePage = () => {
                 <div className="trade_right ">
                   <div className="row mt-1 my-lg-0 mx-0 w-100">
                     <div className="trade-price-container mt-1 my-lg-0  trade-tables-left col-12 col-lg-6 px-0 px-lg-1">
-                      <div className="trades-details boredr-purple d-none d-lg-block mb-1 bg_pannel">
+                      <div className="trades-details dexpresso-border d-none d-lg-block mb-1 bg_pannel">
                         <div className="trade-price ">
                           {/* <TradePriceBtcHead /> */}
                           <TradePriceBtcTable
@@ -203,9 +203,9 @@ const TradePage = () => {
                         </div>
                       </div>
 
-                      <div className=" spot_box_table boredr-purple bg_pannel">
+                      <div className=" spot_box_table dexpresso-border bg_pannel">
                         <SpotBox
-                          className="boredr-purple"
+                          className="dexpresso-border"
                           lastPrice={marketSummary.price}
                           loading={isLoading}
                           rangePrice={rangePrice}
@@ -317,14 +317,14 @@ const TradePage = () => {
                 </div>
               </div>
               <div className="col-12 col-lg-7 px-0  trade-tables-right">
-                <div className="trade_left bg_pannel">
+                <div className="trade_left dexpresso-border bg_pannel">
                   <div>
                     {/* Trade Chart */}
                     <TradeChart currentMarket={tradingViewMarket} />
                   </div>
                 </div>
                 {/* order table  */}
-                <div className="m-auto user-info-container order boredr-purple mt-1 bg_pannel  orders_table_lg">
+                <div className="m-auto user-info-container order dexpresso-border mt-1 bg_pannel  orders_table_lg">
                   <Footer
                     userFills={userFills}
                     userOrders={userOrders}
@@ -335,7 +335,7 @@ const TradePage = () => {
               </div>
             </div>
 
-            <div className="m-auto user-info-container order boredr-purple mt-1 bg_pannel orders_table_mobile ">
+            <div className="m-auto user-info-container order dexpresso-border mt-1 bg_pannel orders_table_mobile ">
               <Footer
                 userFills={userFills}
                 userOrders={userOrders}

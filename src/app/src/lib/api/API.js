@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import { createIcon } from "@download/blockies";
 import Emitter from "tiny-emitter";
 import { ethers } from "ethers";
@@ -54,6 +55,7 @@ export default class API extends Emitter {
   }
 
   setNetwork = async (network) => {
+    console.log('netwoekkkkk', network);
     if (this.network === network) return;
     await this.signOut();
     this.network = network;
@@ -86,6 +88,7 @@ export default class API extends Emitter {
   };
 
   setAPIProvider = async (network) => {
+    console.log('sfsdfdsfdsdsfdsf', network);
     if (this.apiProvider?.NETWORK === network) return;
     this.apiProvider?.stop();
 
@@ -470,7 +473,7 @@ export default class API extends Emitter {
     return this.apiProvider.BRIDGE_CONTRACT;
   };
 
-  approveSpendOfCurrency = async (currency) => {
+  approveSpendOfCurrency = async (currency, allowance = maxAllowance) => {
     const netContract = this.getNetworkContract();
     if (netContract) {
       const [account] = await this.web3.eth.getAccounts();
@@ -480,7 +483,7 @@ export default class API extends Emitter {
         contractAddress
       );
       await contract.methods
-        .approve(netContract, maxAllowance)
+        .approve(netContract, allowance)
         .send({ from: account });
     }
   };
@@ -550,8 +553,9 @@ export default class API extends Emitter {
 
   getOrderDetailsWithoutFee = (order) => {
     const side = order.side;
-    const baseQuantity = order.baseQuantity;
-    const quoteQuantity = order.price * order.baseQuantity;
+    const baseQuantity = new Decimal(order.baseQuantity);
+    const price = new Decimal(order.price);
+    const quoteQuantity = price.mul(baseQuantity);
     let fee = order.feeAmount ? order.feeAmount : 0;
     const remaining = isNaN(Number(order.remaining))
       ? order.baseQuantity
@@ -567,28 +571,29 @@ export default class API extends Emitter {
       if (orderType === "l") {
         baseQuantityWithoutFee = baseQuantity;
         remainingWithoutFee = Math.max(0, remaining);
-        priceWithoutFee = quoteQuantity / baseQuantity;
+        priceWithoutFee = quoteQuantity.dividedBy(baseQuantity);
         quoteQuantityWithoutFee = quoteQuantity;
       } else {
-        baseQuantityWithoutFee = baseQuantity - fee;
+        baseQuantityWithoutFee = baseQuantity.minus(fee);
         if (orderStatus === "o" || orderStatus === "c" || orderStatus === "m") {
-          remainingWithoutFee = baseQuantity - fee;
+          remainingWithoutFee = baseQuantity.minus(fee);
         } else {
           remainingWithoutFee = Math.max(0, remaining - fee);
         }
-        priceWithoutFee = quoteQuantity / baseQuantityWithoutFee;
-        quoteQuantityWithoutFee = priceWithoutFee * baseQuantityWithoutFee;
+        priceWithoutFee = quoteQuantity.dividedBy(baseQuantityWithoutFee);
+        quoteQuantityWithoutFee = priceWithoutFee.mul(baseQuantityWithoutFee);
       }
     } else {
       if (orderType === "l") {
         baseQuantityWithoutFee = baseQuantity;
         quoteQuantityWithoutFee = quoteQuantity;
-        priceWithoutFee = quoteQuantityWithoutFee / baseQuantity;
+        priceWithoutFee = quoteQuantityWithoutFee.dividedBy(baseQuantity);
         remainingWithoutFee = Math.min(baseQuantity, remaining);
       } else {
-        quoteQuantityWithoutFee = quoteQuantity - fee;
-        priceWithoutFee = quoteQuantityWithoutFee / baseQuantity;
-        baseQuantityWithoutFee = quoteQuantityWithoutFee / priceWithoutFee;
+        quoteQuantityWithoutFee = quoteQuantity.minus(fee);
+        priceWithoutFee = quoteQuantityWithoutFee.dividedBy(baseQuantity);
+        baseQuantityWithoutFee =
+          quoteQuantityWithoutFee.dividedBy(priceWithoutFee);
         if (orderStatus === "o" || orderStatus === "c" || orderStatus === "m") {
           remainingWithoutFee = baseQuantity;
         } else {
@@ -606,9 +611,9 @@ export default class API extends Emitter {
 
   getFillDetailsWithoutFee(fill) {
     const time = fill.insertTimestamp;
-    const price = parseFloat(fill.price);
+    const price = new Decimal(parseFloat(fill.price));
     let baseQuantity = fill.amount;
-    let quoteQuantity = fill.price * fill.amount;
+    let quoteQuantity = price.mul(fill.amount);
     const side = fill.side;
     let fee = fill.feeAmount ? fill.feeAmount : 0;
 

@@ -4,7 +4,7 @@ import BridgeCurrencySelector from "../BridgeCurrencySelector/BridgeCurrencySele
 
 const BridgeInputBox = styled.div`
   display: flex;
-  border: 2px solid var(--purple) !important;
+  border: 2px solid var(--dexpressoPrimery) !important;
   flex-direction: row;
   align-items: center;
   background: #fff;
@@ -45,12 +45,12 @@ const BridgeInputBox = styled.div`
   }
 
   .currencySelector {
-    width: 30%;
+    width: 37%;
     height: 52px;
     display: flex;
     align-items: center;
     margin-left: 15px;
-    border-right: 2px solid #5832a6;
+    border-right: 2px solid var(--dexpressoPrimery);
   }
 `;
 

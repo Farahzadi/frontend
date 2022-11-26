@@ -8,6 +8,9 @@
   background-size: cover; */
   /* min-height: calc(850px - var(--navbar-height)); */
 }
+.title {
+  color: var(--mainColor);
+}
 .headerText {
   max-width: 800px;
   text-align: center;
@@ -26,7 +29,6 @@
 }
 .description {
   font-size: 1.2rem;
-  color: var(--grey);
 }
 .background {
   width: 850px;
@@ -34,22 +36,9 @@
   max-width: 100%;
   height: auto;
   display: none;
+  position: relative;
 }
-.tradeBtn {
-  border-radius: 10px;
-  background: var(--themeColor);
-  /* width: 100%; */
-  font-size: 1.05rem;
-  color: #fff;
-  text-align: center;
-  margin-top: 2.57rem;
-  line-height: 2.25rem;
-  position: fixed;
-  bottom: 23px;
-  left: 2rem;
-  right: 2rem;
-  z-index: 55;
-}
+
 .fixedBtn {
   top: auto;
 }
@@ -89,7 +78,6 @@
   .headerText h1 {
     font-size: 2.7rem;
     font-weight: bold;
-    color: #fff;
     line-height: 4.5rem;
     text-align: start;
   }

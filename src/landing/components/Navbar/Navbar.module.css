@@ -1,17 +1,19 @@
 .blurBG {
-  background-color: rgba(17, 20, 43, 0.6) !important;
+  background-color: rgba(var(--mainRgba), 0.5) !important;
   backdrop-filter: blur(8px);
 }
 .brandName {
   display: inline-block;
-  letter-spacing: 2px;
-  font-size: 1rem;
-  font-weight: bold;
+  letter-spacing: 1.5px;
+  font-size: 1.47rem;
+  font-weight: 900;
   margin-inline-start: 7px;
+  color: var(--neutralColor);
+  font-family: 'Ostrich Sans';
 }
 .logoContainer {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
 }
 .hamburgerIconContainer {
   display: flex;
@@ -27,7 +29,7 @@
   width: 24px;
   height: 2px;
   border-radius: 1px;
-  background: #8771b3;
+  background: rgba(var(--lighterMainRgb),1);
   /* margin-bottom: 5px; */
   transition: all ease-in-out 0.5s;
 }
@@ -35,10 +37,10 @@
   transform: translateY(-7px);
 }
 .rect:nth-child(2) {
-  background: #6f59a6;
+  background: rgba(var(--lighterMainRgb), 0.7);
 }
 .rect:nth-child(3) {
-  background: #5e459b;
+  background: rgba(var(--lighterMainRgb), 0.5);
   transform: translateY(7px);
 }
 .crossIconContainer > div:first-child {
@@ -57,13 +59,16 @@
   justify-content: space-between;
   /* border-bottom: 1px solid #ddd; */
   align-items: center;
-  background-color: #11142b;
+  background-color: var(--mainBGColor);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
   padding: 13px 23px;
   height: var(--navbar-height);
   overflow: hidden;
+  color: var(--mainColor);
+  font-size: 1rem;
+
 }
 
 .logoImg {
@@ -79,7 +84,8 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 2rem;
-  color: var(--grey);
+  color: var(--mainColor);
+
 
 }
 .nav a:hover {
@@ -88,21 +94,36 @@
 
 .tradeBtn {
   background: none;
-  color: #ffffff;
+  color: var(--mainColor);
   border-radius: 13px;
   padding: 10px 70px;
   cursor: pointer;
-  border: 1px solid #9747ff;
+  border: 2px solid var(--mainColor);
   transition: 0.5s;
   width: 100%;
-  background-color: rgba(151, 71, 255, 1);
+  background-color: var(--mainColor);
   display: none;
 
 }
+.fixedTradeBtn {
+  border-radius: 10px;
+  background: var(--mainColor);
+  /* width: 100%; */
+  font-size: 1.05rem;
+  color: #fff;
+  text-align: center;
+  margin-top: 2.57rem;
+  line-height: 2.25rem;
+  position: fixed;
+  bottom: 23px;
+  left: 2rem;
+  right: 2rem;
+  z-index: 55;
+}
 .tradeBtn:hover {
-  box-shadow: 0 0 25px 1px #9747ff;
-  color: #11142b;
-  background-color: #9747ff;
+  box-shadow: 0 0 25px 1px var(--mainColor);
+  color: var(--mainBGColor);
+  background-color: var(--mainColor);
 }
 .navItems {
   display: flex;
@@ -157,9 +178,6 @@
     width: 120px !important;
     height: 60px !important;
   }
-  .brandName {
-    display: none;
-  }
   .hamburgerIconContainer {
     display: none;
   }
@@ -167,10 +185,15 @@
   .tradeBtn {
     margin-right: 25px;
     margin-left: 0.75rem;
-    box-shadow: 0 0 24px rgba(151, 71, 255, 0.4);
+    /* box-shadow: 0 0 24px rgba(235, 228, 213, 0.4); */
     background-color: transparent;
     width: auto;
     display: block;
+    font-weight: bold;
+    font-size: 1rem;
+  }
+  .fixedTradeBtn {
+    display: none;
   }
   .navItems {
     height: auto;
@@ -187,6 +210,7 @@
   }
   .navItemInnerContainer {
     flex-flow: row;
+    justify-content: flex-end;
     padding: 0;
   }
   .header-logo {

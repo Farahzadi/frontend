@@ -18,7 +18,7 @@ const NetworkSelection = () => {
   };
 
   useEffect(() => {
-    if (network === 1000) {
+    if (network === "zksyncv1_goerli") {
       return setNetwokName("zkSync(V1) - Goerli");
     }
     setNetwokName("zkSync(V1) - Mainnet");

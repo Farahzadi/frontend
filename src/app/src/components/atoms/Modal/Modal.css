@@ -1,58 +1,69 @@
-.zig_modal {
+.dex_modal {
   position: fixed;
   left: 0;
   top: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   transition: all 0.3s ease-in-out;
   pointer-events: none;
+  z-index: 999;
 }
 
-.zig_modal.enter-done {
+.dex_modal.enter-done {
   opacity: 1;
   pointer-events: visible;
 }
 
-.zig_modal.exit {
+.dex_modal.exit {
   opacity: 0;
 }
 
-.zig_modal_content {
+.dex_modal_content {
   width: 500px;
   max-width: 90%;
-  background-color: #232735;
+  background-color: var(--dexpressoHeader);
   transition: all 0.3s ease-in-out;
   transform: translateY(-200px);
   border-radius: 6px;
   color: #cedafb;
 }
 
-.zig_modal.enter-done .zig_modal_content {
+.dex_modal.enter-done .dex_modal_content {
   transform: translateY(0);
 }
 
-.zig_modal.exit .zig_modal_content {
+.dex_modal.exit .dex_modal_content {
   transform: translateY(-200px);
 }
 
-.zig_modal_header,
-.zig_modal_body {
+.dex_modal_header,
+.dex_modal_body {
   padding: 15px;
 }
 
-.zig_modal_body {
+.dex_modal_body {
   background: rgba(0, 0, 0, 0.3);
   border-radius: 0 0 6px 6px;
   font-size: 0.8rem;
 }
-
-.zig_modal_title {
+.dex_alert {
+  font-size: 1.35rem;
+  padding: 1rem;
+  text-align: center;
+}
+.dex_modal_title {
   margin: 0;
   font-size: 18px;
-  color: rgba(255,255,255,1);
+  color: rgba(255, 255, 255, 1);
+}
+.dex_modal_action_footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: .825rem .5rem;
 }

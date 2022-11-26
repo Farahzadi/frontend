@@ -5,7 +5,7 @@ import { GoGlobe } from 'react-icons/go'
 import { NavLink } from 'react-router-dom'
 import { networkSelector } from 'lib/store/features/api/apiSlice'
 import api from 'lib/api'
-import logo from 'assets/images/logo.png'
+import logo from 'assets/images/LogoMarkCremeLight.svg'
 import './Header.css'
 
 export const HeaderBridge = (props) => {

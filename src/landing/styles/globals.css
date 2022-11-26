@@ -1,17 +1,26 @@
 :root {
+  --mainRgba: 35, 52, 77;
+  --mainBGColor: rgb(35, 52, 77);
+  --mainColorRgb: 191, 163, 138;
+  --mainColor: #bfa38a;
+  --lighterMainRgb: 255, 221, 201;
+  --lighterMainColor: rgb(255, 221, 201);
+  --accentColor: #EBE4D5;
+  --neutralColor: #FCF5ED;
   --grey: #bdbccd;
   --grey2: #7C7C8B;
-  --borderColor: #9747ff;
   --darkBG: #050719;
   --lighterBG: #11142b;
-  --themeColor: rgba(124, 82, 178, 1);
   --txtColor: #fff;
-  --secondaryColor: rgba(32, 197, 186, 1);
   --navbar-height: 70px;
+  --darkRed: 140, 41, 32;
+  --red: 217, 84, 54;
+  --palePink: 242, 170, 128;
+  --pastelBlue: 101, 166, 166;
 }
 body {
   background-color: var(--darkBG);
-  color: #fff;
+  color: var(--neutralColor);
   direction: ltr;
   font-size: 15px;
 }
@@ -20,7 +29,7 @@ body {
   padding: 0;
   font-family: Inter, sans-serif;
   box-sizing: border-box;
-  color: #fff;
+  color: var(--neutralColor);
 }
 *::-webkit-scrollbar {
   width: 7px;
@@ -54,6 +63,7 @@ h1 {
   font-weight: bold;
   line-height: 2.5rem;
   text-align: center;
+  color: var(--mainColor);
 }
 h2 {
   font-size: 1.5rem;
@@ -61,11 +71,13 @@ h2 {
   text-align: center;
   line-height: 2rem;
   margin-bottom: 0.5rem;
+  color: var(--mainColor);
 }
 h3 {
   font-size: 1.2rem;
   text-align: center;
   margin-bottom: 0.45rem;
+  color: var(--mainColor);
 }
 h4 {
   font-size: 1rem;
@@ -76,8 +88,8 @@ p {
   text-align: center;
 }
 button {
-  background: var(--themeColor);
-  border: 1px solid var(--borderColor);
+  background: var(--mainColor);
+  border: 1px solid var(--mainColor);
   border-radius: 10px;
 }
 img, video {
@@ -97,7 +109,14 @@ img, video {
 .contact-bar {
   display: none;
 }
-
+.brand-name {
+  letter-spacing: 1.5px;
+  font-size: 1.47rem;
+  font-weight: 900;
+  color: var(--neutralColor);
+  font-family: 'Ostrich Sans';
+  text-transform: capitalize;
+}
 @media (min-width: 769px) {
   .contact-bar {
     display: block;
