@@ -135,6 +135,10 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
   stop = async () => {
     // this.web3Modal.clearCachedProvider();
+    delete this.provider;
+    delete this.wallet;
+    delete this.syncProvider;
+    delete this.syncWallet;
     this.state.set(APIProvider.State.DISCONNECTED);
   };
 
@@ -201,7 +205,6 @@ export default class ZKSyncAPIProvider extends APIProvider {
     fee,
     orderType
   ) => {
-    // let feeOrder,
     let buyWithFee,
       sellWithFee,
       tokenBuy,
@@ -215,7 +218,6 @@ export default class ZKSyncAPIProvider extends APIProvider {
     buyWithFee = price * (1 + fee);
     sellWithFee = price * (1 - fee);
 
-    const feeTokenRatio = {};
     const currencies = product.split("-");
     const nowUnix = (Date.now() / 1000) | 0;
     const validUntil = nowUnix + 24 * 3600;
@@ -247,22 +249,6 @@ export default class ZKSyncAPIProvider extends APIProvider {
     tokenRatio = this.getTokenRatio(product, 1, priceWithFee.toString());
     const ratio = zksync.utils.tokenRatio(tokenRatio);
 
-    if (sessionStorage.getItem("login") === null) {
-      return;
-    }
-
-    //DAI will be NBX!
-    feeTokenRatio[tokenSell] = 1;
-    feeTokenRatio["DAI"] = (0).toPrecision(6).toString();
-    // if (feeType === "withNBX") {
-    //   feeOrder = await this.syncWallet.signLimitOrder({
-    //     tokenSell: tokenSell,
-    //     tokenBuy: "DAI",
-    //     ratio: zksync.utils.tokenRatio(feeTokenRatio),
-    //     validUntil,
-    //   });
-    // }
-
     const order = await this.syncWallet.signLimitOrder({
       tokenSell,
       tokenBuy,
@@ -270,20 +256,13 @@ export default class ZKSyncAPIProvider extends APIProvider {
       validUntil,
     });
 
-    this.api.sendRequest(
-      "user/order",
-      "POST",
-      {
-        tx: order,
-        market: product,
-        amount: parsedQuantity.toString(),
-        price: price,
-        type: orderType,
-      },
-      true
-    );
-
-    return order;
+    return {
+      tx: order,
+      market: product,
+      amount: parsedQuantity.toString(),
+      price: price,
+      type: orderType,
+    };
   };
 
   getBalances = async () => {
