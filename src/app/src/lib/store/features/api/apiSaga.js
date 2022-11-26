@@ -1,6 +1,6 @@
 import api from "lib/api";
 import { takeEvery, put, all, select, delay, apply } from "redux-saga/effects";
-import { setUserId, resetData } from "./apiSlice";
+import { setUserAddress, resetData } from "./apiSlice";
 
 function* handleSingleMessageSaga({ payload }) {
   let { op, data } = payload;
@@ -17,7 +17,7 @@ function* delegateAuthChangeSaga({ type, payload }) {
   }
 
   if (type === "auth/signIn" || type === "auth/signOut") {
-    yield put(setUserId((payload && payload.id) || null));
+    yield put(setUserAddress((payload && payload.id) || null));
   }
 }
 

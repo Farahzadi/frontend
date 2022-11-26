@@ -9,7 +9,7 @@ import {
   currentMarketSelector,
   unbroadcastedSelector,
   lastPricesSelector,
-  userIdSelector,
+  userAddressSelector,
 } from "lib/store/features/api/apiSlice";
 import { Button } from "react-bootstrap";
 
@@ -720,7 +720,7 @@ const mapStateToProps = (state) => ({
   currentMarket: currentMarketSelector(state),
   unbroadcasted: unbroadcastedSelector(state),
   lastPrices: lastPricesSelector(state),
-  userId: userIdSelector(state),
+  userAddress: userAddressSelector(state),
 });
 
 export default connect(mapStateToProps)(Footer);

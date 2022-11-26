@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   bridgeReceiptsSelector,
-  userIdSelector,
+  userAddressSelector,
   clearBridgeReceipts,
 } from "lib/store/features/api/apiSlice";
 import api from "lib/api";
@@ -13,17 +13,17 @@ const BridgeReceipts = (props) => {
   const [finalReceipts, setFinalReceipts] = useState([]);
 
   const receipts = useSelector(bridgeReceiptsSelector);
-  const userId = useSelector(userIdSelector);
+  const userAddress = useSelector(userAddressSelector);
   const dispatch = useDispatch();
 
   useEffect(() => {
     filterReceipts();
-  }, [userId, receipts]);
+  }, [userAddress, receipts]);
 
   const filterReceipts = () => {
     if (receipts) {
       const final = Array.isArray(receipts)
-        ? receipts.filter((r) => r.userId === userId)
+        ? receipts.filter((r) => r.userAddress === userAddress)
         : [];
       setFinalReceipts(final);
     }
@@ -38,7 +38,7 @@ const BridgeReceipts = (props) => {
       <h6 className="bridge_box_receipt_head">
         {api._accountState !== null ? finalReceipts.length : null} receipts (
         <span
-          onClick={() => dispatch(clearBridgeReceipts(userId))}
+          onClick={() => dispatch(clearBridgeReceipts(userAddress))}
           className="bridge_link"
         >
           Clear All
