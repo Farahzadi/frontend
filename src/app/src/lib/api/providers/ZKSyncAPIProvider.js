@@ -292,7 +292,8 @@ export default class ZKSyncAPIProvider extends APIProvider {
   };
 
   getAccountState = async () => {
-    return this.syncWallet?.getAccountState() ?? {};
+    let accountState = (await this.syncWallet?.getAccountState()) ?? {};
+    return accountState;
   };
 
   handleBridgeReceipt = (
