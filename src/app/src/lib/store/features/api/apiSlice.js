@@ -79,7 +79,7 @@ export const apiSlice = createSlice({
   initialState: {
     network: {
       name: "zksyncv1_goerli",
-      hasBridge: false,
+      hasBridge: true,
     },
     providerState: "DISCONNECTED",
     userId: null,
@@ -105,12 +105,10 @@ export const apiSlice = createSlice({
   },
   reducers: {
     _connected_ws(state, { payload }) {
-      console.log("UUID", payload.uuid);
       api.ws.uuid = payload.uuid;
       state.uuid = payload.uuid;
     },
     _login_post(state, { payload }) {
-      console.log("LOGIN CAME", payload);
       sessionStorage.setItem("access_token", payload.access_token);
       // payload.user_id
       apiSlice.caseReducers._user_orders(state, {
@@ -119,12 +117,10 @@ export const apiSlice = createSlice({
       apiSlice.caseReducers._user_fills(state, { payload: payload.user_fills });
     },
     _markets_info_get(state, { payload }) {
-      console.log("info came", payload);
       state.marketinfo = payload.info[0];
     },
     _markets_stats_ws(state, { payload }) {
       if (!payload) return;
-      // console.log("markets stats", payload);
       payload.map(translators.markets_stats).forEach((update) => {
         const { market, price, priceChange: change } = update;
         if (api.validMarkets[state.network.name].includes(market)) {
@@ -141,7 +137,6 @@ export const apiSlice = createSlice({
       });
     },
     _markets_config_get(state, { payload }) {
-      console.log("config came", payload);
       state.config = payload.config.map(translators.markets_config)[0];
     },
     // _swapfills(state, { payload }) {
@@ -170,7 +165,6 @@ export const apiSlice = createSlice({
       });
     },
     _user_fills(state, { payload }) {
-      console.log("user fills", payload);
       payload
         .map(translators.fills)
         .filter((fill) => fill.chainId === state.network.name)
@@ -185,7 +179,6 @@ export const apiSlice = createSlice({
       apiSlice.caseReducers._user_fills(state, { payload });
     },
     _user_fills_update_ws(state, { payload }) {
-      console.log("user fills update", payload);
       payload.map(translators.fills).forEach((update) => {
         let transactionHash;
         const fillId = update.id;
@@ -199,7 +192,6 @@ export const apiSlice = createSlice({
       });
     },
     _user_orders(state, { payload }) {
-      console.log("user orders...", payload);
       if (!state.userId) return;
       payload
         .map(translators.userOrder)
@@ -212,16 +204,13 @@ export const apiSlice = createSlice({
         });
     },
     _user_order_post(state, { payload }) {
-      toast.info("order post came");
       apiSlice.caseReducers._user_orders(state, { payload: [payload] });
     },
     _user_order_delete(state, { payload }) {
-      console.log("user order delete came", payload);
       if (payload.success && state.userOrders[payload.id])
         state.userOrders[payload.id].status = "c";
     },
     _user_orders_delete(state, { payload }) {
-      console.log("user orders delete came", payload);
       for (const id of payload.ids)
         if (payload.success && state.userOrders[id])
           state.userOrders[id].status = "c";
@@ -342,12 +331,8 @@ export const apiSlice = createSlice({
         }
       });
     },
-    _markets_subscription_post(state, { payload }) {
-      // console.log("SUB POST", payload);
-    },
-    _markets_subscription_delete(state, { payload }) {
-      // console.log("SUB DELETE", payload);
-    },
+    _markets_subscription_post(state, { payload }) {},
+    _markets_subscription_delete(state, { payload }) {},
     _orderbook(state, { payload }) {
       state.orders = payload.map(translators.orderBook).reduce((res, order) => {
         res[order.price] = order;
@@ -355,11 +340,9 @@ export const apiSlice = createSlice({
       }, {});
     },
     _orderbook_ws(state, { payload }) {
-      // console.log("orderbook", payload);
       apiSlice.caseReducers._orderbook(state, { payload });
     },
     _orders_get(state, { payload }) {
-      // console.log("orders came", payload);
       apiSlice.caseReducers._orderbook(state, { payload: payload.orderbook });
     },
     setBalances(state, { payload }) {

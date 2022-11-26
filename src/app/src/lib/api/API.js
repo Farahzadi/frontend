@@ -54,7 +54,6 @@ export default class API extends Emitter {
   }
 
   setNetwork = async (network) => {
-    console.log('netwoekkkkk', network);
     if (this.network === network) return;
     await this.signOut();
     this.network = network;
@@ -87,7 +86,6 @@ export default class API extends Emitter {
   };
 
   setAPIProvider = async (network) => {
-    console.log('sfsdfdsfdsdsfdsf', network);
     if (this.apiProvider?.NETWORK === network) return;
     this.apiProvider?.stop();
 
