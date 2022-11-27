@@ -8,8 +8,9 @@ const CustomizedHead = ({
   relativePath = '',
   imgUrl = '/images/logo/Dexpresso_horizontal.png',
 }) => {
-    const imgSrc = process.env.BASE_URL + imgUrl;
-    const url = process.env.BASE_URL + relativePath;
+    const baseUrl = NEXT_PUBLIC_BASE_URL || '';
+    const imgSrc = baseUrl+ imgUrl;
+    const url = baseUrl+ relativePath;
   return (
     <Head>
       <meta property='og:title' content={title} />
