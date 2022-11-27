@@ -12,7 +12,7 @@ import {
 } from "lib/store/features/api/apiSlice";
 import { formatUSD } from "lib/utils";
 import api from "lib/api";
-import logo from "../../../../src/assets/images/logo.png";
+import logo from "../../../../src/assets/images/LogoMarkCremeLight.svg";
 
 const DropdownDisplay = styled.div`
   position: absolute;
@@ -315,7 +315,7 @@ export const AccountDropdown = () => {
           )}
         </DropdownContent>
         <DropdownFooter>
-          <SignOutButton onClick={() => api.signOut()}>
+          <SignOutButton onClick={() => api.disconnectWallet()}>
             <IoMdLogOut style={{ position: "relative", top: -1 }} /> Disconnect
           </SignOutButton>
         </DropdownFooter>

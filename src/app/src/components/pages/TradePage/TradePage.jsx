@@ -25,17 +25,20 @@ import {
   currentMarketSelector,
   setCurrentMarket,
   uuidSelector,
-  // resetData,
+  resetData,
+  providerStateSelector,
 } from "lib/store/features/api/apiSlice";
 import { userSelector } from "lib/store/features/auth/authSlice";
 import "./style.css";
 import api from "lib/api";
+import APIProvider from "lib/api/providers/APIProvider";
 
 const TradePage = () => {
   const [marketDataTab, updateMarketDataTab] = useState("pairs");
   const [rangePrice, setRangePrice] = useState(0);
   const user = useSelector(userSelector);
   const network = useSelector(networkSelector);
+  const providerState = useSelector(providerStateSelector);
   const currentMarket = useSelector(currentMarketSelector);
   const userOrders = useSelector(userOrdersSelector);
   const userFills = useSelector(userFillsSelector);
@@ -54,12 +57,6 @@ const TradePage = () => {
   const history = useHistory();
   const location = useLocation();
 
-  const pushToBridgeMaybe = (state) => {
-    if (!state.id && !/^\/bridge(\/.*)?/.test(location.pathname)) {
-      history.push("/bridge");
-    }
-  };
-
   useEffect(() => {
     if (!uuid) return;
 
@@ -77,9 +74,10 @@ const TradePage = () => {
     };
   }, [uuid, currentMarket]);
 
-  useEffect(() => {
-    if (uuid) api.signIn(network);
-  }, [uuid, network]);
+  // useEffect(() => {
+  //   if (uuid && providerState === APIProvider.State.CONNECTED)
+  //     api.connectWallet();
+  // }, [uuid, network, providerState]);
 
   const updateMarketChain = (market) => {
     dispatch(setCurrentMarket(market));
@@ -215,10 +213,7 @@ const TradePage = () => {
                           signInHandler={() => {
                             setIsLoading(true);
                             api
-                              .signIn(network)
-                              .then((state) => {
-                                pushToBridgeMaybe(state);
-                              })
+                              .connectWallet()
                               .finally(() => setIsLoading(false));
                           }}
                           user={user}

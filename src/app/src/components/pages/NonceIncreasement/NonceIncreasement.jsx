@@ -8,23 +8,7 @@ import api from "lib/api";
 import { Button } from "react-bootstrap";
 import { networkSelector } from "lib/store/features/api/apiSlice";
 import { toast } from "react-toastify";
-
-import Box from "@mui/material/Box";
-import Backdrop from "@mui/material/Backdrop";
-
 import { Modal } from "../../atoms/Modal";
-
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
 
 const NonceIncreasement = () => {
   const [termsCheck, setTersmsCheck] = useState(false);
@@ -42,15 +26,7 @@ const NonceIncreasement = () => {
 
   const connect = () => {
     setConnecting(true);
-    api
-      .signIn(network)
-      .then((state) => {
-        if (!state.id && !/^\/bridge(\/.*)?/.test(location.pathname)) {
-          history.push("/bridge");
-        }
-        setConnecting(false);
-      })
-      .catch(() => setConnecting(false));
+    api.connectWallet().finally(() => setConnecting(false));
   };
 
   const acceptNonce = () => {

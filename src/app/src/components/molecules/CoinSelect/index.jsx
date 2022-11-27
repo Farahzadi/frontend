@@ -10,7 +10,7 @@ import { networkSelector } from 'lib/store/features/api/apiSlice';
 import { userSelector } from 'lib/store/features/auth/authSlice';
 import { FiChevronDown } from 'react-icons/fi';
 import { styled } from '@mui/material/styles';
-import { ClickAwayListener, Popper } from '@material-ui/core';
+import { ClickAwayListener, Popper } from '@mui/material';
 
 const CoinBtn = styled('button')(() => ({
   width: '175px',

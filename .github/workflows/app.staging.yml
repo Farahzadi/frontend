@@ -34,6 +34,10 @@ jobs:
 
     - name: push docker image to package registry
       run: docker push reg.dexpresso.exchange/staging/app:latest
+
+    - name: clean up
+      run: docker system prune -f
+  
   
   deploy:
     runs-on: self-hosted

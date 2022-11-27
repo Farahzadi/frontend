@@ -324,6 +324,10 @@
   justify-content: center;
   border-radius: 24px;
 }
+.bright-bg {
+  background-color: #dadbdc;
+  color: #2f353a;
+}
 .fa-check-double {
   color: #28a745 !important;
 }
@@ -485,7 +489,7 @@
     display: block;
     margin: 30px;
     padding: 10px 2%;
-    background: #5e35b1;
+    background: var(--dexpressoPrimery);
     width: 480px;
     max-width: 90%;
     border-radius: 24px;
@@ -537,6 +541,7 @@
   }
   .accept-btn {
     display: block;
+    margin-bottom: 2rem;
   }
   .accept-btn button {
     width: 100%;
