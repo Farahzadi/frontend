@@ -1,12 +1,12 @@
-import React from 'react';
-import { ToastContainer } from 'react-toastify';
-import { PersistGate } from 'redux-persist/integration/react';
-import { Provider as ReduxProvider } from 'react-redux';
-import { ThemeProvider } from '@mui/material';
-import theme from 'lib/muiTheme';
-import store, { persistor } from 'lib/store';
+import React from "react";
+import { ToastContainer } from "react-toastify";
+import { PersistGate } from "redux-persist/integration/react";
+import { Provider as ReduxProvider } from "react-redux";
+import { ThemeProvider } from "@mui/material";
+import theme from "lib/muiTheme";
+import store, { persistor } from "lib/store";
 
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 
 function Provider({ children }) {
   return (

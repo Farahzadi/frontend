@@ -489,7 +489,7 @@
     display: block;
     margin: 30px;
     padding: 10px 2%;
-    background: #5e35b1;
+    background: var(--dexpressoPrimery);
     width: 480px;
     max-width: 90%;
     border-radius: 24px;
@@ -541,6 +541,7 @@
   }
   .accept-btn {
     display: block;
+    margin-bottom: 2rem;
   }
   .accept-btn button {
     width: 100%;

@@ -22,7 +22,7 @@ const AppRoutes = () => {
       <Router>
         <Switch>
           {routes.map(({ path, comp }) => (
-            <Route exact path={path} component={comp} />
+            <Route exact key={path} path={path} component={comp} />
           ))}
         </Switch>
       </Router>

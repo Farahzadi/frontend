@@ -20,6 +20,7 @@ import apiReducer, {
   setSelectedPrice,
   clearUuid,
   setNetworkList,
+  setProviderState,
 } from "lib/store/features/api/apiSlice";
 import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 import api from "lib/api";
@@ -93,8 +94,13 @@ api.on("signOut", () => {
   store.dispatch(signOut());
 });
 
-api.on("providerChange", (network) => {
-  store.dispatch(setNetwork(network));
+api.on("networkChange", (payload) => {
+  store.dispatch(setNetwork(payload));
+});
+
+api.on("providerStateChange", (state) => {
+  console.log("PROVIDER STATE CHANGE", state);
+  store.dispatch(setProviderState(state));
 });
 
 api.on("message", (op, data) => {
@@ -117,7 +123,7 @@ api.on("close", () => {
   store.dispatch(clearUuid());
 });
 
-api.on('setNetworkList', (networks) => {
+api.on("setNetworkList", (networks) => {
   store.dispatch(setNetworkList(networks));
-})
+});
 export default store;

@@ -10,6 +10,7 @@ import {
   unbroadcastedSelector,
   lastPricesSelector,
   userIdSelector,
+  networkSelector,
 } from "lib/store/features/api/apiSlice";
 import { Modal } from "../../atoms/Modal";
 
@@ -264,7 +265,7 @@ class Footer extends React.Component {
 
   renderFillTable(fills) {
     let baseExplorerUrl;
-    switch (api.apiProvider.network) {
+    switch (this.props.network) {
       // case 1001:
       //   baseExplorerUrl = "https://goerli.voyager.online/tx/";
       //   break;
@@ -555,8 +556,7 @@ class Footer extends React.Component {
 
   render() {
     let explorerLink;
-    console.log(api);
-    switch (api.apiProvider.network) {
+    switch (this.props.network) {
       case "zksyncv1_goerli":
         explorerLink =
           "https://goerli.zkscan.io/explorer/accounts/" +
@@ -703,6 +703,7 @@ const mapStateToProps = (state) => ({
   unbroadcasted: unbroadcastedSelector(state),
   lastPrices: lastPricesSelector(state),
   userId: userIdSelector(state),
+  network: networkSelector(state),
 });
 
 export default connect(mapStateToProps)(Footer);
