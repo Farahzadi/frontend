@@ -10,25 +10,9 @@ import {
   unbroadcastedSelector,
   lastPricesSelector,
   userIdSelector,
+  networkSelector,
 } from "lib/store/features/api/apiSlice";
-import { Button } from "react-bootstrap";
-
-import Box from "@mui/material/Box";
-import Backdrop from "@mui/material/Backdrop";
-
-import Modal from "@mui/material/Modal";
-
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
+import { Modal } from "../../atoms/Modal";
 
 class Footer extends React.Component {
   constructor(props) {
@@ -281,7 +265,7 @@ class Footer extends React.Component {
 
   renderFillTable(fills) {
     let baseExplorerUrl;
-    switch (api.apiProvider.network) {
+    switch (this.props.network) {
       // case 1001:
       //   baseExplorerUrl = "https://goerli.voyager.online/tx/";
       //   break;
@@ -572,8 +556,7 @@ class Footer extends React.Component {
 
   render() {
     let explorerLink;
-    console.log(api);
-    switch (api.apiProvider.network) {
+    switch (this.props.network) {
       case "zksyncv1_goerli":
         explorerLink =
           "https://goerli.zkscan.io/explorer/accounts/" +
@@ -656,46 +639,19 @@ class Footer extends React.Component {
     return (
       <>
         <Modal
-          aria-labelledby="spring-modal-title"
-          aria-describedby="spring-modal-description"
-          open={this.state.openModal}
+          show={this.state.openModal}
+          actionText='Yes'
+          closeText='No'
+          alert={'Are you sure you want to delete all orders?'}
           onClose={this.handleClose}
-          closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
+          onSubmit={() => {
+            this.handleClose();
+            api.cancelAllOrders();
           }}
         >
-          <Box sx={style}>
-            <h5 className="text-center py-3">
-              Are you sure you want to delete all orders?
-            </h5>
-
-            <div className="d-flex w-100 text-center justify-content-around">
-              <Button
-                size="lg"
-                variant="outline-success "
-                onClick={() => {
-                  this.handleClose();
-                  api.cancelAllOrders();
-                }}
-              >
-                Yes
-              </Button>
-              <Button
-                size="lg"
-                variant="outline-danger "
-                onClick={() => this.handleClose()}
-              >
-                No
-              </Button>
-            </div>
-          </Box>
         </Modal>
-        \
         <div className="user-info">
           <div className="user-info-container ">
-            <hr />
             <div>
               <div className="ft_tabs">
                 <strong
@@ -747,6 +703,7 @@ const mapStateToProps = (state) => ({
   unbroadcasted: unbroadcastedSelector(state),
   lastPrices: lastPricesSelector(state),
   userId: userIdSelector(state),
+  network: networkSelector(state),
 });
 
 export default connect(mapStateToProps)(Footer);

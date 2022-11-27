@@ -9,6 +9,9 @@
   --dexpressoBackground: #071428;
   --dexpressoTableBackground: #14243c;
   --dexpresssoTextPrimery:#B2BFC7;
+  --dangerColor: 140, 41, 32;
+  --successColor: 0, 123, 95;
+  --neutralColor: 252, 245, 237;
 }
 
 h1,
@@ -24,8 +27,10 @@ p {
 
 body {
   height: 100vh;
-  font-size: 0.9rem;
+  color: rgba( var(--neutralColor), 1);
   background-color: #100c22;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
 }
 
 html {
@@ -50,20 +55,6 @@ html {
   cursor: pointer;
 }
 
-.zig-dropdown .rc-dropdown-menu > .rc-dropdown-menu-item:hover,
-.zig-dropdown .rc-dropdown-menu > .rc-dropdown-menu-item-active,
-.zig-dropdown .rc-dropdown-menu > .rc-dropdown-menu-item-selected {
-  background-color: #c0cff8;
-  color: #43f;
-}
-
-@font-face {
-  font-family: "Iceland";
-  src: url("./assets/fonts/Iceland.woff2") format("woff2"),
-    url("./assets/fonts/Iceland.woff") format("woff");
-  font-weight: normal;
-  font-style: normal;
-}
 
 @media screen and (min-width: 1800px) {
   html {
@@ -73,5 +64,5 @@ html {
 
 /* WalletConnect customization */
 .walletconnect-modal__base div:nth-child(3) {
-  overflow-y: scroll;
+  /* overflow-y: scroll; */
 }

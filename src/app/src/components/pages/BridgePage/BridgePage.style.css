@@ -322,8 +322,10 @@
   height: 100%;
   max-width: 97%;
   justify-content: center;
-  background-color: #dadbdc;
   border-radius: 24px;
+}
+.bright-bg {
+  background-color: #dadbdc;
   color: #2f353a;
 }
 .fa-check-double {
@@ -359,7 +361,6 @@
 }
 .bridge_box_right_content p {
   margin-bottom: 3px;
-  color: #5a5a5a;
   display: flex;
   justify-content: center;
 }
@@ -560,5 +561,5 @@
   }
   .bridge_box_parent{
     max-width: 100%;
-  } 
+  }
 }
