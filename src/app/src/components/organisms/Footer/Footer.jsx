@@ -12,24 +12,7 @@ import {
   userIdSelector,
   networkSelector,
 } from "lib/store/features/api/apiSlice";
-import { Button } from "react-bootstrap";
-
-import Box from "@mui/material/Box";
-import Backdrop from "@mui/material/Backdrop";
-
 import { Modal } from "../../atoms/Modal";
-
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
 
 class Footer extends React.Component {
   constructor(props) {
@@ -669,7 +652,6 @@ class Footer extends React.Component {
         </Modal>
         <div className="user-info">
           <div className="user-info-container ">
-            <hr />
             <div>
               <div className="ft_tabs">
                 <strong

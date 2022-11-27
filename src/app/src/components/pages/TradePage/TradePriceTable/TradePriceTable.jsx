@@ -157,7 +157,7 @@ class TradePriceTable extends React.Component {
                 <div
                   key={i}
                   style={rowStyle}
-                  className={` ${i <= this.state.rengId ? "bg-range" : ""} 
+                  className={` ${i <= this.state.rengId ? "bg-range" : ""}
                  table-section`}
                   onClick={() => {
                     onClickRow(data);
@@ -223,7 +223,7 @@ class TradePriceTable extends React.Component {
                   <div
                     key={i}
                     style={rowStyle}
-                    className={` ${i <= this.state.rengId ? "bg-range" : ""} 
+                    className={` ${i <= this.state.rengId ? "bg-range" : ""}
                   table-section`}
                     onClick={() => {
                       onClickRow(data);

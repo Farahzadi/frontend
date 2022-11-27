@@ -118,7 +118,6 @@
     width: 100%;
     height: calc(99% - 410px);
     min-height: 30%;
-    
 
 }
 .price_tables{
@@ -140,11 +139,11 @@
 .user-info-container::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   .user-info-container::-webkit-scrollbar-track {
     background-color: #383b47;
   }
-  
+
   .user-info-container::-webkit-scrollbar-thumb {
     background-color: #898b91;
     border: 1px solid rgba(255,255,255,0.2);
@@ -207,9 +206,9 @@
         height: 100%;
     }
     /* .trade-price-container {
-        flex-direction: column; 
+        flex-direction: column;
         width: 100%;
-  
+
     } */
     .bids-trade-price-buy {
         width: 100%;
@@ -235,7 +234,7 @@
     display: flex;
     align-items: center;
     color: var(--dexpresssoTextPrimery);
-    padding: 20px;
+    padding: 0.82rem 1.25rem;
 }
 
 .trade-price-head-third strong {

@@ -50,6 +50,10 @@ export default class API extends Emitter {
     this.apiUrl = apiUrl;
     this.currencies = currencies;
     this.validMarkets = validMarkets;
+    this.axiosInstance = axios.create({
+      baseURL: apiUrl,
+      timeout: 3000,
+    });
     this.signInMessage = signInMessage ?? "Login to Dexpresso";
   }
 
@@ -716,6 +720,11 @@ export default class API extends Emitter {
     await this.apiProvider.submitSwap(product, side, price, amount);
   };
 
+  getNetworks = () => {
+    this.axiosInstance.get("/networks").then((res) => {
+      this.emit("setNetworkList", res.data.networks);
+    });
+  };
   isSignedIn = () => {
     return sessionStorage.getItem("access_token") !== null;
   };

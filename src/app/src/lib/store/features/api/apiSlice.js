@@ -77,6 +77,7 @@ const translators = {
 export const apiSlice = createSlice({
   name: "api",
   initialState: {
+    networks: [],
     network: {
       name: "zksyncv1_goerli",
       hasBridge: true,
@@ -375,6 +376,9 @@ export const apiSlice = createSlice({
     setProviderState(state, { payload }) {
       state.providerState = payload;
     },
+    setNetworkList(state, { payload }) {
+      state.networks = payload;
+    },
     rangePrice(state, { payload }) {
       state.rangePrice = payload;
     },
@@ -473,6 +477,7 @@ export const apiSlice = createSlice({
 
 export const {
   setNetwork,
+  setNetworkList,
   setProviderState,
   clearBridgeReceipts,
   setBalances,
@@ -515,6 +520,8 @@ export const bridgeReceiptsStatusSelector = (state) =>
   state.api.bridgeReceiptsStatus;
 export const balancesSelector = (state) =>
   state.api.balances[makeScope(state.api)] || {};
+
+export const networkListSelector = (state) => state.api.networks;
 
 export const handleMessage = createAction("api/handleMessage");
 
