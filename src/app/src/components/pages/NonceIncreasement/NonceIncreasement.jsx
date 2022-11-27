@@ -42,15 +42,7 @@ const NonceIncreasement = () => {
 
   const connect = () => {
     setConnecting(true);
-    api
-      .signIn(network)
-      .then((state) => {
-        if (!state.id && !/^\/bridge(\/.*)?/.test(location.pathname)) {
-          history.push("/bridge");
-        }
-        setConnecting(false);
-      })
-      .catch(() => setConnecting(false));
+    api.connectWallet().finally(() => setConnecting(false));
   };
 
   const acceptNonce = () => {

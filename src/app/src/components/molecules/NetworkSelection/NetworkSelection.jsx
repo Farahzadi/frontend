@@ -9,12 +9,9 @@ const NetworkSelection = () => {
   const [netwokName, setNetwokName] = useState("test");
 
   const network = useSelector(networkSelector);
-  const selectNetwork = (id) => {
-    api.setAPIProvider(id);
-    api.refreshNetwork().catch((err) => {
-      console.log(err);
-    });
-    if (id === "zksyncv1_goerli") {
+  const selectNetwork = async (network) => {
+    await api.setNetwork(network);
+    if (network === "zksyncv1_goerli") {
       return setNetwokName("zkSync(V1) - Goerli");
     }
     setNetwokName("zkSync(V1) - Mainnet");

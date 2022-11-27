@@ -146,7 +146,7 @@ const Bridge = () => {
       }
     };
 
-    if (api.apiProvider.syncWallet && transfer.type === "withdraw") {
+    if (api.apiProvider?.syncWallet && transfer.type === "withdraw") {
       setFee(null);
       api
         .withdrawL2Fee(details.currency)
@@ -169,7 +169,7 @@ const Bridge = () => {
   };
 
   const disconnect = () => {
-    api.signOut().catch((err) => console.log(err));
+    api.disconnectWallet().catch((err) => console.log(err));
   };
 
   const ethLayer1Header = (
@@ -339,7 +339,7 @@ const Bridge = () => {
                 className="bg_btn bg_btn-transfer"
                 text="CONNECT WALLET"
                 img={darkPlugHead}
-                onClick={() => api.signIn(network)}
+                onClick={() => api.connectWallet()}
               />
             )}
             {user.address && balances[swapDetails.currency] && !hasAllowance && (
@@ -668,7 +668,7 @@ const Bridge = () => {
                   className="bg_btn bg_btn-transfer"
                   text="CONNECT WALLET"
                   img={darkPlugHead}
-                  onClick={() => api.signIn(network)}
+                  onClick={() => api.connectWallet()}
                 />
               )}
               {user.address && balances[swapDetails.currency] && !hasAllowance && (

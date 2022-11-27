@@ -7,7 +7,6 @@ import api from "../../../lib/api";
 import {useHistory, useLocation} from "react-router-dom";
 
 const ConnectWalletButton = () => {
-  const network = useSelector(networkSelector);
   const [isLoading, setIsLoading] = useState(false)
   const history = useHistory()
   const location = useLocation()
@@ -25,11 +24,7 @@ const ConnectWalletButton = () => {
     img={darkPlugHead}
     onClick={() => {
       setIsLoading(true)
-      api.signIn(network)
-        .then(state => {
-          pushToBridgeMaybe(state)
-        })
-        .finally(() => setIsLoading(false))
+      api.connectWallet().finally(() => setIsLoading(false))
     }}
   />
 }

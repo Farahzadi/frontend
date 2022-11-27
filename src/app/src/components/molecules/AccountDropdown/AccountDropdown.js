@@ -315,7 +315,7 @@ export const AccountDropdown = () => {
           )}
         </DropdownContent>
         <DropdownFooter>
-          <SignOutButton onClick={() => api.signOut()}>
+          <SignOutButton onClick={() => api.disconnectWallet()}>
             <IoMdLogOut style={{ position: "relative", top: -1 }} /> Disconnect
           </SignOutButton>
         </DropdownFooter>

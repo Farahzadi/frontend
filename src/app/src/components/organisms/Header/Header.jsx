@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Button, Dropdown, AccountDropdown, Menu, MenuItem } from "components";
 import { userSelector } from "lib/store/features/auth/authSlice";
-import { networkSelector } from "lib/store/features/api/apiSlice";
+import { networkConfigSelector } from "lib/store/features/api/apiSlice";
 import api from "lib/api";
 import logo from "assets/images/LogoMarkCremeLight.svg";
 import menu from "assets/icons/menu.png";
@@ -17,16 +17,16 @@ export const Header = (props) => {
   const [show, setShow] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const user = useSelector(userSelector);
-  const network = useSelector(networkSelector);
-  const history = useHistory();
-  const location = useLocation();
+  const networkConfig = useSelector(networkConfigSelector);
+  // const history = useHistory();
+  // const location = useLocation();
 
-  const hasBridge = api.isImplemented("depositL2");
+  const hasBridge = networkConfig.hasBridge;
 
   const handleMenu = ({ key }) => {
     switch (key) {
       case "signOut":
-        api.signOut();
+        api.disconnectWallet();
         return;
       default:
         throw new Error("Invalid dropdown option");
@@ -41,15 +41,9 @@ export const Header = (props) => {
 
   const connect = () => {
     setConnecting(true);
-    api
-      .signIn(network)
-      .then((state) => {
-        if (!state.id && !/^\/bridge(\/.*)?/.test(location.pathname)) {
-          history.push("/bridge");
-        }
-        setConnecting(false);
-      })
-      .catch(() => setConnecting(false));
+    api.connectWallet().finally(() => {
+      setConnecting(false);
+    });
   };
 
   return (
