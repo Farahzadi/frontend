@@ -19,11 +19,13 @@ import RoadMap from '../components/Sections/RoadMap/Roadmap';
 import Background from '../components/Sections/Background/Background';
 import ContactBar from '../components/ContactBar/ContactBar';
 import { BGContext } from '../contexts/BGContext';
+import CustomizedHead from '../components/Head/Head';
 
 export default function Home() {
   const { isAnimated } = useContext(BGContext);
   return (
     <>
+      <CustomizedHead />
       <Background />
       <div className={isAnimated ? 'is-visible' : 'is-hidden'}>
         <div className='stars-bg'>
