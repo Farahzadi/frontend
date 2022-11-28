@@ -1,209 +1,190 @@
-import { useSelector } from "react-redux";
-import React, { useState, useEffect } from "react";
-import { IoMdLogOut } from "react-icons/io";
-import { AiOutlineCaretDown } from "react-icons/ai";
-import styled, { css } from "@xstyled/styled-components";
-import { useCoinEstimator } from "components";
-import Loader from "react-loader-spinner";
-import { userSelector } from "lib/store/features/auth/authSlice";
+import { useSelector } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { IoMdLogOut } from 'react-icons/io';
+import { AiOutlineCaretDown } from 'react-icons/ai';
+import { styled } from '@mui/material/styles';
+import { useCoinEstimator } from 'components';
+import Loader from 'react-loader-spinner';
+import { userSelector } from 'lib/store/features/auth/authSlice';
 import {
   networkSelector,
   balancesSelector,
-} from "lib/store/features/api/apiSlice";
-import { formatUSD } from "lib/utils";
-import api from "lib/api";
-import logo from "../../../../src/assets/images/LogoMarkCremeLight.svg";
+} from 'lib/store/features/api/apiSlice';
+import { formatUSD } from 'lib/utils';
+import api from 'lib/api';
+import logo from '../../../../src/assets/images/LogoMarkCremeLight.svg';
+import { Button } from '@mui/material';
 
-const DropdownDisplay = styled.div`
-  position: absolute;
-  z-index: 99;
-  border-radius: 8px;
-  transition: all 0.2s ease-in-out;
-  box-shadow: 0 10px 20px 10px rgba(0, 0, 0, 0.3);
-  margin-top: 10px;
-  width: 360px;
-  height: 400px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(4px);
-  top: 100%;
-  right: 0;
-  transform: translateY(20px);
-  opacity: 0;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-`;
+const DropdownDisplay = styled('div')(({ show, theme }) => ({
+  position: 'absolute',
+  zIndex: 99,
+  borderRadius: '8px',
+  transition: 'all 0.2s ease-in-out',
+  boxShadow: '0 10px 20px 10px rgba(0, 0, 0, 0.3)',
+  width: '360px',
+  background: theme.palette.secondary.dark,
+  backdropFilter: 'blur(4px)',
+  transform: show ? 'translateY(0)' : 'translateY(20px)',
+  top: '100%',
+  right: 0,
+  opacity: show ? 1 : 0,
+  pointerEvents: show ? 'all': 'none',
+  minHeight: '400px',
+  display: 'flex',
+  flexDirection: 'column',
+  border: `1px solid ${theme.palette.primary.main}`,
+}));
 
-const DropdownButton = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 78px;
-  transition: all 0.12s ease-in-out;
-  color: rgba(255, 255, 255, 0.4);
-  user-select: none;
-  cursor: pointer;
-  font-weight: bold;
-  padding: 0 16px;
-  &:focus {
-    outline: 0;
+const DropdownButton = styled('div')(({}) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  height: '78px',
+  transition: 'all 0.12s ease-in-out',
+  color: 'rgba(255, 255, 255, 0.4)',
+  userSelect: 'none',
+  cursor: 'pointer',
+  fontWeight: 'bold',
+  padding: '0 16px',
+  '&:focus': {
+    outline: 0,
+  },
+  '&:hover': {
+    color: 'rgba(255, 255, 255, 0.6)',
+  },
+  '& svg': {
+    marginLeft: '5px',
+    fontSize: '13px',
+  },
+}));
+
+const AvatarImg = styled('img')(({}) => ({
+  width: '26px',
+  height: '26px',
+  borderRadius: '35px',
+  marginRight: '10px',
+}));
+const DropdownContainer = styled('div')(({}) => ({
+  position: 'relative',
+}));
+
+const DropdownHeader = styled('div')(({ theme }) => ({
+  padding: '20px',
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  '& h3': {
+    fontSize: '16px',
+    color: theme.palette.text.primary,
+  },
+}));
+
+const WalletToggle = styled('ul')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  listStyleType: 'none',
+  border: `1.8px solid ${theme.palette.grey[100]}`,
+  borderRadius: '33px',
+  height: '33px',
+  padding: '3px',
+  fontSize: '0.75rem',
+}));
+
+const WalletToggleItem = styled('li')(({ selected, theme }) => ({
+  display: 'block',
+  width: '50px',
+  borderRadius: '33px',
+  padding: '3px',
+  textAlign: 'center',
+  userSelect: 'none',
+  cursor: 'pointer',
+  color: selected ? theme.palette.text.secondary : '',
+  background: selected ? theme.palette.grey[50] : '',
+}));
+
+const CurrencyList = styled('ul')(({theme}) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  justifyContent: 'flex-start',
+  listStyleType: 'none',
+  padding: 0,
+}));
+
+const CurrencyListItem = styled('li')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  lineHeight: '1.2',
+  fontSize: '14px',
+  padding: '12px 20px',
+  borderTop: `1px solid ${theme.palette.grey[800]}`,
+  width: '100%',
+  color: theme.palette.text.primary,
+  '& > .currency-icon': {
+    width: '24px',
+    height: '24px',
+    marginRight: '15px',
+    objectFit: 'contain',
+  },
+  '& > div strong': {
+    display: 'block',
+  },
+  '& > div small': {
+    fontSize: '12px',
+    color: theme.palette.grey[600],
+  },
+}));
+
+const DropdownContent = styled('div')(({}) => ({
+  flex: '1 1 auto',
+  overflowY: 'auto',
+}));
+
+const DropdownFooter = styled('div')(({theme}) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
+  borderTop: `1px solid ${theme.palette.grey[800]}`,
+  borderBottomRightRadius: '8px',
+  borderBottomLeftRadius: '8px',
+  overflow: 'hidden',
+  width: '100%',
+}));
+
+const SignOutButton = styled(Button)(({theme}) => ({
+  padding: '15px 20px',
+  cursor: 'pointer',
+  fontSize: '13px',
+  lineHeight: '1.1',
+  color: theme.palette.text.primary,
+  background: theme.palette.primary.dark,
+  borderLeft: '1px solid rgba(0, 0, 0, 0.1)',
+  '& svg': {
+    fontSize: '1rem',
+    marginInlineEnd: '4px'
+  },
+
+  '&:hover': {
+    background: theme.palette.error.main,
+    color: '#fff',
+  },
+
+  "&:active": {
+    background: theme.palette.error.main,
+    color: '#fff',
   }
+}));
 
-  &:hover {
-    color: rgba(255, 255, 255, 0.6);
-  }
-
-  svg {
-    margin-left: 5px;
-    font-size: 13px;
-  }
-`;
-
-const AvatarImg = styled.img`
-  width: 26px;
-  height: 26px;
-  border-radius: 35px;
-  margin-right: 10px;
-`;
-
-const DropdownContainer = styled.div`
-  position: relative;
-
-  ${(props) =>
-    props.show &&
-    css`
-      ${DropdownDisplay} {
-        pointer-events: all;
-        transform: translateY(0);
-        opacity: 1;
-      }
-    `}
-`;
-
-const DropdownHeader = styled.div`
-  padding: 20px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-
-  h3 {
-    font-size: 16px;
-    color: #3f4b6a;
-    text-shadow: 1px 1px 1px #eee;
-  }
-`;
-
-const WalletToggle = styled.ul`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  list-style-type: none;
-  border: 1px solid #666;
-  border-radius: 33px;
-  height: 33px;
-  padding: 3px;
-`;
-
-const WalletToggleItem = styled.li`
-  display: block;
-  width: 50px;
-  font-size: 12px;
-  border-radius: 33px;
-  padding: 3px;
-  text-align: center;
-  user-select: none;
-  cursor: pointer;
-
-  ${(props) =>
-    props.show &&
-    css`
-      background: #1c2231;
-      color: rgba(255, 255, 255, 0.7);
-    `}
-`;
-
-const CurrencyList = styled.ul`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  list-style-type: none;
-  padding: 0;
-`;
-
-const CurrencyListItem = styled.li`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  line-height: 1.2;
-  font-size: 14px;
-  padding: 12px 20px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  width: 100%;
-
-  > .currency-icon {
-    width: 24px;
-    height: 24px;
-    margin-right: 15px;
-    object-fit: contain;
-  }
-
-  > div strong {
-    display: block;
-  }
-
-  > div small {
-    font-size: 12px;
-    color: #666;
-  }
-`;
-
-const DropdownContent = styled.div`
-  flex: 1 1 auto;
-  overflow-y: auto;
-`;
-
-const DropdownFooter = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  border-bottom-right-radius: 8px;
-  border-bottom-left-radius: 8px;
-  overflow: hidden;
-  width: 100%;
-`;
-
-const SignOutButton = styled.div`
-  padding: 15px 20px;
-  cursor: pointer;
-  font-size: 13px;
-  line-height: 1.1;
-  background: rgba(0, 0, 0, 0.04);
-  border-left: 1px solid rgba(0, 0, 0, 0.1);
-  svg {
-    font-size: 15px;
-  }
-
-  &:hover {
-    background: #b66;
-    color: #fff;
-  }
-
-  &:active {
-    background: #c44;
-    color: #fff;
-  }
-`;
-
-const LoaderContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100px;
-`;
+const LoaderContainer = styled('div')(({theme}) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '100px',
+}));
 
 export const AccountDropdown = () => {
   const user = useSelector(userSelector);
@@ -214,6 +195,10 @@ export const AccountDropdown = () => {
   const [selectedLayer, setSelectedLayer] = useState(2);
   const coinEstimator = useCoinEstimator();
   const { profile } = user;
+  const layers = [
+    { id: 1, name: 'L1' },
+    { id: 2, name: 'L2' },
+  ];
 
   const wallet =
     selectedLayer === 1 ? balanceData.wallet : balanceData[network];
@@ -235,7 +220,7 @@ export const AccountDropdown = () => {
     }
   };
   window.onclick = function (event) {
-    if (!event.target.matches("DropdownButton")) {
+    if (!event.target.matches('DropdownButton')) {
       if (show === true) {
         setShow(!show);
       }
@@ -247,9 +232,9 @@ export const AccountDropdown = () => {
       onKeyDown={handleKeys}
       onClick={(e) => e.stopPropagation()}
       show={show}
-      tabIndex="0"
+      tabIndex='0'
     >
-      <DropdownButton onClick={() => setShow(!show)} tabIndex="0">
+      <DropdownButton onClick={() => setShow(!show)} tabIndex='0'>
         <AvatarImg
           src={profile.image != null ? profile.image : logo}
           alt={profile.name}
@@ -257,28 +242,25 @@ export const AccountDropdown = () => {
         {profile.name}
         <AiOutlineCaretDown />
       </DropdownButton>
-      <DropdownDisplay>
+      <DropdownDisplay show={show}>
         <DropdownHeader>
           <h3>Your Wallet</h3>
           <WalletToggle>
-            <WalletToggleItem
-              onClick={() => setSelectedLayer(1)}
-              show={selectedLayer === 1}
-            >
-              L1
-            </WalletToggleItem>
-            <WalletToggleItem
-              onClick={() => setSelectedLayer(2)}
-              show={selectedLayer === 2}
-            >
-              L2
-            </WalletToggleItem>
+            {layers.map(({ id, name }) => (
+              <WalletToggleItem
+                key={id}
+                onClick={() => setSelectedLayer(id)}
+                selected={selectedLayer === id}
+              >
+                {name}
+              </WalletToggleItem>
+            ))}
           </WalletToggle>
         </DropdownHeader>
         <DropdownContent>
           {!wallet && (
             <LoaderContainer>
-              <Loader type="TailSpin" color="#444" height={24} width={24} />
+              <Loader type='TailSpin' color='#444' height={24} width={24} />
             </LoaderContainer>
           )}
           {wallet && (
@@ -290,7 +272,7 @@ export const AccountDropdown = () => {
                 return (
                   <CurrencyListItem key={key}>
                     <img
-                      className="currency-icon"
+                      className='currency-icon'
                       src={api.currencies[ticker].image.default}
                       alt={ticker}
                     />
@@ -298,7 +280,7 @@ export const AccountDropdown = () => {
                       <strong>
                         {selectedLayer === 2
                           ? wallet[ticker].valueReadable.toPrecision(6)
-                          : wallet[ticker].valueReadable}{" "}
+                          : wallet[ticker].valueReadable}{' '}
                         {ticker}
                       </strong>
                       <small>
@@ -316,7 +298,7 @@ export const AccountDropdown = () => {
         </DropdownContent>
         <DropdownFooter>
           <SignOutButton onClick={() => api.disconnectWallet()}>
-            <IoMdLogOut style={{ position: "relative", top: -1 }} /> Disconnect
+            <IoMdLogOut /> Disconnect
           </SignOutButton>
         </DropdownFooter>
       </DropdownDisplay>
