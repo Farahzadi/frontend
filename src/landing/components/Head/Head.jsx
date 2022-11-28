@@ -8,7 +8,7 @@ const CustomizedHead = ({
   relativePath = '',
   imgUrl = '/images/logo/Dexpresso_horizontal.png',
 }) => {
-    const baseUrl = NEXT_PUBLIC_BASE_URL || '';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
     const imgSrc = baseUrl+ imgUrl;
     const url = baseUrl+ relativePath;
   return (
