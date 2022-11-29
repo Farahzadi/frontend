@@ -617,12 +617,11 @@ export default class ZKSyncAPIProvider extends APIProvider {
     // const walletAddress = await this.ethWallet.getAddress();
     // //fee is optional
     // const fee = zksync.utils.closestPackableTransactionFee(ethers.utils.parseEther('0.001'))
-
     //with zero amount for increase nonce
     const transfer = await this.syncWallet.syncTransfer({
-      to: this.syncWallet.address(),
+      to: this.syncWallet?.address(),
       token: "ETH",
-      amount: 0,
+      amount: "0",
     });
     const transferReceipt = await transfer.awaitReceipt();
 
