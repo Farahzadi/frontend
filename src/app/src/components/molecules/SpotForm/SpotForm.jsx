@@ -89,20 +89,6 @@ class SpotForm extends React.Component {
   }
 
   async buySellHandler(e) {
-    const { userOrders } = this.props;
-
-    if (Object.keys(userOrders).length > 0) {
-      for (let key in userOrders) {
-        if (
-          userOrders[key].status === "o" &&
-          userOrders[key].side !== this.props.side
-        ) {
-          toast.error("Your limit order(s) should fill first");
-          return;
-        }
-      }
-    }
-
     let amount, baseBalance, quoteBalance, newstate, orderPendingToast, price;
     // this variable will change when different fee method has developed
     let feeType = "withoutNBX";
