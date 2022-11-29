@@ -355,12 +355,12 @@ const TradePage = () => {
                     }
                     return (
                       <p>
-                        <code>v0.4.10</code>{" "}
+                        <code>v0.0.1</code>{" "}
                       </p>
                     );
                   }}
                 </CacheHandling>
-                <p>v0.4.10</p>{" "}
+                <p>v0.0.1</p>{" "}
               </div>
               <div className="head_left_socials my-1 my-lg-0 footer-icons">
                 {" "}

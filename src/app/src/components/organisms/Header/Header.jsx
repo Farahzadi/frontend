@@ -132,7 +132,7 @@ export const Header = (props) => {
             {/* {user.id ? */}
             <li>
               <NavLink exact to="/security" activeClassName="active_link">
-                security
+                Security
               </NavLink>
             </li>
             {/* :null} */}
