@@ -3,6 +3,7 @@ import Image from 'next/image';
 import styles from './Layer2Trade.module.css';
 import sampImg from '/public/images/site-samp.svg';
 import Link from 'next/link';
+import { getTradeLink } from '../../../utils/env';
 
 const Layer2Trade = () => {
   return (
@@ -21,7 +22,7 @@ const Layer2Trade = () => {
             of roughly ~10$. To do so head over to Dexpresso Bridge or zkSync
             bridge.
           </p>
-          <Link href={process.env.NEXT_PUBLIC_TRADE_APP_LINK}>
+          <Link href={getTradeLink()}>
             <button className={styles.tradeBtn} type='button'>
               TRAINING
             </button>
