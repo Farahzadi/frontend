@@ -113,9 +113,9 @@ export const Header = (props) => {
       {/* desktop header */}
       <div className="head_wrapper_desktop dex_h">
         <div className="nav_items">
-          <a href="#" rel="noreferrer">
+          <NavLink exact to="/">
             <img src={logo} alt="logo" />
-          </a>
+          </NavLink>
           <ul className="mx-0 px-0">
             <li>
               <NavLink exact to="/" activeClassName="active_link">
