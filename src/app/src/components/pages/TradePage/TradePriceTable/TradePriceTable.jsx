@@ -70,10 +70,10 @@ class TradePriceTable extends React.Component {
       api.emit("selectedPrice", this.state.selectedPrice);
       this.updateOrderType("limit");
       if (this.props.itsAsks) {
-        api.emit("orderSide", false);
+        api.emit("orderSide", true);
       }
       if (this.props.itsBids) {
-        api.emit("orderSide", true);
+        api.emit("orderSide", false);
       }
     }
   }
@@ -129,10 +129,7 @@ class TradePriceTable extends React.Component {
               this.props.isSell === "isSell" ? "flex-column-reverse d-flex" : ""
             }
           >
-            {this.props.priceTableData.map((data, i) => {
-              if (!this.props.latestTrades) {
-                return null;
-              }
+            {this.props.latestTrades && this.props.priceTableData.map((data, i) => {
               const color = data.side === "b" ? "#27302F" : "#2C232D";
               const breakpoint = Math.round(
                 (data.remaining / maxQuantity) * 100
@@ -176,10 +173,7 @@ class TradePriceTable extends React.Component {
                 </div>
               );
             })}
-            {this.props.priceTableData.reverse().map((data, i) => {
-              if (this.props.latestTrades) {
-                return null;
-              }
+            {!this.props.latestTrades && this.props.priceTableData.map((data, i) => {
               const color = data.side === "b" ? "#27302F" : "#2C232D";
               const breakpoint = Math.round(
                 (data.remaining / maxQuantity) * 100

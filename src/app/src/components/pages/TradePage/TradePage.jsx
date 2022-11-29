@@ -151,12 +151,12 @@ const TradePage = () => {
 
   const askBins =
     allOrders !== {}
-      ? Object.values(allOrders).filter((order) => order.side === "s")
+      ? Object.values(allOrders).filter((order) => order.side === "s").reverse()
       : [];
 
   const bidBins =
     allOrders !== {}
-      ? Object.values(allOrders).filter((order) => order.side === "b")
+      ? Object.values(allOrders).filter((order) => order.side === "b").reverse()
       : [];
 
   const activeLimitAndMarketOrdersCount = Object.values(userOrders).filter(
