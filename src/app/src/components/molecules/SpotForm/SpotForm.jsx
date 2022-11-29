@@ -623,7 +623,7 @@ class SpotForm extends React.Component {
                 this.props.orderType === "limit"
                   ? this.props.rangePrice > 0
                     ? this.props.rangePrice
-                    : this.state.amount
+                    : this.state.baseAmount
                   : this.state.amount
               }
               placeholder="0.0000"
