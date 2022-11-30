@@ -68,6 +68,7 @@ class SpotForm extends React.Component {
       newState.baseAmount = this.props.rangePrice;
     } else {
       newState.baseAmount = e.target.value;
+      newState.amount = e.target.value;
     }
     this.setState(newState);
   }
@@ -623,7 +624,7 @@ class SpotForm extends React.Component {
                 this.props.orderType === "limit"
                   ? this.props.rangePrice > 0
                     ? this.props.rangePrice
-                    : this.state.baseAmount
+                    : this.state.amount
                   : this.state.amount
               }
               placeholder="0.0000"
