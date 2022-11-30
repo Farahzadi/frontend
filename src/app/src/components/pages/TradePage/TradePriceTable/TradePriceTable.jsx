@@ -6,6 +6,7 @@ import { connect } from "react-redux";
 import { numStringToSymbol } from "lib/utils";
 import api from "lib/api";
 import Tooltip from "@mui/material/Tooltip";
+import { Fade } from "@mui/material";
 import {
   setOrderType,
   orderTypeSelector,
@@ -98,7 +99,7 @@ class TradePriceTable extends React.Component {
           className={`trade-price-table ${this.props.className}`}
           ref={(el) => (this.tableDiv = el)}
         >
-          <div className="mb-4">
+          <div className="mb-4 trade_table_asks_head">
             {!this.props.isBuy ? (
               <div className="d-flex flex-wrap text-white ">
                 <div className="table-head">
@@ -203,6 +204,8 @@ class TradePriceTable extends React.Component {
                   key={i}
                   followCursor
                   style={this.tooltipStyle}
+                  TransitionComponent={Fade}
+                  TransitionProps={{ timeout: 0 }}
                   title={
                     <div className={this.props.latestTrades ? "d-none" : ""}>
                       <h6>

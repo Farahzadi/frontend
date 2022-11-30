@@ -79,9 +79,7 @@ export const Header = (props) => {
               )}
               {process.env.NODE_ENV === "development" && (
                 <li>
-                  <NavLink exact to="/">
-                    Docs
-                  </NavLink>
+                  <a href="https://docs.dexpresso.exchange/">Docs</a>
                 </li>
               )}
             </ul>
@@ -137,9 +135,7 @@ export const Header = (props) => {
             </li>
             {/* :null} */}
             <li>
-              <NavLink exact to="/">
-                Docs
-              </NavLink>
+              <a href="https://docs.dexpresso.exchange/">Docs</a>
             </li>
           </ul>
         </div>
