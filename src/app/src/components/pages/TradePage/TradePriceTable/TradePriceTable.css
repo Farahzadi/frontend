@@ -33,7 +33,6 @@
     z-index: 2;
     top: 0;
     background: var(--dexpressoTableBackground);
-    height: 100%;
 }
 
 .trade-price-table::-webkit-scrollbar-thumb:window-inactive {

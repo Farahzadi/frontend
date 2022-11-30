@@ -6,6 +6,7 @@ import { connect } from "react-redux";
 import { numStringToSymbol } from "lib/utils";
 import api from "lib/api";
 import Tooltip from "@mui/material/Tooltip";
+import { Fade } from "@mui/material";
 import {
   setOrderType,
   orderTypeSelector,
@@ -203,6 +204,8 @@ class TradePriceTable extends React.Component {
                   key={i}
                   followCursor
                   style={this.tooltipStyle}
+                  TransitionComponent={Fade}
+                  TransitionProps={{ timeout: 0 }}
                   title={
                     <div className={this.props.latestTrades ? "d-none" : ""}>
                       <h6>
