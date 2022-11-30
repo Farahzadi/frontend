@@ -116,7 +116,7 @@ export default class API extends Emitter {
       //     "Account not found. Please use the bridge to deposit funds before trying again."
       //   );
       // }
-      toast.error(
+      toast.info(
         <>
           Account not activated. Please activate your account first:{" "}
           <a
