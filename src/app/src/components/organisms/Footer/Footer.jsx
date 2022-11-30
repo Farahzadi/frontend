@@ -309,7 +309,7 @@ class Footer extends React.Component {
             const quantity = amount.mul(price);
 
             let fee = new Decimal(isTaker ? fill.takerFee : fill.makerFee);
-            fee.mul(side === "b" ? quantity : amount);
+            fee = fee.mul(side === "b" ? quantity : amount);
 
             const feeCurrency = side === "b" ? quoteCurrency : baseCurrency;
 
@@ -640,16 +640,15 @@ class Footer extends React.Component {
       <>
         <Modal
           show={this.state.openModal}
-          actionText='Yes'
-          closeText='No'
-          alert={'Are you sure you want to delete all orders?'}
+          actionText="Yes"
+          closeText="No"
+          alert={"Are you sure you want to delete all orders?"}
           onClose={this.handleClose}
           onSubmit={() => {
             this.handleClose();
             api.cancelAllOrders();
           }}
-        >
-        </Modal>
+        ></Modal>
         <div className="user-info">
           <div className="user-info-container ">
             <div>
