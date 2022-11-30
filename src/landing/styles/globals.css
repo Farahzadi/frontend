@@ -5,10 +5,10 @@
   --mainColor: #bfa38a;
   --lighterMainRgb: 255, 221, 201;
   --lighterMainColor: rgb(255, 221, 201);
-  --accentColor: #EBE4D5;
-  --neutralColor: #FCF5ED;
+  --accentColor: #ebe4d5;
+  --neutralColor: #fcf5ed;
   --grey: #bdbccd;
-  --grey2: #7C7C8B;
+  --grey2: #7c7c8b;
   --darkBG: #050719;
   --lighterBG: #11142b;
   --txtColor: #fff;
@@ -92,7 +92,8 @@ button {
   border: 1px solid var(--mainColor);
   border-radius: 10px;
 }
-img, video {
+img,
+video {
   max-width: 100%;
   height: auto;
 }
@@ -116,6 +117,24 @@ img, video {
   color: var(--neutralColor);
   font-family: 'Ostrich Sans';
   text-transform: capitalize;
+}
+.center-container {
+  height: 85vh;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.not-found-text {
+  color: var(--neutralColor);
+  display: flex;
+}
+.not-found-text p {
+  padding: 10px;
+}
+.not-found-text p:first-child{
+  border-right: 1px solid var(--accentColor);
 }
 @media (min-width: 769px) {
   .contact-bar {

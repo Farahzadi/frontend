@@ -25,7 +25,9 @@ export default function Home() {
   const { isAnimated } = useContext(BGContext);
   return (
     <>
-      <CustomizedHead />
+      <CustomizedHead>
+        <meta name='description' content='Dexpresso is a decentralized exchange'></meta>
+      </CustomizedHead>
       <Background />
       <div className={isAnimated ? 'is-visible' : 'is-hidden'}>
         <div className='stars-bg'>
