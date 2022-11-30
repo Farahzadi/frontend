@@ -20,13 +20,18 @@ import Background from '../components/Sections/Background/Background';
 import ContactBar from '../components/ContactBar/ContactBar';
 import { BGContext } from '../contexts/BGContext';
 import CustomizedHead from '../components/Head/Head';
+import { getAPIUrl } from '../utils/env';
+import Networks from '../components/Sections/Networks/Network';
 
-export default function Home() {
+export default function Home({ networks }) {
   const { isAnimated } = useContext(BGContext);
   return (
     <>
       <CustomizedHead>
-        <meta name='description' content='Dexpresso is a decentralized exchange'></meta>
+        <meta
+          name='description'
+          content='Dexpresso is a decentralized exchange'
+        ></meta>
       </CustomizedHead>
       <Background />
       <div className={isAnimated ? 'is-visible' : 'is-hidden'}>
@@ -34,6 +39,7 @@ export default function Home() {
           <div className='stars-blend'>
             <IntroSection />
             <Users />
+            <Networks networks={networks} />
             <div className='contact-bar'>
               <ContactBar />
             </div>
@@ -58,3 +64,25 @@ export default function Home() {
     </>
   );
 }
+
+export const getServerSideProps = async (context) => {
+  let netResponse;
+  try {
+    netResponse = await fetch(`${getAPIUrl()}/networks`, {}).then((res) => {
+      if (res.status === 200) {
+        return res.json();
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
+
+  if (netResponse) {
+    return {
+      props: { networks: netResponse.networks },
+    };
+  }
+  return {
+    props: {}
+  }
+};
