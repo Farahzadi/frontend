@@ -109,13 +109,27 @@ export default class API extends Emitter {
     }
 
     if (result === "redirectToBridge") {
-      const isBrige = !/^\/bridge(\/.*)?$/.test(window.location.pathname);
-      if (!isBrige) {
-        // window.history.pushState("/bridge");
-        toast.error(
-          "Account not found. Please use the bridge to deposit funds before trying again."
-        );
-      }
+      // const isBrige = !/^\/bridge(\/.*)?$/.test(window.location.pathname);
+      // if (!isBrige) {
+      //   // window.history.pushState("/bridge");
+      //   toast.error(
+      //     "Account not found. Please use the bridge to deposit funds before trying again."
+      //   );
+      // }
+      toast.error(
+        <>
+          Account not activated. Please activate your account first:{" "}
+          <a
+            href="https://wallet.zksync.io/?network=goerli"
+            style={{ color: "white" }}
+            target="_blank"
+          >
+            {" "}
+            go to wallet.zksync.io
+          </a>
+        </>
+      );
+      throw new Error();
     }
 
     this.apiProvider.onAccountChange(this.signOut);
