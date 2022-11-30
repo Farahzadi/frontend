@@ -98,7 +98,7 @@ class TradePriceTable extends React.Component {
           className={`trade-price-table ${this.props.className}`}
           ref={(el) => (this.tableDiv = el)}
         >
-          <div className="mb-4">
+          <div className="mb-4 trade_table_asks_head">
             {!this.props.isBuy ? (
               <div className="d-flex flex-wrap text-white ">
                 <div className="table-head">
