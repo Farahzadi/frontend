@@ -489,50 +489,23 @@ export default class API extends Emitter {
   };
 
   approveSpendOfCurrency = async (currency, allowance = maxAllowance) => {
-    const netContract = this.getNetworkContract();
-    if (netContract) {
-      const [account] = await this.web3.eth.getAccounts();
-      const { contractAddress } = this.currencies[currency].chain[this.network];
-      const contract = new this.web3.eth.Contract(
-        erc20ContractABI,
-        contractAddress
-      );
-      await contract.methods
-        .approve(netContract, allowance)
-        .send({ from: account });
-    }
+    return await this.apiProvider?.approveSpendOfCurrency(
+      currency,
+      allowance || maxAllowance,
+      erc20ContractABI
+    );
   };
 
   getBalanceOfCurrency = async (currency) => {
-    const { contractAddress } = this.currencies[currency].chain[this.network];
-    let result = { balance: 0, allowance: maxAllowance };
-    if (/* !this.ethersProvider || */ !contractAddress) return result;
-
-    try {
-      const netContract = this.getNetworkContract();
-      const [account] = await this.web3.eth.getAccounts();
-      if (currency === "ETH") {
-        result.balance = await this.web3.eth.getBalance(account);
-        return result;
-      }
-      const contract = new this.web3.eth.Contract(
-        erc20ContractABI,
-        contractAddress
-      );
-      result.balance = await contract.methods.balanceOf(account).call();
-      if (netContract) {
-        result.allowance = ethers.BigNumber.from(
-          await contract.methods.allowance(account, netContract).call()
-        );
-      }
-      return result;
-    } catch (e) {
-      console.log(e);
-      return result;
-    }
+    return await this.apiProvider?.getBalanceOfCurrency(
+      currency,
+      erc20ContractABI,
+      maxAllowance
+    );
   };
 
   getWalletBalances = async () => {
+    if (!this.apiProvider) return null;
     const balances = {};
 
     const getBalance = async (ticker) => {

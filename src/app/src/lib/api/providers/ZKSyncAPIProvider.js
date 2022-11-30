@@ -86,7 +86,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
     if (networkChanged) return await this.start();
 
     const signer = this.provider.getSigner();
-    
+
     // const address = await signer.getAddress();
 
     // const network = await this.provider.getNetwork();
@@ -675,5 +675,53 @@ export default class ZKSyncAPIProvider extends APIProvider {
       ethereum_goerli: "0x5",
     };
     return map[network];
+  };
+
+  approveSpendOfCurrency = async (currency, allowance, erc20ContractABI) => {
+    const netContract = this.api.getNetworkContract();
+    if (netContract) {
+      // const account = await this.getAddress();
+      const { contract: contractAddress } =
+        this.api.currencies[currency].chain[this.NETWORK];
+      const contract = new ethers.Contract(
+        contractAddress,
+        erc20ContractABI,
+        this.provider
+      );
+      await contract.functions.approve(netContract, allowance);
+    }
+  };
+
+  getBalanceOfCurrency = async (currency, erc20ContractABI, maxAllowance) => {
+    const { contract: contractAddress } =
+      this.api.currencies[currency].chain[this.NETWORK];
+    let result = { balance: 0, allowance: maxAllowance };
+    if (/* !this.ethersProvider || */ !contractAddress) return result;
+
+    try {
+      const netContract = this.api.getNetworkContract();
+      const account = await this.getAddress();
+      console.log("account", account);
+      if (currency === "ETH") {
+        result.balance = await this.provider.getBalance(account);
+        return result;
+      }
+      const contract = new ethers.Contract(
+        contractAddress,
+        erc20ContractABI,
+        this.provider
+      );
+      result.balance = await contract.functions.balanceOf(account);
+      if (netContract) {
+        result.allowance = await contract.functions.allowance(
+          account,
+          netContract
+        );
+      }
+      return result;
+    } catch (e) {
+      console.log(e);
+      return result;
+    }
   };
 }
