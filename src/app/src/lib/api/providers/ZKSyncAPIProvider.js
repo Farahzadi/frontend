@@ -32,7 +32,6 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
   start = async () => {
     this.state.set(APIProvider.State.CONNECTING);
-    console.log("here0", Date.now() % 10000);
 
     const providerOptions = {
       walletconnect: {
@@ -71,7 +70,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
     }
 
     const web3Modal = new Web3Modal({
-      network: "any",
+      network: this.NETWORK,
       cacheProvider: true,
       providerOptions,
       theme: "dark",
@@ -101,8 +100,6 @@ export default class ZKSyncAPIProvider extends APIProvider {
       throw e;
     }
 
-    // console.log("here1", Date.now() % 10000);
-
     try {
       const { seed, ethSignatureType } = await this.getSeed();
       const syncSigner = await zksync.Signer.fromSeed(seed);
@@ -118,8 +115,6 @@ export default class ZKSyncAPIProvider extends APIProvider {
       throw err;
     }
 
-    // console.log("here2", Date.now() % 10000);
-
     let result;
     const accountState = await this.getAccountState();
     if (!accountState.id) {
@@ -128,8 +123,6 @@ export default class ZKSyncAPIProvider extends APIProvider {
       const isActivated = await this.syncWallet.isSigningKeySet();
       if (!isActivated) await this.activateAccount(accountState);
     }
-
-    // console.log("here3", Date.now() % 10000);
 
     this.state.set(APIProvider.State.CONNECTED);
     return result;
@@ -151,7 +144,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
   signMessage = async (message) => {
     const address = await this.getAddress();
     try {
-      const signature = await window.ethereum.request({
+      const signature = await this.provider.provider.request({
         method: "personal_sign",
         params: [message, address],
       });
