@@ -6,17 +6,24 @@
     justify-content: center;
 }
 .netItem {
-    min-width: 200px;
+    width: 150px;
     min-height: 150px;
     border-radius: 50px;
     border: 2px solid rgb(var(--mainColorRgb) , 0.7);
     background-color: var(--darkBG);
     display: flex;
+    flex-flow: column;
     justify-content: center;
     align-items: center;
     margin: 1rem;
     padding: 13px;
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: bold;
     text-transform: uppercase;
+}
+.logo {
+    margin-block-end: 0.75rem;
+}
+.netName {
+    text-align: center;
 }

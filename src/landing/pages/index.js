@@ -7,7 +7,7 @@ import { Media } from '../utils/media';
 // components
 import FeatureSection from '../components/Sections/Feature/Feature';
 import GuideSection from '../components/Sections/Guide/Guide';
-import Users from '../components/Sections/Users/Users';
+import Trades from '../components/Sections/Trades/Trades';
 import NoFiat from '../components/Sections/NoFiat/NoFiat';
 import Decentralization from '../components/Sections/Decentralization';
 import Layer2Trade from '../components/Sections/Layer2Trade/Layer2Trade';
@@ -20,10 +20,10 @@ import Background from '../components/Sections/Background/Background';
 import ContactBar from '../components/ContactBar/ContactBar';
 import { BGContext } from '../contexts/BGContext';
 import CustomizedHead from '../components/Head/Head';
-import { getAPIUrl } from '../utils/env';
 import Networks from '../components/Sections/Networks/Network';
+import { getNetworks, getTradeStats } from '../api/API';
 
-export default function Home({ networks }) {
+export default function Home({ networks, trades }) {
   const { isAnimated } = useContext(BGContext);
   return (
     <>
@@ -38,7 +38,7 @@ export default function Home({ networks }) {
         <div className='stars-bg'>
           <div className='stars-blend'>
             <IntroSection />
-            <Users />
+            <Trades trades={trades} />
             <Networks networks={networks} />
             <div className='contact-bar'>
               <ContactBar />
@@ -66,23 +66,12 @@ export default function Home({ networks }) {
 }
 
 export const getServerSideProps = async (context) => {
-  let netResponse;
-  try {
-    netResponse = await fetch(`${getAPIUrl()}/networks`, {}).then((res) => {
-      if (res.status === 200) {
-        return res.json();
-      }
-    });
-  } catch (error) {
-    console.log(error);
-  }
-
-  if (netResponse) {
-    return {
-      props: { networks: netResponse.networks },
-    };
-  }
+  const netResponse = await getNetworks();
+  const tradeRes = await getTradeStats();
   return {
-    props: {}
-  }
+    props: {
+      networks: netResponse?.networks || [],
+      trades: tradeRes?.summary || [],
+    },
+  };
 };
