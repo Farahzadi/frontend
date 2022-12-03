@@ -74,19 +74,27 @@ class SpotForm extends React.Component {
   }
 
   getBaseBalance() {
+    let totalActiveLimitOrderBaseQuantity = 0;
     const baseCurrency = this.props.currentMarket.split("-")[0];
-    return (
+    let baseBalance =
       this.props.user.committed.balances[baseCurrency] /
-      Math.pow(10, api.currencies[baseCurrency].decimals)
-    );
+      Math.pow(10, api.currencies[baseCurrency].decimals);
+    this.props.activeLimitAndMarketOrders.map((order) => {
+      totalActiveLimitOrderBaseQuantity += order.baseQuantity;
+    });
+    return (baseBalance -= totalActiveLimitOrderBaseQuantity);
   }
 
   getQuoteBalance() {
+    let totalActiveLimitOrderQuoteQuantity = 0;
     const quoteCurrency = this.props.currentMarket.split("-")[1];
-    return (
+    let quoteBalance =
       this.props.user.committed.balances[quoteCurrency] /
-      Math.pow(10, api.currencies[quoteCurrency].decimals)
-    );
+      Math.pow(10, api.currencies[quoteCurrency].decimals);
+    this.props.activeLimitAndMarketOrders.map((order) => {
+      totalActiveLimitOrderQuoteQuantity += order.quoteQuantity;
+    });
+    return (quoteBalance -= totalActiveLimitOrderQuoteQuantity);
   }
 
   async buySellHandler(e) {
@@ -117,7 +125,7 @@ class SpotForm extends React.Component {
     }
     const [baseCurrency, quoteCurrency] = this.props.currentMarket.split("-");
     amount = Number(amount.toFixed(api.currencies[baseCurrency].decimals));
-    if (this.props.activeLimitAndMarketOrdersCount > 0) {
+    if (this.props.activeLimitAndMarketOrders.length > 0) {
       if (this.props.orderType === "market") {
         toast.error("Your limit or market order should fill first");
         return;

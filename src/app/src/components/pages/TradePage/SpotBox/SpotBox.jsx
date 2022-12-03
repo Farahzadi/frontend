@@ -44,13 +44,9 @@ class SpotBox extends React.Component {
           res[key] = obj[key];
           return res;
         }, {});
-        
+
     let filltered = this.props.userId
-      ? Object.filter(
-          this.props.allOrders,
-          (order) =>
-            order.side === orderSide 
-        )
+      ? Object.filter(this.props.allOrders, (order) => order.side === orderSide)
       : "";
 
     return filltered;
@@ -116,8 +112,8 @@ class SpotBox extends React.Component {
                 user={this.props.user}
                 currentMarket={this.props.currentMarket}
                 orderType={this.props.orderType}
-                activeLimitAndMarketOrdersCount={
-                  this.props.activeLimitAndMarketOrdersCount
+                activeLimitAndMarketOrders={
+                  this.props.activeLimitAndMarketOrders
                 }
                 activeSwapOrdersCount={this.props.activeSwapOrdersCount}
                 liquidity={this.props.liquidity}
@@ -134,8 +130,8 @@ class SpotBox extends React.Component {
                 user={this.props.user}
                 currentMarket={this.props.currentMarket}
                 orderType={this.props.orderType}
-                activeLimitAndMarketOrdersCount={
-                  this.props.activeLimitAndMarketOrdersCount
+                activeLimitAndMarketOrders={
+                  this.props.activeLimitAndMarketOrders
                 }
                 activeSwapOrdersCount={this.props.activeSwapOrdersCount}
                 liquidity={this.props.liquidity}
