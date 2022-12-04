@@ -19,6 +19,7 @@ const Navbar = () => {
   ];
   console.log('docs: ',getDocsLink());
   console.log('base: ', getBaseUrl());
+  console.log('trade: ', getTradeLink());
   const { isAnimated } = useContext(BGContext);
   const [visible, setIsVisible] = useState(false);
   const route = useRouter();
