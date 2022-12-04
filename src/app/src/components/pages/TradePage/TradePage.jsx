@@ -159,13 +159,13 @@ const TradePage = () => {
       ? Object.values(allOrders).filter((order) => order.side === "b").reverse()
       : [];
 
-  const activeLimitAndMarketOrdersCount = Object.values(userOrders).filter(
+  const activeLimitAndMarketOrders = Object.values(userOrders).filter(
     (order) => activeOrderStatuses.includes(order.status) && order.type === "l"
-  ).length;
+  );
 
   const activeSwapOrders = Object.values(userOrders).filter(
     (order) => activeOrderStatuses.includes(order.status) && order.type === "s"
-  ).length;
+  );
 
   let tradingViewMarket = currentMarket;
   const baseCurrency = currentMarket.split("-")[0];
@@ -218,8 +218,8 @@ const TradePage = () => {
                           }}
                           user={user}
                           currentMarket={currentMarket}
-                          activeLimitAndMarketOrdersCount={
-                            activeLimitAndMarketOrdersCount
+                          activeLimitAndMarketOrders={
+                            activeLimitAndMarketOrders
                           }
                           activeSwapOrdersCount={activeSwapOrders}
                           liquidity={liquidity}
