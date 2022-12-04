@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { Button, Dropdown, AccountDropdown, Menu, MenuItem } from "components";
 import { userSelector } from "lib/store/features/auth/authSlice";
@@ -18,8 +18,6 @@ export const Header = (props) => {
   const [connecting, setConnecting] = useState(false);
   const user = useSelector(userSelector);
   const networkConfig = useSelector(networkConfigSelector);
-  // const history = useHistory();
-  // const location = useLocation();
 
   const hasBridge = networkConfig.hasBridge;
 
@@ -33,6 +31,7 @@ export const Header = (props) => {
     }
   };
 
+ 
   const dropdownMenu = (
     <Menu onSelect={handleMenu}>
       <MenuItem key="signOut">Disconnect</MenuItem>
@@ -77,22 +76,21 @@ export const Header = (props) => {
                   </NavLink>
                 </li>
               )}
-              {process.env.NODE_ENV === "development" && (
-                <li>
-                  <a href="https://docs.dexpresso.exchange/">Docs</a>
-                </li>
-              )}
+              <li>
+                <a href="https://docs.dexpresso.exchange/">Docs</a>
+              </li>
             </ul>
           </div>
           <div className="wallet">
             <div className="d-flex align-items-center justify-content-between mb-3 mb-lg-0">
               {user.id && user.address ? (
-                <Dropdown overlay={dropdownMenu}>
-                  <button className="address_button">
-                    {user.address.slice(0, 6)}...
-                    {user.address.slice(-4)}
-                  </button>
-                </Dropdown>
+                // <Dropdown overlay={dropdownMenu}>
+                //   <button className="address_button">
+                //     {user.address.slice(0, 6)}...
+                //     {user.address.slice(-4)}
+                //   </button>
+                // </Dropdown>
+                <AccountDropdown/>
               ) : (
                 <Button
                   loading={connecting}
