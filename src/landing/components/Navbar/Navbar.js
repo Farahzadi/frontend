@@ -8,7 +8,7 @@ import { Arrow } from '../Icons/Icons';
 import { BGContext } from '../../contexts/BGContext';
 import { useRouter } from 'next/router';
 import ClientPortal from '../ClientPortal/ClientPortal';
-import { getDocsLink, getTradeLink } from '../../utils/env';
+import { getBaseUrl, getDocsLink, getTradeLink } from '../../utils/env';
 
 const Navbar = () => {
   const links = [
@@ -17,6 +17,8 @@ const Navbar = () => {
     { label: 'Community', href: `${getDocsLink()}/Community`, target: 'blank' },
     { label: 'Docs', href: getDocsLink(), target: 'blank' },
   ];
+  console.log('docs: ',getDocsLink());
+  console.log('base: ', getBaseUrl());
   const { isAnimated } = useContext(BGContext);
   const [visible, setIsVisible] = useState(false);
   const route = useRouter();
