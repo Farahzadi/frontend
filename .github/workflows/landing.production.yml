@@ -57,4 +57,5 @@ jobs:
           docker pull reg.dexpresso.exchange/production/landing:latest
           export NEXT_PUBLIC_TRADE_APP_LINK=https://trade.dexpresso.exchange
           export NEXT_PUBLIC_BASE_URL=https://dexpresso.exchange
+          export NEXT_PUBLIC_DOCS_LINK=https://docs.dexpresso.exchange
           docker-compose up -d
