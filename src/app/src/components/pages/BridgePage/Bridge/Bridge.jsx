@@ -213,11 +213,15 @@ const Bridge = () => {
     api
       .approveSpendOfCurrency(swapDetails.currency)
       .then(() => {
+        setShowModal(false);
         setApproving(false);
       })
       .catch((err) => {
         console.log(err);
+        setShowModal(false);
         setApproving(false);
+      }).finally(() => {
+        setShowModal(false);
       });
   };
 
@@ -256,8 +260,8 @@ const Bridge = () => {
 
   return (
     <>
-    <Modal show={showModal} onClose={() => setShowModal(false)}>
-      <div className="bridge_box_right_content container">
+      <Modal show={showModal} onClose={() => setShowModal(false)}>
+        <div className="bridge_box_right_content container">
           <div className="row">
             <div className="col-6-border">
               <p>
@@ -303,12 +307,11 @@ const Bridge = () => {
               </p>
             </div>
             <hr />
-            <div className="col-6-border-right-dark my-2">
+            <div className="col-6-border-right-dark d-flex align-items-center my-2">
               <p className="bridge_box_fee">
                 Fee:
                 <b className="mx-0">
                   {transfer.type === "withdraw" ? null : "~"}
-                  {""}
                   {typeof bridgeFee !== "number" ? (
                     <div style={{ display: "inline-flex", margin: "0 5px" }}>
                       <Loader
@@ -327,61 +330,55 @@ const Bridge = () => {
                 </b>
               </p>
             </div>
-            <div className="col-5-border my-2">
+            <div className="col-5-border my-2 d-flex align-items-center justify-content-end">
               <p>
                 Time: <b className="mx-0">2 to 10 min</b>
               </p>
             </div>
           </div>
           <div className="bridge_button">
-            {!user.address && (
-              <Button
-                className="bg_btn bg_btn-transfer"
-                text="CONNECT WALLET"
-                img={darkPlugHead}
-                onClick={() => api.connectWallet()}
-              />
-            )}
-            {user.address && balances[swapDetails.currency] && !hasAllowance && (
-              <Button
-                loading={isApproving}
-                className={cx("bg_btn bg_btn-transfer", {
-                  zig_disabled:
-                    formErr.length > 0 || swapDetails.amount.length === 0,
-                })}
-                text="APPROVE"
-                style={{ marginBottom: 10 }}
-                onClick={() => {
-                  approveSpend();
-                  setShowModal(!showModal);
-                }}
-              />
-            )}
-            {user.address && hasError && (
-              <Button
-                className="bg_btn bg_btn-transfer zig_btn_disabled bg_err"
-                text={formErr}
-                icon={<BiError />}
-              />
-            )}
-            {user.address && !hasError && (
-              <Button
-                loading={loading}
-                className={cx("bg_btn bg_btn-transfer", {
-                  zig_disabled:
-                    bridgeFee === null ||
-                    !hasAllowance ||
-                    swapDetails.amount.length === 0,
-                })}
-                text="TRANSFER"
-                icon={<MdSwapCalls />}
-                onClick={() => {
-                  doTransfer();
-                  setShowModal(!showModal);
-                }}
-              />
-            )}
-          </div>
+              {!user.address && (
+                <Button
+                  className="bg_btn bg_btn-transfer"
+                  text="CONNECT WALLET"
+                  img={darkPlugHead}
+                  onClick={() => api.connectWallet()}
+                />
+              )}
+              {user.address && balances[swapDetails.currency] && !hasAllowance && (
+                <Button
+                  loading={isApproving}
+                  className={cx("bg_btn bg_btn-transfer", {
+                    zig_disabled:
+                      formErr.length > 0 || swapDetails.amount.length === 0,
+                  })}
+                  text="APPROVE"
+                  style={{ marginBottom: 10 }}
+                  onClick={approveSpend}
+                />
+              )}
+              {user.address && hasError && (
+                <Button
+                  className="bg_btn bg_btn-transfer zig_btn_disabled bg_err"
+                  text={formErr}
+                  icon={<BiError />}
+                />
+              )}
+              {user.address && !hasError && (
+                <Button
+                  loading={loading}
+                  className={cx("bg_btn bg_btn-transfer", {
+                    zig_disabled:
+                      bridgeFee === null ||
+                      !hasAllowance ||
+                      swapDetails.amount.length === 0,
+                  })}
+                  text="TRANSFER"
+                  icon={<MdSwapCalls />}
+                  onClick={doTransfer}
+                />
+              )}
+            </div>
           <div>
             {user.address ? (
               <div className="bridge_connected_as">
@@ -460,8 +457,8 @@ const Bridge = () => {
               🔗 &nbsp;Please connect your wallet
             </div>
           )}
-      </div>
-    </Modal>
+        </div>
+      </Modal>
       <div className="bridge_lables-btn">
         <button
           onClick={() => setShowBridge(true)}
@@ -630,7 +627,7 @@ const Bridge = () => {
                 </p>
               </div>
               <hr />
-              <div className="col-6-border-right-dark">
+              <div className="col-6-border-right-dark d-flex align-items-center">
                 <p className="bridge_box_fee">
                   Fee:
                   <b className="mx-0">
@@ -656,7 +653,7 @@ const Bridge = () => {
                   </b>
                 </p>
               </div>
-              <div className="col-5-border-time mb-2">
+              <div className="col-5-border-time d-flex align-items-center justify-content-end">
                 <p>
                   Time: <b className="mx-0">2 to 10 min</b>
                 </p>

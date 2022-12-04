@@ -170,7 +170,6 @@
 
 .bridge_box_transaction_txId {
   font-size: 15px;
-  margin-top: 8px;
   text-align: center;
 }
 
@@ -462,8 +461,8 @@
   display: none;
 }
 .select-currency-width {
-  top: -528%;
-  left: -8%;
+  top: -528% !important;
+  left: -8% !important;
 }
 @media only screen and (max-width: 1290px) {
   .bridge_container{
