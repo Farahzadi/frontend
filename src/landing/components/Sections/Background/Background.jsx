@@ -156,7 +156,7 @@ function Background() {
   function zoomInCamera() {
     return new TWEEN.Tween(sphereParent.position).to(
       {
-        x: window.innerWidth / 1.5,
+        x: window.innerWidth / 2,
         y: 0,
         z: CAMERA_RADIUS_ZOOM
       }, 10500

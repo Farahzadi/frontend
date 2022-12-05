@@ -309,7 +309,7 @@ class Footer extends React.Component {
             const quantity = amount.mul(price);
 
             let fee = new Decimal(isTaker ? fill.takerFee : fill.makerFee);
-            fee.mul(side === "b" ? quantity : amount);
+            fee = fee.mul(side === "b" ? quantity : amount);
 
             const feeCurrency = side === "b" ? quoteCurrency : baseCurrency;
 

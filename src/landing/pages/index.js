@@ -20,12 +20,15 @@ import Background from '../components/Sections/Background/Background';
 import ContactBar from '../components/ContactBar/ContactBar';
 import { BGContext } from '../contexts/BGContext';
 import CustomizedHead from '../components/Head/Head';
+import { getBaseUrl } from '../utils/env';
 
-export default function Home() {
+export default function Home({baseUrl}) {
   const { isAnimated } = useContext(BGContext);
   return (
     <>
-      <CustomizedHead />
+      <CustomizedHead baseUrl={baseUrl}>
+        <meta name='description' content='Dexpresso is a decentralized exchange'></meta>
+      </CustomizedHead>
       <Background />
       <div className={isAnimated ? 'is-visible' : 'is-hidden'}>
         <div className='stars-bg'>
@@ -55,4 +58,12 @@ export default function Home() {
       </div>
     </>
   );
+}
+
+export const getStaticProps = () => {
+  return({
+    props: {
+      baseUrl: getBaseUrl()
+    }
+  })
 }

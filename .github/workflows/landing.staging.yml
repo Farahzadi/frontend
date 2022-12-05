@@ -56,5 +56,6 @@ jobs:
           docker rmi -f reg.dexpresso.exchange/staging/landing:latest || echo "Ok"
           docker pull reg.dexpresso.exchange/staging/landing:latest
           export NEXT_PUBLIC_TRADE_APP_LINK=https://morabandtrade.dexpresso.exchange
-          NEXT_PUBLIC_BASE_URL=https://moraband.dexpresso.exchange/
+          export BASE_URL=https://moraband.dexpresso.exchange
+          export NEXT_PUBLIC_DOCS_LINK=https://docs.dexpresso.exchange
           docker-compose up -d

@@ -42,7 +42,7 @@ jobs:
   
   deploy:
     runs-on: self-hosted
-    needs: build_and_push
+    needs: environment_step
     steps:
     - name: run command on remote
       uses: appleboy/ssh-action@master

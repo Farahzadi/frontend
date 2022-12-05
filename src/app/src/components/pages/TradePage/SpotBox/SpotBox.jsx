@@ -116,8 +116,8 @@ class SpotBox extends React.Component {
                 user={this.props.user}
                 currentMarket={this.props.currentMarket}
                 orderType={this.props.orderType}
-                activeLimitAndMarketOrdersCount={
-                  this.props.activeLimitAndMarketOrdersCount
+                activeLimitAndMarketOrders={
+                  this.props.activeLimitAndMarketOrders
                 }
                 activeSwapOrdersCount={this.props.activeSwapOrdersCount}
                 liquidity={this.props.liquidity}
@@ -134,8 +134,8 @@ class SpotBox extends React.Component {
                 user={this.props.user}
                 currentMarket={this.props.currentMarket}
                 orderType={this.props.orderType}
-                activeLimitAndMarketOrdersCount={
-                  this.props.activeLimitAndMarketOrdersCount
+                activeLimitAndMarketOrders={
+                  this.props.activeLimitAndMarketOrders
                 }
                 activeSwapOrdersCount={this.props.activeSwapOrdersCount}
                 liquidity={this.props.liquidity}

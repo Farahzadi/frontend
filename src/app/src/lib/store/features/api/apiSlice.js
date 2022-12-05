@@ -250,6 +250,7 @@ export const apiSlice = createSlice({
             const matchedOrder = state.userOrders[update.id];
             if (!matchedOrder) return;
             matchedOrder.status = "m";
+            matchedOrder.remaining = update.remaining;
             if (
               matchedOrder &&
               state.userAddress &&

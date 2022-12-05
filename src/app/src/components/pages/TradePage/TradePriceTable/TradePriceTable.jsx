@@ -6,6 +6,7 @@ import { connect } from "react-redux";
 import { numStringToSymbol } from "lib/utils";
 import api from "lib/api";
 import Tooltip from "@mui/material/Tooltip";
+import { Fade } from "@mui/material";
 import {
   setOrderType,
   orderTypeSelector,
@@ -70,10 +71,10 @@ class TradePriceTable extends React.Component {
       api.emit("selectedPrice", this.state.selectedPrice);
       this.updateOrderType("limit");
       if (this.props.itsAsks) {
-        api.emit("orderSide", false);
+        api.emit("orderSide", true);
       }
       if (this.props.itsBids) {
-        api.emit("orderSide", true);
+        api.emit("orderSide", false);
       }
     }
   }
@@ -98,7 +99,7 @@ class TradePriceTable extends React.Component {
           className={`trade-price-table ${this.props.className}`}
           ref={(el) => (this.tableDiv = el)}
         >
-          <div className="mb-4">
+          <div className="mb-4 trade_table_asks_head">
             {!this.props.isBuy ? (
               <div className="d-flex flex-wrap text-white ">
                 <div className="table-head">
@@ -129,10 +130,7 @@ class TradePriceTable extends React.Component {
               this.props.isSell === "isSell" ? "flex-column-reverse d-flex" : ""
             }
           >
-            {this.props.priceTableData.map((data, i) => {
-              if (!this.props.latestTrades) {
-                return null;
-              }
+            {this.props.latestTrades && this.props.priceTableData.map((data, i) => {
               const color = data.side === "b" ? "#27302F" : "#2C232D";
               const breakpoint = Math.round(
                 (data.remaining / maxQuantity) * 100
@@ -176,10 +174,7 @@ class TradePriceTable extends React.Component {
                 </div>
               );
             })}
-            {this.props.priceTableData.reverse().map((data, i) => {
-              if (this.props.latestTrades) {
-                return null;
-              }
+            {!this.props.latestTrades && this.props.priceTableData.map((data, i) => {
               const color = data.side === "b" ? "#27302F" : "#2C232D";
               const breakpoint = Math.round(
                 (data.remaining / maxQuantity) * 100
@@ -209,6 +204,8 @@ class TradePriceTable extends React.Component {
                   key={i}
                   followCursor
                   style={this.tooltipStyle}
+                  TransitionComponent={Fade}
+                  TransitionProps={{ timeout: 0 }}
                   title={
                     <div className={this.props.latestTrades ? "d-none" : ""}>
                       <h6>

@@ -32,7 +32,6 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
   start = async () => {
     this.state.set(APIProvider.State.CONNECTING);
-    console.log("here0", Date.now() % 10000);
 
     const providerOptions = {
       walletconnect: {
@@ -71,7 +70,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
     }
 
     const web3Modal = new Web3Modal({
-      network: "any",
+      network: this.NETWORK,
       cacheProvider: true,
       providerOptions,
       theme: "dark",
@@ -87,7 +86,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
     if (networkChanged) return await this.start();
 
     const signer = this.provider.getSigner();
-    
+
     // const address = await signer.getAddress();
 
     // const network = await this.provider.getNetwork();
@@ -100,8 +99,6 @@ export default class ZKSyncAPIProvider extends APIProvider {
       toast.error(`Connection to zkSync network ${this.NETWORK_NAME} is lost`);
       throw e;
     }
-
-    // console.log("here1", Date.now() % 10000);
 
     try {
       const { seed, ethSignatureType } = await this.getSeed();
@@ -118,8 +115,6 @@ export default class ZKSyncAPIProvider extends APIProvider {
       throw err;
     }
 
-    // console.log("here2", Date.now() % 10000);
-
     let result;
     const accountState = await this.getAccountState();
     if (!accountState.id) {
@@ -128,8 +123,6 @@ export default class ZKSyncAPIProvider extends APIProvider {
       const isActivated = await this.syncWallet.isSigningKeySet();
       if (!isActivated) await this.activateAccount(accountState);
     }
-
-    // console.log("here3", Date.now() % 10000);
 
     this.state.set(APIProvider.State.CONNECTED);
     return result;
@@ -151,7 +144,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
   signMessage = async (message) => {
     const address = await this.getAddress();
     try {
-      const signature = await window.ethereum.request({
+      const signature = await this.provider.provider.request({
         method: "personal_sign",
         params: [message, address],
       });
@@ -623,12 +616,11 @@ export default class ZKSyncAPIProvider extends APIProvider {
     // const walletAddress = await this.ethWallet.getAddress();
     // //fee is optional
     // const fee = zksync.utils.closestPackableTransactionFee(ethers.utils.parseEther('0.001'))
-
     //with zero amount for increase nonce
     const transfer = await this.syncWallet.syncTransfer({
-      to: this.syncWallet.address(),
+      to: this.syncWallet?.address(),
       token: "ETH",
-      amount: 0,
+      amount: "0",
     });
     const transferReceipt = await transfer.awaitReceipt();
 
@@ -689,5 +681,53 @@ export default class ZKSyncAPIProvider extends APIProvider {
       ethereum_goerli: "0x5",
     };
     return map[network];
+  };
+
+  approveSpendOfCurrency = async (currency, allowance, erc20ContractABI) => {
+    const netContract = this.api.getNetworkContract();
+    if (netContract) {
+      // const account = await this.getAddress();
+      const { contract: contractAddress } =
+        this.api.currencies[currency].chain[this.NETWORK];
+      const contract = new ethers.Contract(
+        contractAddress,
+        erc20ContractABI,
+        this.provider
+      );
+      await contract.functions.approve(netContract, allowance);
+    }
+  };
+
+  getBalanceOfCurrency = async (currency, erc20ContractABI, maxAllowance) => {
+    const { contract: contractAddress } =
+      this.api.currencies[currency].chain[this.NETWORK];
+    let result = { balance: 0, allowance: maxAllowance };
+    if (/* !this.ethersProvider || */ !contractAddress) return result;
+
+    try {
+      const netContract = this.api.getNetworkContract();
+      const account = await this.getAddress();
+      console.log("account", account);
+      if (currency === "ETH") {
+        result.balance = await this.provider.getBalance(account);
+        return result;
+      }
+      const contract = new ethers.Contract(
+        contractAddress,
+        erc20ContractABI,
+        this.provider
+      );
+      result.balance = await contract.functions.balanceOf(account);
+      if (netContract) {
+        result.allowance = await contract.functions.allowance(
+          account,
+          netContract
+        );
+      }
+      return result;
+    } catch (e) {
+      console.log(e);
+      return result;
+    }
   };
 }

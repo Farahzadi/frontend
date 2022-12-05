@@ -8,14 +8,17 @@ import { Arrow } from '../Icons/Icons';
 import { BGContext } from '../../contexts/BGContext';
 import { useRouter } from 'next/router';
 import ClientPortal from '../ClientPortal/ClientPortal';
+import { getBaseUrl, getDocsLink, getTradeLink } from '../../utils/env';
 
 const Navbar = () => {
   const links = [
-    { label: 'About', href: '/about-us' },
-    { label: 'Developers', href: '' },
-    { label: 'Community', href: '' },
-    { label: 'Docs', href: '' },
+    { label: 'About', href: '/about-us', target: 'self' },
+    { label: 'Developers', href: `${getDocsLink()}/Develop`, target: 'blank' },
+    { label: 'Community', href: `${getDocsLink()}/Community`, target: 'blank' },
+    { label: 'Docs', href: getDocsLink(), target: 'blank' },
   ];
+  console.log('docs: ',getDocsLink());
+  console.log('trade: ', getTradeLink());
   const { isAnimated } = useContext(BGContext);
   const [visible, setIsVisible] = useState(false);
   const route = useRouter();
@@ -25,7 +28,7 @@ const Navbar = () => {
     } else if (isAnimated) {
       setIsVisible(true);
     }
-  }, [isAnimated, route])
+  }, [isAnimated, route]);
   function onScroll() {
     if (
       document.body.scrollTop > 150 ||
@@ -88,20 +91,37 @@ const Navbar = () => {
         >
           <div className={styles.navItemInnerContainer}>
             <div className={styles.navLinks}>
-              {links.map((item, index) => (
-                <Link key={index} href={item.href}>
-                  <a className={styles.navLink}>
-                    <span>{item.label}</span>
-                    <Arrow className={styles.arrowIcon} />
-                  </a>
-                </Link>
-              ))}
+              {links.map((item, index) => {
+                if (item.target === 'blank') {
+                  return (
+                    <a
+                      key={index}
+                      href={item.href}
+                      target='_blank'
+                      rel='noreferrer noopener'
+                      className={styles.navLink}
+                    >
+                      <span>{item.label}</span>
+                      <Arrow className={styles.arrowIcon} />
+                    </a>
+                  );
+                } else {
+                  return (
+                    <Link passHref key={index} href={item.href}>
+                      <a className={styles.navLink}>
+                        <span>{item.label}</span>
+                        <Arrow className={styles.arrowIcon} />
+                      </a>
+                    </Link>
+                  );
+                }
+              })}
             </div>
             <div className={styles.bottomSection}>
               <div className={styles.contactSection}>
                 <ContactBar />
               </div>
-              <Link href={process.env.NEXT_PUBLIC_TRADE_APP_LINK}>
+              <Link href={getTradeLink()}>
                 <button type='button' className={styles.tradeBtn}>
                   TRADE
                 </button>
@@ -125,7 +145,7 @@ const Navbar = () => {
           START TRADING
         </button>
       </ClientPortal>
-      </>
+    </>
   );
 };
 
