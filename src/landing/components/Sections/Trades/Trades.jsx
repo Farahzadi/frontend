@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import styles from './Users.module.css';
+import styles from './Trades.module.css';
 import CountUp from 'react-countup';
 
 const Trades = ({trades}) => {
