@@ -7,7 +7,7 @@ import { Media } from '../utils/media';
 // components
 import FeatureSection from '../components/Sections/Feature/Feature';
 import GuideSection from '../components/Sections/Guide/Guide';
-import Users from '../components/Sections/Users/Users';
+import Trades from '../components/Sections/Trades/Trades';
 import NoFiat from '../components/Sections/NoFiat/NoFiat';
 import Decentralization from '../components/Sections/Decentralization';
 import Layer2Trade from '../components/Sections/Layer2Trade/Layer2Trade';
@@ -20,21 +20,27 @@ import Background from '../components/Sections/Background/Background';
 import ContactBar from '../components/ContactBar/ContactBar';
 import { BGContext } from '../contexts/BGContext';
 import CustomizedHead from '../components/Head/Head';
-import { getBaseUrl } from '../utils/env';
+import Networks from '../components/Sections/Networks/Network';
+import { getNetworks, getTradeStats } from '../api/API';
 
-export default function Home({baseUrl}) {
+export default function Home({ networks, trades, baseUrl }) {
   const { isAnimated } = useContext(BGContext);
   return (
     <>
-      <CustomizedHead baseUrl={baseUrl}>
-        <meta name='description' content='Dexpresso is a decentralized exchange'></meta>
+      <CustomizedHead>
+        <meta
+          baseUrl={baseUrl}
+          name='description'
+          content='Dexpresso is a decentralized exchange'
+        ></meta>
       </CustomizedHead>
       <Background />
       <div className={isAnimated ? 'is-visible' : 'is-hidden'}>
         <div className='stars-bg'>
           <div className='stars-blend'>
             <IntroSection />
-            <Users />
+            <Trades trades={trades} />
+            <Networks networks={networks} />
             <div className='contact-bar'>
               <ContactBar />
             </div>
@@ -60,6 +66,16 @@ export default function Home({baseUrl}) {
   );
 }
 
+export const getServerSideProps = async (context) => {
+  const netResponse = await getNetworks();
+  const tradeRes = await getTradeStats();
+  return {
+    props: {
+      networks: netResponse?.networks || [],
+      trades: tradeRes?.summary || [],
+    },
+  };
+};
 export const getStaticProps = () => {
   return({
     props: {
