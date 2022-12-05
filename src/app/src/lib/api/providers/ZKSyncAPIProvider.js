@@ -138,7 +138,8 @@ export default class ZKSyncAPIProvider extends APIProvider {
   };
 
   getAddress = async () => {
-    return this.syncWallet?.cachedAddress ?? (await this.wallet?.getAddress());
+    const address = this.syncWallet?.cachedAddress ?? (await this.wallet?.getAddress());
+    return ethers.utils.getAddress(address);
   };
 
   signMessage = async (message) => {
@@ -419,6 +420,9 @@ export default class ZKSyncAPIProvider extends APIProvider {
       amountDecimals,
       this.api.currencies[token].decimals
     );
+    const checksumAddress = ethers.utils.getAddress(
+      this.api._accountState.address
+    );
     if (amount) {
       try {
         transfer = await this.syncWallet.withdrawFromSyncToEthereum({
@@ -439,7 +443,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
             token,
             "withdraw",
             this.api._accountState.id,
-            this.api._accountState.address,
+            checksumAddress,
             bridgeReceiptData.status
           )
         );
@@ -458,6 +462,9 @@ export default class ZKSyncAPIProvider extends APIProvider {
     const amount = toBaseUnit(
       amountDecimals,
       this.api.currencies[token].decimals
+    );
+    const checksumAddress = ethers.utils.getAddress(
+      this.api._accountState.address
     );
     if (amount) {
       try {
@@ -479,7 +486,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
             token,
             "deposit",
             this.api._accountState.id,
-            this.api._accountState.address,
+            checksumAddress,
             bridgeReceiptData.status
           )
         );

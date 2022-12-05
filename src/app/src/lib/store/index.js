@@ -21,6 +21,7 @@ import apiReducer, {
   clearUuid,
   setNetworkList,
   setProviderState,
+  setUserAddress,
 } from "lib/store/features/api/apiSlice";
 import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 import api from "lib/api";
@@ -35,7 +36,7 @@ const persistConfig = {
 
 const apiPersistConfig = {
   key: "api",
-  whitelist: ["userId", "currentMarket", "bridgeReceipts", "network"],
+  whitelist: ["userAddress", "currentMarket", "bridgeReceipts", "network"],
   storage,
 };
 
@@ -87,6 +88,10 @@ api.on("balanceUpdate", (network, balances) => {
 
 api.on("signIn", (accountState) => {
   store.dispatch(signIn(accountState));
+});
+
+api.on("userChanged", (userAddress) => {
+  store.dispatch(setUserAddress(userAddress));
 });
 
 api.on("signOut", () => {

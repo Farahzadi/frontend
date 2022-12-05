@@ -2,7 +2,7 @@ import { createSlice, createAction } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import api from "lib/api";
 
-const makeScope = (state) => `${state.network}-${state.userId}`;
+const makeScope = (state) => `${state.network}-${state.userAddress}`;
 
 const translators = {
   // used for both initial orders and order updates
@@ -15,7 +15,7 @@ const translators = {
     baseQuantity: +o.base_quantity,
     quoteQuantity: +o.quote_quantity,
     expires: o.expiration,
-    userId: o.user_id,
+    userAddress: o.user_address,
     status: o.status,
     remaining: o.unfilled,
     type: o.type,
@@ -42,11 +42,11 @@ const translators = {
     amount: +f.amount,
     status: f.status,
     txHash: f.tx_hash,
-    takerUserId: f.taker_user_id,
-    makerUserId: f.maker_user_id,
+    takerUserAddress: f.taker_user_address,
+    makerUserAddress: f.maker_user_address,
     type: f.type,
-    takerOrderId: f.taker_order_id,
-    makerOrderId: f.maker_order_id,
+    takerOrderAddress: f.taker_order_address,
+    makerOrderAddress: f.maker_order_address,
     insertTimestamp: f.created_at,
     makerFee: +f.maker_fee,
     takerFee: +f.taker_fee,
@@ -83,7 +83,7 @@ export const apiSlice = createSlice({
       hasBridge: true,
     },
     providerState: "DISCONNECTED",
-    userId: null,
+    userAddress: null,
     currentMarket: "ETH-DAI",
     config: {},
     marketFills: {},
@@ -172,7 +172,7 @@ export const apiSlice = createSlice({
         .forEach((fill) => {
           state.userFills[fill.id] = {
             ...fill,
-            isTaker: fill.takerUserId === state.userId.toString(),
+            isTaker: fill.takerUserAddress === state.userAddress,
           };
         });
     },
@@ -193,12 +193,12 @@ export const apiSlice = createSlice({
       });
     },
     _user_orders(state, { payload }) {
-      if (!state.userId) return;
+      if (!state.userAddress) return;
       payload
         .map(translators.userOrder)
         .filter((order) => order.chainId === state.network.name)
         .forEach((order) => {
-          if (order.userId === state.userId.toString()) {
+          if (order.userAddress === state.userAddress) {
             state.userOrders[order.id] = order;
             state.unbroadcasted = order.unbroadcasted;
           }
@@ -253,8 +253,8 @@ export const apiSlice = createSlice({
             matchedOrder.remaining = update.remaining;
             if (
               matchedOrder &&
-              state.userId &&
-              matchedOrder.userId === state.userId.toString()
+              state.userAddress &&
+              matchedOrder.userAddress === state.userAddress
             ) {
               if (!state.userOrders[matchedOrder.id])
                 state.userOrders[matchedOrder.id] = matchedOrder;
@@ -367,8 +367,8 @@ export const apiSlice = createSlice({
         state.orders = {};
       }
     },
-    setUserId(state, { payload }) {
-      state.userId = payload;
+    setUserAddress(state, { payload }) {
+      state.userAddress = payload;
     },
     setNetwork(state, { payload }) {
       state.network.name = payload.name;
@@ -393,20 +393,21 @@ export const apiSlice = createSlice({
       state.selectedPrice = payload;
     },
     clearBridgeReceipts(state, { payload }) {
-      const userId = payload;
+      const userAddress = payload;
       const newBridgeReceipts = state.bridgeReceipts.filter((r) => {
-        return r.userId !== userId;
+        return r.userAddress !== userAddress;
       });
       state.bridgeReceipts = newBridgeReceipts;
     },
     addBridgeReceipt(state, { payload }) {
       if (!payload || !payload.txId) return;
-      const { amount, token, txUrl, type, userId } = payload;
-      if (!state.userId) {
+      const { amount, token, txUrl, type, userAddress } = payload;
+      if (!state.userAddress) {
         //‌This is for addresses that have not yet been activated
         state.bridgeReceipts.unshift(payload);
         toast.info("Your wallet address is going to be activate!");
-      } else if (state.userId.toString() === userId.toString()) {
+      }
+      if (state.userAddress === userAddress) {
         state.bridgeReceipts.unshift(payload);
       } else {
         return {};
@@ -482,7 +483,7 @@ export const {
   setProviderState,
   clearBridgeReceipts,
   setBalances,
-  setUserId,
+  setUserAddress,
   addBridgeReceipt,
   addbridgeReceiptStatus,
   setCurrentMarket,
@@ -510,7 +511,7 @@ export const marketInfoSelector = (state) => state.api.marketinfo;
 export const liquiditySelector = (state) => state.api.liquidity;
 export const currentMarketSelector = (state) => state.api.currentMarket;
 export const bridgeReceiptsSelector = (state) => state.api.bridgeReceipts;
-export const userIdSelector = (state) => state.api.userId;
+export const userAddressSelector = (state) => state.api.userAddress;
 export const orderTypeSelector = (state) => state.api.orderType;
 export const unbroadcastedSelector = (state) => state.api.unbroadcasted;
 export const rangePriceSelector = (state) => state.api.rangePrice;

@@ -9,7 +9,7 @@ import {
   currentMarketSelector,
   unbroadcastedSelector,
   lastPricesSelector,
-  userIdSelector,
+  userAddressSelector,
   networkSelector,
 } from "lib/store/features/api/apiSlice";
 import { Modal } from "../../atoms/Modal";
@@ -701,7 +701,7 @@ const mapStateToProps = (state) => ({
   currentMarket: currentMarketSelector(state),
   unbroadcasted: unbroadcastedSelector(state),
   lastPrices: lastPricesSelector(state),
-  userId: userIdSelector(state),
+  userAddress: userAddressSelector(state),
   network: networkSelector(state),
 });
 

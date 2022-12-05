@@ -11,7 +11,7 @@ import {
   setOrderType,
   orderTypeSelector,
   allOrdersSelector,
-  userIdSelector,
+  userAddressSelector,
   orderSideSelector,
 } from "lib/store/features/api/apiSlice";
 
@@ -249,7 +249,7 @@ class TradePriceTable extends React.Component {
 const mapStateToProps = (state) => ({
   orderType: orderTypeSelector(state),
   allOrders: allOrdersSelector(state),
-  userId: userIdSelector(state),
+  userAddress: userAddressSelector(state),
   orderSide: orderSideSelector(state),
 });
 

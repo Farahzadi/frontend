@@ -9,7 +9,7 @@ import {
   setOrderType,
   orderTypeSelector,
   allOrdersSelector,
-  userIdSelector,
+  userAddressSelector,
   orderSideSelector,
 } from "lib/store/features/api/apiSlice";
 import api from "lib/api";
@@ -44,9 +44,13 @@ class SpotBox extends React.Component {
           res[key] = obj[key];
           return res;
         }, {});
-
-    let filltered = this.props.userId
-      ? Object.filter(this.props.allOrders, (order) => order.side === orderSide)
+        
+    let filltered = this.props.userAddress
+      ? Object.filter(
+          this.props.allOrders,
+          (order) =>
+            order.side === orderSide 
+        )
       : "";
 
     return filltered;
@@ -149,7 +153,7 @@ class SpotBox extends React.Component {
 const mapStateToProps = (state) => ({
   orderType: orderTypeSelector(state),
   allOrders: allOrdersSelector(state),
-  userId: userIdSelector(state),
+  userAddress: userAddressSelector(state),
   orderSide: orderSideSelector(state),
 });
 
