@@ -18,7 +18,6 @@ const Navbar = () => {
     { label: 'Docs', href: getDocsLink(), target: 'blank' },
   ];
   console.log('docs: ',getDocsLink());
-  console.log('base: ', getBaseUrl());
   console.log('trade: ', getTradeLink());
   const { isAnimated } = useContext(BGContext);
   const [visible, setIsVisible] = useState(false);

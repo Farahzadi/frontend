@@ -1,6 +1,5 @@
 import Head from 'next/head';
 import React from 'react';
-import { getBaseUrl } from '../../utils/env';
 
 const CustomizedHead = ({
   title = 'Dexpresso',
@@ -8,9 +7,9 @@ const CustomizedHead = ({
   description = 'Dexpresso is a decentralized exchange',
   relativePath = '',
   imgUrl = '/images/logo/Dexpresso_horizontal.png',
-  children
+  children,
+  baseUrl
 }) => {
-    const baseUrl = getBaseUrl();
     const imgSrc = baseUrl + imgUrl;
     const url = baseUrl + relativePath;
   return (
