@@ -22,6 +22,7 @@ import { BGContext } from '../contexts/BGContext';
 import CustomizedHead from '../components/Head/Head';
 import Networks from '../components/Sections/Networks/Network';
 import { getNetworks, getTradeStats } from '../api/API';
+import { getBaseUrl } from '../utils/env';
 
 export default function Home({ networks, trades, baseUrl }) {
   const { isAnimated } = useContext(BGContext);
