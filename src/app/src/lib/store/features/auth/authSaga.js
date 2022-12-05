@@ -19,7 +19,7 @@ function* handleHydration({ payload, key }) {
       }
     } else {
       console.log(`Switching to default network "${DEFAULT_NETWORK}"`);
-      api.setNetwork(DEFAULT_NETWORK);
+      api.setNetwork(DEFAULT_NETWORK ?? "ethereum");
     }
   }
 }

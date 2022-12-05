@@ -205,6 +205,10 @@ header.bridge_header {
   .mobile_header img:nth-child(1) {
     margin-left: 20px;
 }
+.mobile-account-dropdown{
+    right: -93px !important;
+    top: -500%;
+}
 
 @media screen and (max-width: 991px) {
     #networkSelector {

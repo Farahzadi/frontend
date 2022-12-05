@@ -23,12 +23,13 @@ import CustomizedHead from '../components/Head/Head';
 import Networks from '../components/Sections/Networks/Network';
 import { getNetworks, getTradeStats } from '../api/API';
 
-export default function Home({ networks, trades }) {
+export default function Home({ networks, trades, baseUrl }) {
   const { isAnimated } = useContext(BGContext);
   return (
     <>
       <CustomizedHead>
         <meta
+          baseUrl={baseUrl}
           name='description'
           content='Dexpresso is a decentralized exchange'
         ></meta>
@@ -75,3 +76,10 @@ export const getServerSideProps = async (context) => {
     },
   };
 };
+export const getStaticProps = () => {
+  return({
+    props: {
+      baseUrl: getBaseUrl()
+    }
+  })
+}

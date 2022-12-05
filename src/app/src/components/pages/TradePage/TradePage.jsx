@@ -151,21 +151,21 @@ const TradePage = () => {
 
   const askBins =
     allOrders !== {}
-      ? Object.values(allOrders).filter((order) => order.side === "s")
+      ? Object.values(allOrders).filter((order) => order.side === "s").reverse()
       : [];
 
   const bidBins =
     allOrders !== {}
-      ? Object.values(allOrders).filter((order) => order.side === "b")
+      ? Object.values(allOrders).filter((order) => order.side === "b").reverse()
       : [];
 
-  const activeLimitAndMarketOrdersCount = Object.values(userOrders).filter(
+  const activeLimitAndMarketOrders = Object.values(userOrders).filter(
     (order) => activeOrderStatuses.includes(order.status) && order.type === "l"
-  ).length;
+  );
 
   const activeSwapOrders = Object.values(userOrders).filter(
     (order) => activeOrderStatuses.includes(order.status) && order.type === "s"
-  ).length;
+  );
 
   let tradingViewMarket = currentMarket;
   const baseCurrency = currentMarket.split("-")[0];
@@ -218,8 +218,8 @@ const TradePage = () => {
                           }}
                           user={user}
                           currentMarket={currentMarket}
-                          activeLimitAndMarketOrdersCount={
-                            activeLimitAndMarketOrdersCount
+                          activeLimitAndMarketOrders={
+                            activeLimitAndMarketOrders
                           }
                           activeSwapOrdersCount={activeSwapOrders}
                           liquidity={liquidity}
@@ -355,12 +355,12 @@ const TradePage = () => {
                     }
                     return (
                       <p>
-                        <code>v0.4.10</code>{" "}
+                        <code>v0.0.1</code>{" "}
                       </p>
                     );
                   }}
                 </CacheHandling>
-                <p>v0.4.10</p>{" "}
+                <p>v0.0.1</p>{" "}
               </div>
               <div className="head_left_socials my-1 my-lg-0 footer-icons">
                 {" "}

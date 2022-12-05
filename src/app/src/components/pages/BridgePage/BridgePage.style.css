@@ -31,7 +31,7 @@
   flex-direction: column;
   align-items: center;
   top: 40%;
-  left: -8%;
+  left: -7%;
   position: absolute;
 }
 
@@ -170,7 +170,6 @@
 
 .bridge_box_transaction_txId {
   font-size: 15px;
-  margin-top: 8px;
   text-align: center;
 }
 
@@ -462,8 +461,13 @@
   display: none;
 }
 .select-currency-width {
-  top: -528%;
-  left: -8%;
+  top: -528% !important;
+  left: -8% !important;
+}
+@media only screen and (max-width: 1290px) {
+  .bridge_container{
+    max-width: 90%;
+  }
 }
 @media only screen and (max-width: 960px) {
   .bridge_box {
@@ -561,5 +565,14 @@
   }
   .bridge_box_parent{
     max-width: 100%;
+  }
+  .bridge_box_swap_wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    top: -10%;
+    left: 40%;
+    position: absolute;
+    transform: rotate(90deg);
   }
 }

@@ -2,7 +2,9 @@ import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
   typography: {
-    fontFamily: ['Inter', 'sans-serif'].join(','),
+    fontFamily: ['system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Helvetica Neue',
+    'Arial', 'Noto Sans', 'Liberation Sans', 'sans-serif', 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'].join(','),
   },
   palette: {
     primary: {
@@ -14,6 +16,13 @@ const theme = createTheme({
       main: '#071428',
       dark: '#050f1e',
       light: '#14243c'
+    },
+    text: {
+      primary: '#fff'
+    },
+    error: {
+      main: '#8C2920',
+      light: '#D95436',
     }
   },
   components: {

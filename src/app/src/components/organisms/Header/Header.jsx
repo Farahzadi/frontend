@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { Button, Dropdown, AccountDropdown, Menu, MenuItem } from "components";
 import { userSelector } from "lib/store/features/auth/authSlice";
@@ -18,8 +18,6 @@ export const Header = (props) => {
   const [connecting, setConnecting] = useState(false);
   const user = useSelector(userSelector);
   const networkConfig = useSelector(networkConfigSelector);
-  // const history = useHistory();
-  // const location = useLocation();
 
   const hasBridge = networkConfig.hasBridge;
 
@@ -33,6 +31,7 @@ export const Header = (props) => {
     }
   };
 
+ 
   const dropdownMenu = (
     <Menu onSelect={handleMenu}>
       <MenuItem key="signOut">Disconnect</MenuItem>
@@ -77,24 +76,21 @@ export const Header = (props) => {
                   </NavLink>
                 </li>
               )}
-              {process.env.NODE_ENV === "development" && (
-                <li>
-                  <NavLink exact to="/">
-                    Docs
-                  </NavLink>
-                </li>
-              )}
+              <li>
+                <a href="https://docs.dexpresso.exchange/">Docs</a>
+              </li>
             </ul>
           </div>
           <div className="wallet">
             <div className="d-flex align-items-center justify-content-between mb-3 mb-lg-0">
               {user.id && user.address ? (
-                <Dropdown overlay={dropdownMenu}>
-                  <button className="address_button">
-                    {user.address.slice(0, 6)}...
-                    {user.address.slice(-4)}
-                  </button>
-                </Dropdown>
+                // <Dropdown overlay={dropdownMenu}>
+                //   <button className="address_button">
+                //     {user.address.slice(0, 6)}...
+                //     {user.address.slice(-4)}
+                //   </button>
+                // </Dropdown>
+                <AccountDropdown/>
               ) : (
                 <Button
                   loading={connecting}
@@ -113,9 +109,9 @@ export const Header = (props) => {
       {/* desktop header */}
       <div className="head_wrapper_desktop dex_h">
         <div className="nav_items">
-          <a href="#" rel="noreferrer">
+          <NavLink exact to="/">
             <img src={logo} alt="logo" />
-          </a>
+          </NavLink>
           <ul className="mx-0 px-0">
             <li>
               <NavLink exact to="/" activeClassName="active_link">
@@ -132,14 +128,12 @@ export const Header = (props) => {
             {/* {user.id ? */}
             <li>
               <NavLink exact to="/security" activeClassName="active_link">
-                security
+                Security
               </NavLink>
             </li>
             {/* :null} */}
             <li>
-              <NavLink exact to="/">
-                Docs
-              </NavLink>
+              <a href="https://docs.dexpresso.exchange/">Docs</a>
             </li>
           </ul>
         </div>
