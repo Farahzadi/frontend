@@ -73,13 +73,7 @@ export const getServerSideProps = async (context) => {
     props: {
       networks: netResponse?.networks || [],
       trades: tradeRes?.summary || [],
+      baseUrl: getBaseUrl()
     },
   };
 };
-export const getStaticProps = () => {
-  return({
-    props: {
-      baseUrl: getBaseUrl()
-    }
-  })
-}
