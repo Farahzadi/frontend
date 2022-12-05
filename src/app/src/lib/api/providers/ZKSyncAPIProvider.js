@@ -138,7 +138,8 @@ export default class ZKSyncAPIProvider extends APIProvider {
   };
 
   getAddress = async () => {
-    return this.syncWallet?.cachedAddress ?? (await this.wallet?.getAddress());
+    const address = this.syncWallet?.cachedAddress ?? (await this.wallet?.getAddress());
+    return ethers.utils.getAddress(address);
   };
 
   signMessage = async (message) => {

@@ -20,7 +20,7 @@ function* delegateAuthChangeSaga({ type, payload }) {
   if (type === "auth/signIn" || type === "auth/signOut") {
     console.log("test auth", payload);
     console.log("adddress", payload?.address);
-    put(
+    yield put(
       setUserAddress(
         payload?.address && ethers.utils.getAddress(payload?.address)
       )

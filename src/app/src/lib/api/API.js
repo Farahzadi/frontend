@@ -331,6 +331,8 @@ export default class API extends Emitter {
             sessionStorage.setItem(networkKey, signature);
           }
 
+          this.emit("userChanged", address);
+
           this.sendRequest("login", "POST", {
             network: network,
             address: address,
