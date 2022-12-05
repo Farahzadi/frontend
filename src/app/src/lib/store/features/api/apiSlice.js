@@ -172,7 +172,7 @@ export const apiSlice = createSlice({
         .forEach((fill) => {
           state.userFills[fill.id] = {
             ...fill,
-            isTaker: fill.takerUserAddress === state.userAddress.toString(),
+            isTaker: fill.takerUserAddress === state.userAddress,
           };
         });
     },
@@ -198,7 +198,7 @@ export const apiSlice = createSlice({
         .map(translators.userOrder)
         .filter((order) => order.chainId === state.network.name)
         .forEach((order) => {
-          if (order.userAddress === state.userAddress.toString()) {
+          if (order.userAddress === state.userAddress) {
             state.userOrders[order.id] = order;
             state.unbroadcasted = order.unbroadcasted;
           }
@@ -254,7 +254,7 @@ export const apiSlice = createSlice({
             if (
               matchedOrder &&
               state.userAddress &&
-              matchedOrder.userAddress === state.userAddress.toString()
+              matchedOrder.userAddress === state.userAddress
             ) {
               if (!state.userOrders[matchedOrder.id])
                 state.userOrders[matchedOrder.id] = matchedOrder;
