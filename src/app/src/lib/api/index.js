@@ -201,6 +201,7 @@ const api = new Core({
     ],
     zksyncv1_goerli: ["ETH-USDC", "ETH-DAI", "DAI-USDC"],
     ethereum: ["ETH-USDC", "ETH-DAI", "DAI-USDC"],
+    ethereum_goerli: ["ETH-USDC", "ETH-DAI", "DAI-USDC"],
   },
 });
 

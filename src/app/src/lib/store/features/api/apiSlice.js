@@ -124,7 +124,7 @@ export const apiSlice = createSlice({
       if (!payload) return;
       payload.map(translators.markets_stats).forEach((update) => {
         const { market, price, priceChange: change } = update;
-        if (api.validMarkets[state.network.name].includes(market)) {
+        if (api.validMarkets[state.network.name]?.includes(market)) {
           state.lastPrices[market] = {
             price,
             change,
