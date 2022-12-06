@@ -31,7 +31,6 @@ import {
 import { userSelector } from "lib/store/features/auth/authSlice";
 import "./style.css";
 import api from "lib/api";
-import APIProvider from "lib/api/providers/APIProvider";
 
 const TradePage = () => {
   const [marketDataTab, updateMarketDataTab] = useState("pairs");
@@ -58,7 +57,7 @@ const TradePage = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (!uuid) return;
+    if (!uuid || !network) return;
 
     const sub = () => api.subscribeToMarket(currentMarket);
 
@@ -72,7 +71,7 @@ const TradePage = () => {
     return () => {
       api.off("open");
     };
-  }, [uuid, currentMarket]);
+  }, [uuid, currentMarket, network]);
 
   // useEffect(() => {
   //   if (uuid && providerState === APIProvider.State.CONNECTED)
@@ -109,22 +108,17 @@ const TradePage = () => {
     .filter((fill) => fill.id > maxFillId - 500)
     .sort((a, b) => b.id - a.id)
     .forEach((fill) => {
-      if (
-        api.isZksyncChain() &&
-        fill.status !== "e" &&
-        fill.status !== "r" &&
-        fill.status !== "c"
-      ) {
-        const fillWithoutFee = api.getFillDetailsWithoutFee(fill);
-        fillData.push({
-          price: fillWithoutFee.price,
-          remaining: fillWithoutFee.baseQuantity,
-          quoteQuantity: fillWithoutFee.quoteQuantity,
-          side: fill.takerSide,
-          time: fillWithoutFee.time,
-        });
-      } else {
-        if (fill.status !== "e" && fill.status !== "r" && fill.status !== "c") {
+      if (fill.status !== "e" && fill.status !== "r" && fill.status !== "c") {
+        if (["zksyncv1", "zksyncv1_goerli"].includes(network)) {
+          const fillWithoutFee = api.getFillDetailsWithoutFee(fill);
+          fillData.push({
+            price: fillWithoutFee.price,
+            remaining: fillWithoutFee.baseQuantity,
+            quoteQuantity: fillWithoutFee.quoteQuantity,
+            side: fill.takerSide,
+            time: fillWithoutFee.time,
+          });
+        } else {
           fillData.push({
             price: fill.price,
             remaining: fill.amount,
@@ -151,12 +145,16 @@ const TradePage = () => {
 
   const askBins =
     allOrders !== {}
-      ? Object.values(allOrders).filter((order) => order.side === "s").reverse()
+      ? Object.values(allOrders)
+          .filter((order) => order.side === "s")
+          .reverse()
       : [];
 
   const bidBins =
     allOrders !== {}
-      ? Object.values(allOrders).filter((order) => order.side === "b").reverse()
+      ? Object.values(allOrders)
+          .filter((order) => order.side === "b")
+          .reverse()
       : [];
 
   const activeLimitAndMarketOrders = Object.values(userOrders).filter(

@@ -79,8 +79,8 @@ export const apiSlice = createSlice({
   initialState: {
     networks: [],
     network: {
-      name: "zksyncv1_goerli",
-      hasBridge: true,
+      name: null,
+      hasBridge: null,
     },
     providerState: "DISCONNECTED",
     userAddress: null,

@@ -1,49 +1,39 @@
 import Decimal from "decimal.js";
 import { createIcon } from "@download/blockies";
 import Emitter from "tiny-emitter";
-import { ethers } from "ethers";
 
 import { getENSName } from "lib/ens";
 import { formatAmount } from "lib/utils";
 import erc20ContractABI from "lib/contracts/ERC20.json";
 import { maxAllowance } from "./constants";
 import axios from "axios";
-import { toast } from "react-toastify";
-import APIProvider from "./providers/APIProvider";
 
 const DEFAULT_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK;
 
-export default class API extends Emitter {
-  networks = {};
+export default class Core extends Emitter {
+  networkClasses = {};
   network = DEFAULT_NETWORK || "zksyncv1_goerli";
+  networkInterface = null;
   ws = null;
-  apiProvider = null;
   currencies = null;
   websocketUrl = null;
-  _signInProgress = null;
   _profiles = {};
-  changingWallet = false;
   lastSocketOpenState = false;
 
   constructor({
     infuraId,
     websocketUrl,
     apiUrl,
-    networks,
+    networkClasses,
     currencies,
     validMarkets,
     signInMessage,
   }) {
     super();
 
-    if (networks) {
-      Object.entries(networks).forEach(([networkName, network]) => {
-        this.networks[networkName] = {
-          provider: new network.apiProvider(this, this.onProviderStateChange),
-          contract: network.contract,
-        };
-      });
-    }
+    this.networkClasses = networkClasses;
+    this.networkInterface = null;
+    this.network = null;
 
     this.infuraId = infuraId;
     this.websocketUrl = websocketUrl;
@@ -59,87 +49,45 @@ export default class API extends Emitter {
 
   setNetwork = async (network) => {
     if (this.network === network) return;
-    await this.signOut();
+    await this.stopNetworkInterface();
+    try {
+      this.networkInterface = this.initiateNetworkInteface(network);
+    } catch (err) {
+      console.log(err);
+      return;
+    }
     this.network = network;
-    const hasBridge = this.getAPIProvider(network).HAS_BRIDGE;
-    this.emit("networkChange", { name: network, hasBridge });
+    this.emit("networkChange", {
+      name: network,
+      ...this.networkInterface.getConfig(),
+    });
   };
 
   connectWallet = async () => {
-    if (!this.network) return;
-    await this.signOut();
-    try {
-      await this.setAPIProvider(this.network);
-      await this.signIn();
-    } catch (err) {
-      console.log("Wallet connection failed with error, disconnecting.");
-      await this.clearAPIProvider();
-    }
+    console.log("connect try", this.network, this.networkInterface);
+    if (this.network) await this.networkInterface?.connectWallet();
   };
 
   disconnectWallet = async () => {
-    await this.signOut();
+    await this.networkInterface?.disconnectWallet();
   };
 
   onProviderStateChange = (state) => {
     this.emit("providerStateChange", state);
   };
 
-  getAPIProvider = (network) => {
-    return this.networks[network]?.provider;
+  initiateNetworkInteface = (network) => {
+    const NetworkClass = this.networkClasses[network];
+    if (!NetworkClass) throw new Error("Network not found");
+    return new NetworkClass({ core: this, signInMessage: this.signInMessage });
   };
 
-  setAPIProvider = async (network) => {
-    if (this.apiProvider?.NETWORK === network) return;
-    this.apiProvider?.stop();
-
-    if (!network) {
-      this.apiProvider = null;
-      return;
-    }
-
-    this.apiProvider = this.getAPIProvider(network);
-
-    let result;
-    try {
-      result = await this.apiProvider.start();
-    } catch (err) {
-      console.error("Error on connecting to provider:", err);
-      throw err;
-    }
-
-    if (result === "redirectToBridge") {
-      // const isBrige = !/^\/bridge(\/.*)?$/.test(window.location.pathname);
-      // if (!isBrige) {
-      //   // window.history.pushState("/bridge");
-      //   toast.error(
-      //     "Account not found. Please use the bridge to deposit funds before trying again."
-      //   );
-      // }
-      toast.info(
-        <>
-          Account not activated. Please activate your account first:{" "}
-          <a
-            href="https://wallet.zksync.io/?network=goerli"
-            style={{ color: "white" }}
-            target="_blank"
-          >
-            {" "}
-            go to wallet.zksync.io
-          </a>
-        </>
-      );
-      throw new Error();
-    }
-
-    this.apiProvider.onAccountChange(this.signOut);
-  };
-
-  clearAPIProvider = async () => {
-    await this.setAPIProvider(null);
+  stopNetworkInterface = async () => {
+    await this.networkInterface?.stop();
   };
 
   getProfile = async (address) => {
+    if (!address) throw new Error("profile request for undefined address");
     if (!this._profiles[address]) {
       const profile = (this._profiles[address] = {
         description: null,
@@ -230,10 +178,7 @@ export default class API extends Emitter {
   };
 
   getAccountState = async () => {
-    const accountState = { ...(await this.apiProvider.getAccountState()) };
-    accountState.profile = await this.getProfile(accountState.address);
-    this.emit("accountState", accountState);
-    return accountState;
+    return (await this.networkInterface?.getAccountState()) ?? {};
   };
 
   ping = () => this.send("ping");
@@ -242,7 +187,7 @@ export default class API extends Emitter {
     return this.ws.send(JSON.stringify({ op, args }));
   };
 
-  sendRequest = (url, method, data, isPrivate = false) => {
+  sendRequest = async (url, method, data, isPrivate = false) => {
     if (method) method = method.toLowerCase();
     let token;
     if (isPrivate) {
@@ -261,7 +206,7 @@ export default class API extends Emitter {
       },
       params: !hasBody && data,
     };
-    axios[method || "get"](
+    await axios[method || "get"](
       fullUrl,
       hasBody ? finalData : config,
       hasBody && config
@@ -296,89 +241,6 @@ export default class API extends Emitter {
       });
   };
 
-  signIn = async () => {
-    const { network } = this;
-    const { uuid } = this.ws;
-    let accountState;
-    if (!(this.apiProvider?.state.get() === APIProvider.State.CONNECTED))
-      throw new Error("SignIn Error: wallet not connected");
-    if (!uuid) throw new Error("SignIn Error: UUID not set");
-    if (!this._signInProgress) {
-      this._signInProgress = Promise.resolve()
-        .then(async () => {
-          const address = await this.apiProvider.getAddress();
-
-          const networkKey = `login:${network}`;
-
-          let signature = sessionStorage.getItem(networkKey);
-
-          const shouldSign =
-            this.changingWallet ||
-            !signature ||
-            !(await this.apiProvider.verifyMessage(
-              this.signInMessage,
-              signature
-            ));
-
-          if (shouldSign) {
-            sessionStorage.removeItem(networkKey);
-            signature = await this.apiProvider.signMessage(this.signInMessage);
-            if (!signature) {
-              const err = new Error("Signing failed.");
-              console.error("Error on signing message:", err);
-              throw err;
-            }
-            sessionStorage.setItem(networkKey, signature);
-          }
-
-          this.emit("userChanged", address);
-
-          this.sendRequest("login", "POST", {
-            network: network,
-            address: address,
-            signature: signature,
-            user_data: true,
-            uuid,
-          });
-
-          try {
-            accountState = await this.getAccountState();
-          } catch (err) {
-            await this.signOut();
-            throw err;
-          }
-
-          this.emit("signIn", accountState);
-          this._accountState = accountState;
-          return accountState;
-        })
-        .finally(() => {
-          this._signInProgress = null;
-          this.changingWallet = false;
-        });
-    }
-
-    return this._signInProgress;
-  };
-
-  signOut = async () => {
-    if (this._signInProgress) {
-      return;
-    } else if (!this.apiProvider) {
-      return;
-    } else if (this.web3Modal) {
-      this.web3Modal.clearCachedProvider();
-    }
-    this._accountState = null;
-    this.changingWallet = true;
-    sessionStorage.removeItem("access_token");
-    this.clearAPIProvider();
-    this.emit("balanceUpdate", "wallet", {});
-    this.emit("balanceUpdate", this.network, {});
-    this.emit("accountState", {});
-    this.emit("signOut");
-  };
-
   subscribeToMarket = (market) => {
     this.sendRequest("markets/subscription", "POST", {
       network: this.network,
@@ -410,63 +272,19 @@ export default class API extends Emitter {
     });
   };
 
-  isZksyncChain = () => {
-    return true;
-  };
-
   cancelOrder = (orderId) => {
     this.sendRequest(
       "user/order",
-      "DELETE",
+      "POST",
       {
-        id: orderId,
+        tx: data.tx,
+        market: data.market,
+        amount: data.amount,
+        price: data.price,
+        type: orderType,
       },
       true
     );
-  };
-
-  verifiedAccountNonce = async () => {
-    return await this._accountState.verified.nonce;
-  };
-
-  increaseWalletNonce = async () => {
-    let increaseNonceResult = {};
-
-    const increaseNonceRes = await this.apiProvider.increaseWalletNonce();
-    // cancel all orders if wallet nonce is increased
-    this.cancelAllOrders();
-    const verifiedAccountNonce = await this._accountState.verified.nonce;
-    if (increaseNonceRes) {
-      increaseNonceResult.response = increaseNonceRes;
-      increaseNonceResult.verifiedAccountNonce = verifiedAccountNonce;
-    }
-
-    return increaseNonceResult;
-  };
-
-  depositL2 = async (amount, token) => {
-    return this.apiProvider.depositL2(amount, token);
-  };
-
-  withdrawL2 = async (amount, token) => {
-    return this.apiProvider.withdrawL2(amount, token);
-  };
-
-  depositL2Fee = async (token) => {
-    return this.apiProvider.depositL2Fee(token);
-  };
-
-  withdrawL2Fee = async (token) => {
-    return this.apiProvider.withdrawL2Fee(token);
-  };
-
-  getCommitedBalance = async () => {
-    const commitedBalance = this.apiProvider.getCommitedBalance();
-    if (commitedBalance) {
-      return commitedBalance;
-    } else {
-      return 0;
-    }
   };
 
   cancelAllOrders = async () => {
@@ -482,16 +300,107 @@ export default class API extends Emitter {
     return true;
   };
 
-  isImplemented = (method) => {
-    return this.apiProvider[method] && !this.apiProvider[method].notImplemented;
+  getOrderBook(market, side) {
+    this.sendRequest("orders", "GET", {
+      network: this.network,
+      market,
+      side: undefined,
+      page: undefined,
+      per_page: undefined,
+    });
+  }
+
+  submitOrder = async (
+    product,
+    side,
+    price,
+    amount,
+    feeType,
+    fee,
+    orderType
+  ) => {
+    if (!this.isSignedIn()) return;
+
+    const data = await this.networkInterface.prepareOrder(
+      product,
+      side,
+      price,
+      amount,
+      feeType,
+      fee,
+      orderType
+    );
+
+    this.sendRequest(
+      "user/order",
+      "POST",
+      {
+        tx: data.tx,
+        market: data.market,
+        amount: data.amount,
+        price: data.price,
+        type: orderType,
+      },
+      true
+    );
+  };
+
+  getNetworks = () => {
+    this.axiosInstance.get("/networks").then((res) => {
+      this.emit("setNetworkList", res.data.networks);
+    });
+  };
+
+  verifiedAccountNonce = async () => {
+    return await this._accountState.verified.nonce;
+  };
+
+  increaseWalletNonce = async () => {
+    let increaseNonceResult = {};
+
+    const increaseNonceRes = await this.networkInterface.increaseWalletNonce();
+    // cancel all orders if wallet nonce is increased
+    this.cancelAllOrders();
+    const verifiedAccountNonce = await this._accountState.verified.nonce;
+    if (increaseNonceRes) {
+      increaseNonceResult.response = increaseNonceRes;
+      increaseNonceResult.verifiedAccountNonce = verifiedAccountNonce;
+    }
+
+    return increaseNonceResult;
+  };
+
+  depositL2 = async (amount, token) => {
+    return this.networkInterface?.depositL2(amount, token);
+  };
+
+  withdrawL2 = async (amount, token) => {
+    return this.networkInterface?.withdrawL2(amount, token);
+  };
+
+  depositL2Fee = async (token) => {
+    return this.networkInterface?.depositL2Fee(token);
+  };
+
+  withdrawL2Fee = async (token) => {
+    return this.networkInterface?.withdrawL2Fee(token);
+  };
+
+  getCommitedBalance = async () => {
+    const commitedBalance = this.networkInterface?.getCommitedBalance();
+    if (commitedBalance) {
+      return commitedBalance;
+    } else {
+      return 0;
+    }
   };
 
   getNetworkContract = () => {
-    return this.apiProvider.BRIDGE_CONTRACT;
+    return this.networkInterface?.BRIDGE_CONTRACT;
   };
 
   approveSpendOfCurrency = async (currency, allowance = maxAllowance) => {
-    return await this.apiProvider?.approveSpendOfCurrency(
+    return await this.networkInterface?.approveSpendOfCurrency(
       currency,
       allowance || maxAllowance,
       erc20ContractABI
@@ -499,7 +408,7 @@ export default class API extends Emitter {
   };
 
   getBalanceOfCurrency = async (currency) => {
-    return await this.apiProvider?.getBalanceOfCurrency(
+    return await this.networkInterface?.getBalanceOfCurrency(
       currency,
       erc20ContractABI,
       maxAllowance
@@ -507,18 +416,23 @@ export default class API extends Emitter {
   };
 
   getWalletBalances = async () => {
-    if (!this.apiProvider) return null;
+    if (!this.networkInterface || !this.networkInterface.apiProvider)
+      return null;
     const balances = {};
 
     const getBalance = async (ticker) => {
-      const { balance, allowance } = await this.getBalanceOfCurrency(ticker);
-      balances[ticker] = {
-        value: balance,
-        allowance,
-        valueReadable: formatAmount(balance, this.currencies[ticker]),
-      };
+      try {
+        const { balance, allowance } = await this.getBalanceOfCurrency(ticker);
+        balances[ticker] = {
+          value: balance,
+          allowance,
+          valueReadable: formatAmount(balance, this.currencies[ticker]),
+        };
 
-      this.emit("balanceUpdate", "wallet", { ...balances });
+        this.emit("balanceUpdate", "wallet", { ...balances });
+      } catch (err) {
+        console.error(err);
+      }
     };
     let tickers;
     try {
@@ -535,8 +449,8 @@ export default class API extends Emitter {
   };
 
   getBalances = async () => {
-    if (!this.apiProvider) return null;
-    const balances = await this.apiProvider.getBalances();
+    if (!this.networkInterface) return null;
+    const balances = await this.networkInterface.getBalances();
     this.emit("balanceUpdate", this.network, balances);
     return balances;
   };
@@ -660,60 +574,6 @@ export default class API extends Emitter {
     }
   }
 
-  getOrderBook(market, side) {
-    this.sendRequest("orders", "GET", {
-      network: this.network,
-      market,
-      side: undefined,
-      page: undefined,
-      per_page: undefined,
-    });
-  }
-
-  submitOrder = async (
-    product,
-    side,
-    price,
-    amount,
-    feeType,
-    fee,
-    orderType
-  ) => {
-    if (!this.isSignedIn()) return;
-
-    const data = await this.apiProvider.submitOrder(
-      product,
-      side,
-      price,
-      amount,
-      feeType,
-      fee,
-      orderType
-    );
-
-    this.sendRequest(
-      "user/order",
-      "POST",
-      {
-        tx: data.tx,
-        market: data.market,
-        amount: data.amount,
-        price: data.price,
-        type: orderType,
-      },
-      true
-    );
-  };
-
-  submitSwap = async (product, side, price, amount) => {
-    await this.apiProvider.submitSwap(product, side, price, amount);
-  };
-
-  getNetworks = () => {
-    this.axiosInstance.get("/networks").then((res) => {
-      this.emit("setNetworkList", res.data.networks);
-    });
-  };
   isSignedIn = () => {
     return sessionStorage.getItem("access_token") !== null;
   };
