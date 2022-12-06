@@ -26,6 +26,7 @@ class SpotForm extends React.Component {
       baseAmount: "",
       maxSizeSelected: false,
       modalShow: false,
+      orderSide: "",
     };
     this.minimumAmounts = {
       ETH: 0.0002,
@@ -80,9 +81,11 @@ class SpotForm extends React.Component {
       this.props.user.committed.balances[baseCurrency] /
       Math.pow(10, api.currencies[baseCurrency].decimals);
     this.props.activeLimitAndMarketOrders.map((order) => {
-      totalActiveLimitOrderBaseQuantity += order.baseQuantity;
+      if (order.side === "s")
+        totalActiveLimitOrderBaseQuantity += order.baseQuantity;
     });
-    return (baseBalance -= totalActiveLimitOrderBaseQuantity);
+    let finalBaseBalance = (baseBalance -= totalActiveLimitOrderBaseQuantity);
+    return finalBaseBalance;
   }
 
   getQuoteBalance() {
@@ -92,9 +95,12 @@ class SpotForm extends React.Component {
       this.props.user.committed.balances[quoteCurrency] /
       Math.pow(10, api.currencies[quoteCurrency].decimals);
     this.props.activeLimitAndMarketOrders.map((order) => {
-      totalActiveLimitOrderQuoteQuantity += order.quoteQuantity;
+      if (order.side === "b")
+        totalActiveLimitOrderQuoteQuantity += order.quoteQuantity;
     });
-    return (quoteBalance -= totalActiveLimitOrderQuoteQuantity);
+    let finalQuoteBalance = (quoteBalance -=
+      totalActiveLimitOrderQuoteQuantity);
+    return finalQuoteBalance;
   }
 
   async buySellHandler(e) {
@@ -450,17 +456,10 @@ class SpotForm extends React.Component {
       this.setState((state) => ({ ...state, price: "", amount: "" }));
     }
   }
-
-  // hideModal() {
-  //   let newstate = { ...this.state };
-
-  //   if (newstate.modalShow === false) {
-  //     newstate.modalShow = true;
-  //   } else {
-  //     newstate.modalShow = false;
-  //   }
-  //   this.setState(newstate);
-  // }
+  componentDidMount() {
+    const senderOrReceiver = this.props.side === "s" ? "Receive" : "Send";
+    this.setState({ orderSide: senderOrReceiver });
+  }
 
   getLimitFeesDetails() {
     const baseCurrency = this.props.currentMarket.split("-")[0];
@@ -651,11 +650,7 @@ class SpotForm extends React.Component {
               {this.props.user.id ? (
                 <>
                   <div className="spf_head_total_amount">
-                    {this.props.side === "b" ? (
-                      <span>Send</span>
-                    ) : (
-                      <span>Receive</span>
-                    )}
+                    <span>{this.state.orderSide}</span>
                     <strong>
                       {this.props.orderType === "limit" ? (
                         <>
