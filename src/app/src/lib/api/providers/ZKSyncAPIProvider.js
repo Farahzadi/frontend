@@ -68,7 +68,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
     }
 
     const web3Modal = new Web3Modal({
-      network: this.NETWORK,
+      network: this.NETWORK_NAME,
       cacheProvider: true,
       providerOptions,
       theme: "dark",
@@ -113,13 +113,12 @@ export default class ZKSyncAPIProvider extends APIProvider {
       throw err;
     }
 
-    let result;
     const accountState = await this.getAccountState();
-    if (!accountState.id) {
+
+    let result;
+    if (!(await this.isActivated())) {
+      await this.activateAccount(accountState);
       result = "redirectToBridge";
-    } else {
-      const isActivated = await this.syncWallet.isSigningKeySet();
-      if (!isActivated) await this.activateAccount(accountState);
     }
 
     this.state.set(APIProvider.State.CONNECTED);
@@ -163,6 +162,10 @@ export default class ZKSyncAPIProvider extends APIProvider {
       console.error("Error on verifying signature:", err);
       return false;
     }
+  };
+
+  isActivated = async () => {
+    return this.syncWallet?.isSigningKeySet();
   };
 
   getTransactionState = async (txHash) => {
@@ -637,7 +640,9 @@ export default class ZKSyncAPIProvider extends APIProvider {
   getParsedSellQuantity = (tokenSell, sellQuantity) => {
     const parsedSellQuantity = this.syncProvider.tokenSet.parseToken(
       tokenSell,
-      sellQuantity.toFixed(this.networkInterface.core.currencies[tokenSell].decimals)
+      sellQuantity.toFixed(
+        this.networkInterface.core.currencies[tokenSell].decimals
+      )
     );
 
     return parsedSellQuantity;
