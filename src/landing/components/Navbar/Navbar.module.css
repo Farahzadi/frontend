@@ -72,8 +72,8 @@
 }
 
 .logoImg {
-  width: 60px !important;
-  height: 30px !important;
+  width: 30px !important;
+  height: 45px !important;
 }
 .navLink {
   text-decoration: none;
@@ -175,8 +175,8 @@
     opacity: 1;
   }
   .logoImg {
-    width: 120px !important;
-    height: 60px !important;
+    width: 30px !important;
+    height: 43px !important;
   }
   .hamburgerIconContainer {
     display: none;
