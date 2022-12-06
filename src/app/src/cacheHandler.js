@@ -38,15 +38,12 @@ function clearCache(Component) {
     }, []);
 
     const refreshCacheAndReload = () => {
-      if (caches) {
-        caches.keys().then(async function (names) {
-          await Promise.all(names.map((name) => caches.delete(name)));
-        });
-      }
+      localStorage.clear();
       window.location.reload();
+      console.log("localStorage has been successfully updated");
     };
 
-    return <>{isLatestBuildDate ? <Component {...props} /> : null}</>;
+    return <>{<Component {...props} />}</>;
   }
 
   return ClearCacheComponent;
