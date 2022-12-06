@@ -275,13 +275,9 @@ export default class Core extends Emitter {
   cancelOrder = (orderId) => {
     this.sendRequest(
       "user/order",
-      "POST",
+      "DELETE",
       {
-        tx: data.tx,
-        market: data.market,
-        amount: data.amount,
-        price: data.price,
-        type: orderType,
+        id: orderId,
       },
       true
     );
