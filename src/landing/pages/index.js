@@ -28,9 +28,8 @@ export default function Home({ networks, trades, baseUrl }) {
   const { isAnimated } = useContext(BGContext);
   return (
     <>
-      <CustomizedHead>
+      <CustomizedHead baseUrl={baseUrl}>
         <meta
-          baseUrl={baseUrl}
           name='description'
           content='Dexpresso is a decentralized exchange'
         ></meta>
