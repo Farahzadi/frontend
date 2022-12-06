@@ -188,6 +188,8 @@ export default class NetworkInterface {
       sessionStorage.setItem(networkKey, signature);
     }
 
+    this.emit("userChanged", address);
+
     await this.core.sendRequest("login", "POST", {
       network: network,
       address: address,
