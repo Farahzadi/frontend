@@ -19,6 +19,9 @@ import apiReducer, {
   setOrderSide,
   setSelectedPrice,
   clearUuid,
+  setNetworkList,
+  setProviderState,
+  setUserAddress,
 } from "lib/store/features/api/apiSlice";
 import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 import api from "lib/api";
@@ -33,7 +36,7 @@ const persistConfig = {
 
 const apiPersistConfig = {
   key: "api",
-  whitelist: ["userId", "currentMarket", "bridgeReceipts", "network"],
+  whitelist: ["userAddress", "currentMarket", "bridgeReceipts", "network"],
   storage,
 };
 
@@ -87,13 +90,22 @@ api.on("signIn", (accountState) => {
   store.dispatch(signIn(accountState));
 });
 
+api.on("userChanged", (userAddress) => {
+  store.dispatch(setUserAddress(userAddress));
+});
+
 api.on("signOut", () => {
   store.dispatch(clearUserOrders());
   store.dispatch(signOut());
 });
 
-api.on("providerChange", (network) => {
-  store.dispatch(setNetwork(network));
+api.on("networkChange", (payload) => {
+  store.dispatch(setNetwork(payload));
+});
+
+api.on("providerStateChange", (state) => {
+  console.log("PROVIDER STATE CHANGE", state);
+  store.dispatch(setProviderState(state));
 });
 
 api.on("message", (op, data) => {
@@ -116,4 +128,7 @@ api.on("close", () => {
   store.dispatch(clearUuid());
 });
 
+api.on("setNetworkList", (networks) => {
+  store.dispatch(setNetworkList(networks));
+});
 export default store;

@@ -1,10 +1,10 @@
 import { useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { Button, Dropdown, AccountDropdown, Menu, MenuItem } from "components";
 import { userSelector } from "lib/store/features/auth/authSlice";
-import { networkSelector } from "lib/store/features/api/apiSlice";
+import { networkConfigSelector } from "lib/store/features/api/apiSlice";
 import api from "lib/api";
 import logo from "assets/images/LogoMarkCremeLight.svg";
 import menu from "assets/icons/menu.png";
@@ -17,22 +17,21 @@ export const Header = (props) => {
   const [show, setShow] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const user = useSelector(userSelector);
-  const network = useSelector(networkSelector);
-  const history = useHistory();
-  const location = useLocation();
+  const networkConfig = useSelector(networkConfigSelector);
 
-  const hasBridge = api.isImplemented("depositL2");
+  const hasBridge = networkConfig.hasBridge;
 
   const handleMenu = ({ key }) => {
     switch (key) {
       case "signOut":
-        api.signOut();
+        api.disconnectWallet();
         return;
       default:
         throw new Error("Invalid dropdown option");
     }
   };
 
+ 
   const dropdownMenu = (
     <Menu onSelect={handleMenu}>
       <MenuItem key="signOut">Disconnect</MenuItem>
@@ -41,15 +40,9 @@ export const Header = (props) => {
 
   const connect = () => {
     setConnecting(true);
-    api
-      .signIn(network)
-      .then((state) => {
-        if (!state.id && !/^\/bridge(\/.*)?/.test(location.pathname)) {
-          history.push("/bridge");
-        }
-        setConnecting(false);
-      })
-      .catch(() => setConnecting(false));
+    api.connectWallet().finally(() => {
+      setConnecting(false);
+    });
   };
 
   return (
@@ -83,24 +76,21 @@ export const Header = (props) => {
                   </NavLink>
                 </li>
               )}
-              {process.env.NODE_ENV === "development" && (
-                <li>
-                  <NavLink exact to="/">
-                    Docs
-                  </NavLink>
-                </li>
-              )}
+              <li>
+                <a href="https://docs.dexpresso.exchange/">Docs</a>
+              </li>
             </ul>
           </div>
           <div className="wallet">
             <div className="d-flex align-items-center justify-content-between mb-3 mb-lg-0">
               {user.id && user.address ? (
-                <Dropdown overlay={dropdownMenu}>
-                  <button className="address_button">
-                    {user.address.slice(0, 6)}...
-                    {user.address.slice(-4)}
-                  </button>
-                </Dropdown>
+                // <Dropdown overlay={dropdownMenu}>
+                //   <button className="address_button">
+                //     {user.address.slice(0, 6)}...
+                //     {user.address.slice(-4)}
+                //   </button>
+                // </Dropdown>
+                <AccountDropdown/>
               ) : (
                 <Button
                   loading={connecting}
@@ -119,9 +109,9 @@ export const Header = (props) => {
       {/* desktop header */}
       <div className="head_wrapper_desktop dex_h">
         <div className="nav_items">
-          <a href="#" rel="noreferrer">
+          <NavLink exact to="/">
             <img src={logo} alt="logo" />
-          </a>
+          </NavLink>
           <ul className="mx-0 px-0">
             <li>
               <NavLink exact to="/" activeClassName="active_link">
@@ -138,14 +128,12 @@ export const Header = (props) => {
             {/* {user.id ? */}
             <li>
               <NavLink exact to="/security" activeClassName="active_link">
-                security
+                Security
               </NavLink>
             </li>
             {/* :null} */}
             <li>
-              <NavLink exact to="/">
-                Docs
-              </NavLink>
+              <a href="https://docs.dexpresso.exchange/">Docs</a>
             </li>
           </ul>
         </div>

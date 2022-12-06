@@ -1,55 +1,87 @@
-import React, { useState, useEffect } from "react";
-import { Dropdown } from "react-bootstrap";
-import { GoGlobe } from "react-icons/go";
-import { networkSelector } from "lib/store/features/api/apiSlice";
-import { useSelector } from "react-redux";
-import api from "lib/api";
+import React, { useEffect, useState } from 'react';
+import { GoGlobe } from 'react-icons/go';
+import {
+  networkListSelector,
+  networkSelector,
+} from 'lib/store/features/api/apiSlice';
+import { useSelector } from 'react-redux';
+import api from 'lib/api';
+import {
+  FormControl,
+  InputAdornment,
+  MenuItem,
+  TextField,
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
 
+const NetFormControl = styled(FormControl)(({ theme }) => ({
+  border: `1.5px solid ${theme.palette.primary.main}`,
+  borderRadius: '6px',
+  minWidth: '200px',
+  textAlign: 'center',
+  paddingInlineStart: '0',
+  marginInlineEnd: '1rem',
+  '&:focus': {
+    backgroundColor: theme.palette.primary.main,
+  },
+}));
+const NetInput = styled(TextField)(({ theme }) => ({
+  paddingLeft: '0',
+  '& .MuiInputBase-root': {
+    paddingLeft: '0',
+  },
+  '& .MuiSelect-select': {
+    paddingLeft: '30px',
+  },
+}));
+const GlobAdornment = styled(InputAdornment)(() => ({
+  position: 'absolute',
+  left: '10px',
+}));
 const NetworkSelection = () => {
-  const [netwokName, setNetwokName] = useState("test");
-
+  const networks = useSelector(networkListSelector);
   const network = useSelector(networkSelector);
-  const selectNetwork = (id) => {
-    api.setAPIProvider(id);
-    api.refreshNetwork().catch((err) => {
-      console.log(err);
-    });
-    if (id === "zksyncv1_goerli") {
-      return setNetwokName("zkSync(V1) - Goerli");
+
+  const [selectedNet, setSelectedNet] = useState('');
+  useEffect(() => {
+    api.getNetworks();
+  }, []);
+  useEffect(() => {
+    if (network && networks.length) {
+      setSelectedNet(network);
     }
-    setNetwokName("zkSync(V1) - Mainnet");
+  }, [network, networks]);
+  const transformNetName = (network) => {
+    return network.replace('_', ' ');
   };
 
-  useEffect(() => {
-    if (network === "zksyncv1_goerli") {
-      return setNetwokName("zkSync(V1) - Goerli");
-    }
-    setNetwokName("zkSync(V1) - Mainnet");
-  }, []);
+  const handleChangeNetwork = async (network) => {
+    await api.setNetwork(network);
+  };
+
   return (
     <>
-      <Dropdown className=" mx-0 mx-md-5 newBtn">
-        <Dropdown.Toggle>
-          <GoGlobe className="eu_network" />  {netwokName}
-        </Dropdown.Toggle>
-
-        <Dropdown.Menu className="dropdown-menu "> 
-          <Dropdown.Item
-            onClick={() => {
-              selectNetwork("zksyncv1_goerli");
-            }}
-          >
-            zkSync(V1) - Goerli
-          </Dropdown.Item>
-          <Dropdown.Item
-            onClick={() => {
-              selectNetwork("zksyncv1");
-            }}
-          >
-            zkSync(V1) - Mainnet
-          </Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown>
+      <NetFormControl>
+        <NetInput
+          size='small'
+          value={selectedNet}
+          select
+          onChange={(e) => handleChangeNetwork(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <GlobAdornment position='start'>
+                <GoGlobe />
+              </GlobAdornment>
+            ),
+          }}
+        >
+          {networks?.map(({ network }, index) => (
+            <MenuItem key={network} value={network}>
+              {transformNetName(network)}
+            </MenuItem>
+          ))}
+        </NetInput>
+      </NetFormControl>
     </>
   );
 };

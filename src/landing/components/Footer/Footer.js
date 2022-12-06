@@ -22,7 +22,7 @@ const Footer = () => {
     <footer className={styles.footer}>
       <div className={styles.mainContainer}>
         <div className={styles.footerHeader}>
-          <Image src={logo} width={65} height={105} alt='dexpresso' />
+          <Image src={logo} width={95} height={105} alt='dexpresso' />
           <div className={`brand-name ${styles.brandName}`}>Dexpresso</div>
         </div>
         <div className={styles.footerCols}>
@@ -35,14 +35,14 @@ const Footer = () => {
               id={val.id}
             >
               <Link href={val.link}>
-                <a>
+                <div>
                   <div className={styles.itemTitle}>
                     <p>{val.title}</p>
                   </div>
                   <div className={styles.itemBody}>
                     <p>{val.description}</p>
                   </div>
-                </a>
+                </div>
               </Link>
             </div>
           ))}

@@ -16,7 +16,7 @@ import * as coins from '../../Icons/Coins.js';
 const NUMBER = 100;
 const RADIUS = 800;
 const CAMERA_RADIUS = 2500;
-const CAMERA_RADIUS_ZOOM = 2100;
+const CAMERA_RADIUS_ZOOM = 1000;
 const DTHETA = 1;
 const DTHETAX = 0.5;
 
@@ -156,7 +156,7 @@ function Background() {
   function zoomInCamera() {
     return new TWEEN.Tween(sphereParent.position).to(
       {
-        x: window.innerWidth / 1.5,
+        x: window.innerWidth / 3,
         y: 0,
         z: CAMERA_RADIUS_ZOOM
       }, 10500

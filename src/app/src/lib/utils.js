@@ -61,3 +61,13 @@ export function numStringToSymbol(str, decimals) {
   if (!item) return str;
   return (str / item.value).toFixed(decimals) + item.symbol;
 }
+export const validateNumberInputs = (value) => {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (value) {
+    return value.replace(/[^0-9.]/g, "");
+  } else {
+    return value;
+  }
+}

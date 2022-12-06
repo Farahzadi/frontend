@@ -13,7 +13,7 @@
   font-weight: 300;
 }
 
-/* bg_btn */
+
 .bg_btn {
   display: flex;
   align-items: center;
@@ -30,11 +30,37 @@
   font-size: 0.9rem;
   outline: none;
 }
+.bg_btn:disabled {
+  background: gray;
+  cursor: not-allowed;
+}
+.normal_btn {
+  max-width: 50%;
+  min-width: 175px;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s linear;
+  height: 38px;
+  padding: 4px 30px;
+  background: linear-gradient(to right top, rgba(10,181,255,1) 0%, rgba(3,95,135,1) 100%);
+  border: none;
+  border-radius: 5px;
+  justify-content: center;
+  position: relative;
+  color: white;
+  font-size: 0.9rem;
+  outline: none;
+}
 .bg_btn-transfer{
   height: 50px;
   border-radius: 15px;
 }
-
+.btn_danger {
+  background: rgba(var(--dangerColor), 1);
+}
+.btn_success {
+  background: rgba(var(--successColor), 1);
+}
 .bg_btn > img {
   margin-right: 10px;
 }

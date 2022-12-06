@@ -9,7 +9,7 @@ import {
   setOrderType,
   orderTypeSelector,
   allOrdersSelector,
-  userIdSelector,
+  userAddressSelector,
   orderSideSelector,
 } from "lib/store/features/api/apiSlice";
 import api from "lib/api";
@@ -45,7 +45,7 @@ class SpotBox extends React.Component {
           return res;
         }, {});
         
-    let filltered = this.props.userId
+    let filltered = this.props.userAddress
       ? Object.filter(
           this.props.allOrders,
           (order) =>
@@ -116,8 +116,8 @@ class SpotBox extends React.Component {
                 user={this.props.user}
                 currentMarket={this.props.currentMarket}
                 orderType={this.props.orderType}
-                activeLimitAndMarketOrdersCount={
-                  this.props.activeLimitAndMarketOrdersCount
+                activeLimitAndMarketOrders={
+                  this.props.activeLimitAndMarketOrders
                 }
                 activeSwapOrdersCount={this.props.activeSwapOrdersCount}
                 liquidity={this.props.liquidity}
@@ -134,8 +134,8 @@ class SpotBox extends React.Component {
                 user={this.props.user}
                 currentMarket={this.props.currentMarket}
                 orderType={this.props.orderType}
-                activeLimitAndMarketOrdersCount={
-                  this.props.activeLimitAndMarketOrdersCount
+                activeLimitAndMarketOrders={
+                  this.props.activeLimitAndMarketOrders
                 }
                 activeSwapOrdersCount={this.props.activeSwapOrdersCount}
                 liquidity={this.props.liquidity}
@@ -153,7 +153,7 @@ class SpotBox extends React.Component {
 const mapStateToProps = (state) => ({
   orderType: orderTypeSelector(state),
   allOrders: allOrdersSelector(state),
-  userId: userIdSelector(state),
+  userAddress: userAddressSelector(state),
   orderSide: orderSideSelector(state),
 });
 

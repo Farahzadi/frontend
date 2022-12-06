@@ -24,17 +24,20 @@ import {
   currentMarketSelector,
   setCurrentMarket,
   uuidSelector,
-  // resetData,
+  resetData,
+  providerStateSelector,
 } from "lib/store/features/api/apiSlice";
 import { userSelector } from "lib/store/features/auth/authSlice";
 import "./style.css";
 import api from "lib/api";
+import APIProvider from "lib/api/providers/APIProvider";
 
 const TradePage = () => {
   const [marketDataTab, updateMarketDataTab] = useState("pairs");
   const [rangePrice, setRangePrice] = useState(0);
   const user = useSelector(userSelector);
   const network = useSelector(networkSelector);
+  const providerState = useSelector(providerStateSelector);
   const currentMarket = useSelector(currentMarketSelector);
   const userOrders = useSelector(userOrdersSelector);
   const userFills = useSelector(userFillsSelector);
@@ -53,12 +56,6 @@ const TradePage = () => {
   const history = useHistory();
   const location = useLocation();
 
-  const pushToBridgeMaybe = (state) => {
-    if (!state.id && !/^\/bridge(\/.*)?/.test(location.pathname)) {
-      history.push("/bridge");
-    }
-  };
-
   useEffect(() => {
     if (!uuid) return;
 
@@ -76,9 +73,10 @@ const TradePage = () => {
     };
   }, [uuid, currentMarket]);
 
-  useEffect(() => {
-    if (uuid) api.signIn(network);
-  }, [uuid, network]);
+  // useEffect(() => {
+  //   if (uuid && providerState === APIProvider.State.CONNECTED)
+  //     api.connectWallet();
+  // }, [uuid, network, providerState]);
 
   const updateMarketChain = (market) => {
     dispatch(setCurrentMarket(market));
@@ -152,21 +150,25 @@ const TradePage = () => {
 
   const askBins =
     allOrders !== {}
-      ? Object.values(allOrders).filter((order) => order.side === "s")
+      ? Object.values(allOrders)
+          .filter((order) => order.side === "s")
+          .reverse()
       : [];
 
   const bidBins =
     allOrders !== {}
-      ? Object.values(allOrders).filter((order) => order.side === "b")
+      ? Object.values(allOrders)
+          .filter((order) => order.side === "b")
+          .reverse()
       : [];
 
-  const activeLimitAndMarketOrdersCount = Object.values(userOrders).filter(
+  const activeLimitAndMarketOrders = Object.values(userOrders).filter(
     (order) => activeOrderStatuses.includes(order.status) && order.type === "l"
-  ).length;
+  );
 
   const activeSwapOrders = Object.values(userOrders).filter(
     (order) => activeOrderStatuses.includes(order.status) && order.type === "s"
-  ).length;
+  );
 
   let tradingViewMarket = currentMarket;
   const baseCurrency = currentMarket.split("-")[0];
@@ -214,16 +216,13 @@ const TradePage = () => {
                           signInHandler={() => {
                             setIsLoading(true);
                             api
-                              .signIn(network)
-                              .then((state) => {
-                                pushToBridgeMaybe(state);
-                              })
+                              .connectWallet()
                               .finally(() => setIsLoading(false));
                           }}
                           user={user}
                           currentMarket={currentMarket}
-                          activeLimitAndMarketOrdersCount={
-                            activeLimitAndMarketOrdersCount
+                          activeLimitAndMarketOrders={
+                            activeLimitAndMarketOrders
                           }
                           activeSwapOrdersCount={activeSwapOrders}
                           liquidity={liquidity}
@@ -351,7 +350,7 @@ const TradePage = () => {
                 Powered By Dexpresso
               </div>
               <div className="mt-3 mt-lg-0 d-flex align-items-center justify-content-center">
-                <p>v0.4.10</p>{" "}
+                <p>v0.0.1</p>{" "}
               </div>
               <div className="head_left_socials my-1 my-lg-0 footer-icons">
                 {" "}

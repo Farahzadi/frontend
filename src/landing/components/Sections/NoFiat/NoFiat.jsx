@@ -10,36 +10,42 @@ const NoFiat = () => {
       title: 'Low fees, no gas costs',
       description: `Once you deposit to Layer 2, you will no longer pay fees
         to miners for each transaction.`,
+      img: 'square-low-fee.svg'
     },
     {
       id: 2,
       title: 'Lightning quick',
       description: ` Trades are executed instantly and confirmed on the
         blockchain within hours.`,
+      img: 'square-fast.svg'
     },
     {
       id: 3,
       title: 'Fast withdrawals',
       description: `Unlike other platforms, there is no wait required to
         withdraw your funds from Layer 2.`,
+      img: 'square-multi-chain.svg'
     },
     {
       id: 4,
       title: 'Secure & private',
       description: `StarkWare's Layer 2 solution provides increased security &
         privacy via zero-knowledge rollups.`,
+      img: 'square-trustless.svg'
     },
     {
       id: 5,
       title: 'Cross-margining',
       description: `Access leverage across positions in multiple markets from
         a single account.`,
+      img: 'square-secure.svg'
     },
     {
       id: 6,
       title: 'Mobile friendly',
       description: ` We've redesigned our exchange from the ground up, so you
         can use it from any device.`,
+      img: 'square-orderbook.svg'
     },
   ];
   return (
@@ -76,7 +82,7 @@ const NoFiat = () => {
             <div className={styles.itemBody}>
               <div className={styles.imgContainer}>
                 <Image
-                  src={no_more_fiat}
+                  src={`/images/${val.img}`}
                   width={67}
                   height={67}
                   alt='no more fiat'

@@ -1,9 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import styles from './Users.module.css';
+import styles from './Trades.module.css';
 import CountUp from 'react-countup';
 
-const Users = () => {
+const Trades = ({trades}) => {
   const [rendered, hasRendered] = useState(false);
+  let tradeVolumeTotal = 0;
+  let tradesCountsTotal = 0;
+  let openInterestsTotal = 0;
+  trades?.forEach(({tradingCount,  tradingVolumes, openInterest}) => {
+    tradeVolumeTotal += tradingVolumes;
+    tradesCountsTotal += tradingCount;
+    openInterestsTotal += openInterest;
+  });
+  const getStartPoint = (val) => {
+    const len = val?.toString().length;
+    if (len > 8) {
+      return 9000000;
+    } else if (len >= 6) {
+      return 90000;
+    } else if (len > 4) {
+      return 500;
+    } else if (len > 2) {
+      return 50;
+    }
+    return 0;
+
+  }
   useEffect(() => {
     if (!rendered) {
       hasRendered(true);
@@ -21,8 +43,8 @@ const Users = () => {
         <div className={styles.item}>
           <h3>trading volume</h3>
           <CountUp
-            start={100000}
-            end={800000000}
+            start={getStartPoint(tradeVolumeTotal)}
+            end={tradeVolumeTotal}
             duration={20}
             enableScrollSpy={true}
             scrollSpyOnce={true}
@@ -34,9 +56,9 @@ const Users = () => {
         <div className={styles.item}>
           <h3>trades</h3>
           <CountUp
-            start={1000}
-            end={200000}
-            duration={20}
+            start={getStartPoint(tradesCountsTotal)}
+            end={tradesCountsTotal}
+            duration={30}
             enableScrollSpy
             scrollSpyOnce
             separator=','
@@ -46,19 +68,18 @@ const Users = () => {
         <div className={styles.item}>
           <h3>open interest</h3>
           <CountUp
-            start={100000}
-            end={600000000}
+            start={getStartPoint(openInterestsTotal)}
+            end={openInterestsTotal}
             duration={20}
             enableScrollSpy
             scrollSpyOnce
             separator=','
             prefix='$'
           />
-          {/* <h1>$600,000,000</h1> */}
           <p>last 24 hr</p>
         </div>
       </div>
     </section>
   );
 };
-export default Users;
+export default Trades;

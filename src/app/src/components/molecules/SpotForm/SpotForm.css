@@ -74,6 +74,7 @@
 .spf_range {
     width: 98%;
     padding-left: 10px;
+    margin-top: 13px;
 }
 
 .spf_fee {
@@ -94,7 +95,7 @@
 
 .spot_box_footer{
     justify-content: space-around;
-    margin-top: 15px;
+    margin-top: 8px;
 }
 
 .buy_btn {
@@ -116,10 +117,6 @@
     filter: brightness(120%);
 }
 
-.btn_fix {
-    margin-top: 10px;
-}
-
 .fee-container {
     margin-top: 2px;
     color: var(--gray);
@@ -132,6 +129,7 @@
 .connect-btn {
     display: flex;
     justify-content: space-between;
+    margin-bottom: 5px;
 }
 
 @media screen and (max-width: 655px) {

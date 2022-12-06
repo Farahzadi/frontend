@@ -68,46 +68,36 @@ class SpotForm extends React.Component {
       newState.baseAmount = this.props.rangePrice;
     } else {
       newState.baseAmount = e.target.value;
-    }
-    if (this.props.rangePrice > 0 && this.props.orderType === "limit") {
-      newState.amount = this.props.rangePrice;
-    } else {
       newState.amount = e.target.value;
     }
     this.setState(newState);
   }
 
   getBaseBalance() {
+    let totalActiveLimitOrderBaseQuantity = 0;
     const baseCurrency = this.props.currentMarket.split("-")[0];
-    return (
+    let baseBalance =
       this.props.user.committed.balances[baseCurrency] /
-      Math.pow(10, api.currencies[baseCurrency].decimals)
-    );
+      Math.pow(10, api.currencies[baseCurrency].decimals);
+    this.props.activeLimitAndMarketOrders.map((order) => {
+      totalActiveLimitOrderBaseQuantity += order.baseQuantity;
+    });
+    return (baseBalance -= totalActiveLimitOrderBaseQuantity);
   }
 
   getQuoteBalance() {
+    let totalActiveLimitOrderQuoteQuantity = 0;
     const quoteCurrency = this.props.currentMarket.split("-")[1];
-    return (
+    let quoteBalance =
       this.props.user.committed.balances[quoteCurrency] /
-      Math.pow(10, api.currencies[quoteCurrency].decimals)
-    );
+      Math.pow(10, api.currencies[quoteCurrency].decimals);
+    this.props.activeLimitAndMarketOrders.map((order) => {
+      totalActiveLimitOrderQuoteQuantity += order.quoteQuantity;
+    });
+    return (quoteBalance -= totalActiveLimitOrderQuoteQuantity);
   }
 
   async buySellHandler(e) {
-    const { userOrders } = this.props;
-
-    if (Object.keys(userOrders).length > 0) {
-      for (let key in userOrders) {
-        if (
-          userOrders[key].status === "o" &&
-          userOrders[key].side !== this.props.side
-        ) {
-          toast.error("Your limit order(s) should fill first");
-          return;
-        }
-      }
-    }
-
     let amount, baseBalance, quoteBalance, newstate, orderPendingToast, price;
     // this variable will change when different fee method has developed
     let feeType = "withoutNBX";
@@ -135,7 +125,7 @@ class SpotForm extends React.Component {
     }
     const [baseCurrency, quoteCurrency] = this.props.currentMarket.split("-");
     amount = Number(amount.toFixed(api.currencies[baseCurrency].decimals));
-    if (this.props.activeLimitAndMarketOrdersCount > 0) {
+    if (this.props.activeLimitAndMarketOrders.length > 0) {
       if (this.props.orderType === "market") {
         toast.error("Your limit or market order should fill first");
         return;
@@ -444,7 +434,6 @@ class SpotForm extends React.Component {
 
     if (isNaN(newstate.baseAmount)) newstate.baseAmount = 0;
     if (isNaN(newstate.amount)) newstate.amount = 0;
-
     this.setState(newstate);
   }
 

@@ -30,6 +30,7 @@ export const Button = (props) => {
 
   return (
     <button
+      disabled={props.disabled}
       type="button"
       style={props.style}
       className={cx( props.className, { 'zig_btn_loading': loading })}
