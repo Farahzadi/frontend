@@ -35,12 +35,14 @@ const Footer = () => {
               id={val.id}
             >
               <Link href={val.link}>
+                <div>
                   <div className={styles.itemTitle}>
                     <p>{val.title}</p>
                   </div>
                   <div className={styles.itemBody}>
                     <p>{val.description}</p>
                   </div>
+                </div>
               </Link>
             </div>
           ))}
