@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-
+import Decimal from "decimal.js";
 import { toast } from "react-toastify";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
@@ -77,29 +77,36 @@ class SpotForm extends React.Component {
   getBaseBalance() {
     let totalActiveLimitOrderBaseQuantity = 0;
     const baseCurrency = this.props.currentMarket.split("-")[0];
-    let baseBalance =
-      this.props.user.committed.balances[baseCurrency] /
-      Math.pow(10, api.currencies[baseCurrency].decimals);
+    let committedBaseBalance = new Decimal(
+      this.props.user.committed.balances[baseCurrency]
+    );
+    let baseBalance = committedBaseBalance.dividedBy(
+      Math.pow(10, api.currencies[baseCurrency].decimals)
+    );
     this.props.activeLimitAndMarketOrders.map((order) => {
       if (order.side === "s")
         totalActiveLimitOrderBaseQuantity += order.baseQuantity;
     });
-    let finalBaseBalance = (baseBalance -= totalActiveLimitOrderBaseQuantity);
+    let finalBaseBalance = baseBalance.minus(totalActiveLimitOrderBaseQuantity);
     return finalBaseBalance;
   }
 
   getQuoteBalance() {
     let totalActiveLimitOrderQuoteQuantity = 0;
     const quoteCurrency = this.props.currentMarket.split("-")[1];
-    let quoteBalance =
-      this.props.user.committed.balances[quoteCurrency] /
-      Math.pow(10, api.currencies[quoteCurrency].decimals);
+    let committedQuoteBalance = new Decimal(
+      this.props.user.committed.balances[quoteCurrency]
+    );
+    let quoteBalance = committedQuoteBalance.dividedBy(
+      Math.pow(10, api.currencies[quoteCurrency].decimals)
+    );
     this.props.activeLimitAndMarketOrders.map((order) => {
       if (order.side === "b")
         totalActiveLimitOrderQuoteQuantity += order.quoteQuantity;
     });
-    let finalQuoteBalance = (quoteBalance -=
-      totalActiveLimitOrderQuoteQuantity);
+    let finalQuoteBalance = quoteBalance.minus(
+      totalActiveLimitOrderQuoteQuantity
+    );
     return finalQuoteBalance;
   }
 
@@ -139,8 +146,8 @@ class SpotForm extends React.Component {
     }
 
     if (this.props.user.id) {
-      baseBalance = Number(this.getBaseBalance());
-      quoteBalance = Number(this.getQuoteBalance());
+      baseBalance = this.getBaseBalance().toNumber();
+      quoteBalance = this.getQuoteBalance().toNumber();
     } else {
       baseBalance = 0;
       quoteBalance = 0;
