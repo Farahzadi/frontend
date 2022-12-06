@@ -6,7 +6,7 @@ const CustomizedHead = ({
   type = 'website',
   description = 'Dexpresso is a decentralized exchange',
   relativePath = '',
-  imgUrl = '/images/logo/Dexpresso_horizontal.png',
+  imgUrl = '/images/logo/Dexpresso_logo.png',
   children,
   baseUrl
 }) => {
