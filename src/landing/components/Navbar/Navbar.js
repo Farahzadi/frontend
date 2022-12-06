@@ -72,7 +72,7 @@ const Navbar = () => {
         }`}
       >
         <Link href='/'>
-          <a className={styles.logoContainer}>
+          <div className={styles.logoContainer}>
             <Image
               className={styles.logoImg}
               src={logo}
@@ -81,7 +81,7 @@ const Navbar = () => {
               alt='Logo'
             />
             <span className={styles.brandName}>DEXPRESSO</span>
-          </a>
+          </div>
         </Link>
         <div
           className={`${styles.navItems} ${
@@ -108,10 +108,10 @@ const Navbar = () => {
                 } else {
                   return (
                     <Link passHref key={index} href={item.href}>
-                      <a className={styles.navLink}>
+                      <div className={styles.navLink}>
                         <span>{item.label}</span>
                         <Arrow className={styles.arrowIcon} />
-                      </a>
+                      </div>
                     </Link>
                   );
                 }
