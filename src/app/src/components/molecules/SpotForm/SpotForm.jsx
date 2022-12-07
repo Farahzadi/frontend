@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-
+import Decimal from "decimal.js";
 import { toast } from "react-toastify";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
@@ -26,6 +26,7 @@ class SpotForm extends React.Component {
       baseAmount: "",
       maxSizeSelected: false,
       modalShow: false,
+      orderSide: "",
     };
     this.minimumAmounts = {
       ETH: 0.0002,
@@ -76,25 +77,37 @@ class SpotForm extends React.Component {
   getBaseBalance() {
     let totalActiveLimitOrderBaseQuantity = 0;
     const baseCurrency = this.props.currentMarket.split("-")[0];
-    let baseBalance =
-      this.props.user.committed.balances[baseCurrency] /
-      Math.pow(10, api.currencies[baseCurrency].decimals);
+    let committedBaseBalance = new Decimal(
+      this.props.user.committed.balances[baseCurrency]
+    );
+    let baseBalance = committedBaseBalance.dividedBy(
+      Math.pow(10, api.currencies[baseCurrency].decimals)
+    );
     this.props.activeLimitAndMarketOrders.map((order) => {
-      totalActiveLimitOrderBaseQuantity += order.baseQuantity;
+      if (order.side === "s")
+        totalActiveLimitOrderBaseQuantity += order.baseQuantity;
     });
-    return (baseBalance -= totalActiveLimitOrderBaseQuantity);
+    let finalBaseBalance = baseBalance.minus(totalActiveLimitOrderBaseQuantity);
+    return finalBaseBalance;
   }
 
   getQuoteBalance() {
     let totalActiveLimitOrderQuoteQuantity = 0;
     const quoteCurrency = this.props.currentMarket.split("-")[1];
-    let quoteBalance =
-      this.props.user.committed.balances[quoteCurrency] /
-      Math.pow(10, api.currencies[quoteCurrency].decimals);
+    let committedQuoteBalance = new Decimal(
+      this.props.user.committed.balances[quoteCurrency]
+    );
+    let quoteBalance = committedQuoteBalance.dividedBy(
+      Math.pow(10, api.currencies[quoteCurrency].decimals)
+    );
     this.props.activeLimitAndMarketOrders.map((order) => {
-      totalActiveLimitOrderQuoteQuantity += order.quoteQuantity;
+      if (order.side === "b")
+        totalActiveLimitOrderQuoteQuantity += order.quoteQuantity;
     });
-    return (quoteBalance -= totalActiveLimitOrderQuoteQuantity);
+    let finalQuoteBalance = quoteBalance.minus(
+      totalActiveLimitOrderQuoteQuantity
+    );
+    return finalQuoteBalance;
   }
 
   async buySellHandler(e) {
@@ -133,8 +146,8 @@ class SpotForm extends React.Component {
     }
 
     if (this.props.user.id) {
-      baseBalance = Number(this.getBaseBalance());
-      quoteBalance = Number(this.getQuoteBalance());
+      baseBalance = this.getBaseBalance().toNumber();
+      quoteBalance = this.getQuoteBalance().toNumber();
     } else {
       baseBalance = 0;
       quoteBalance = 0;
@@ -450,17 +463,10 @@ class SpotForm extends React.Component {
       this.setState((state) => ({ ...state, price: "", amount: "" }));
     }
   }
-
-  // hideModal() {
-  //   let newstate = { ...this.state };
-
-  //   if (newstate.modalShow === false) {
-  //     newstate.modalShow = true;
-  //   } else {
-  //     newstate.modalShow = false;
-  //   }
-  //   this.setState(newstate);
-  // }
+  componentDidMount() {
+    const senderOrReceiver = this.props.side === "s" ? "Receive" : "Send";
+    this.setState({ orderSide: senderOrReceiver });
+  }
 
   getLimitFeesDetails() {
     const baseCurrency = this.props.currentMarket.split("-")[0];
@@ -651,11 +657,7 @@ class SpotForm extends React.Component {
               {this.props.user.id ? (
                 <>
                   <div className="spf_head_total_amount">
-                    {this.props.side === "b" ? (
-                      <span>Send</span>
-                    ) : (
-                      <span>Receive</span>
-                    )}
+                    <span>{this.state.orderSide}</span>
                     <strong>
                       {this.props.orderType === "limit" ? (
                         <>
