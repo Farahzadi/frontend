@@ -26,6 +26,11 @@ jobs:
     steps:
     - name: pull latest code
       uses: actions/checkout@v3
+
+    - name: deal with robots.txt
+      run: |
+        rm src/app/public/robots.txt
+        mv src/app/public/robots.txt.prod src/app/public/robots.txt
     
     - name: build step
       run: cd src/app; docker build -t reg.dexpresso.exchange/production/app:latest .
