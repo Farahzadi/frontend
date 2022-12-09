@@ -1,24 +1,40 @@
 const fs = require("fs");
-const packageJsonPath = "./package.json";
+var localStorageVersionPath = "./src/localStorage_version.json";
 
-const packageJson = JSON.parse(fs.readFileSync(packageJsonPath).toString());
-packageJson.buildDate = new Date().getTime();
-
-fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-
-const jsonData = {
-  buildDate: packageJson.buildDate,
+const jsonContent = {
+  version: 1,
 };
 
-const jsonContent = JSON.stringify(jsonData);
+try {
+  if (!fs.existsSync(localStorageVersionPath)) {
+    fs.writeFile(
+      localStorageVersionPath,
+      JSON.stringify(jsonContent),
+      "utf8",
+      function (error) {
+        if (error) {
+          console.log(
+            "An error occured while saving build date and time to localStorage_version.json"
+          );
+          return console.log(error);
+        }
 
-fs.writeFile("./public/meta.json", jsonContent, "utf8", function (error) {
-  if (error) {
-    console.log(
-      "An error occured while saving build date and time to meta.json"
+        console.log(
+          "Latest build date and time updated in localStorage_version.json file"
+        );
+      }
     );
-    return console.log(error);
+    return;
   }
-
-  console.log("Latest build date and time updated in meta.json file");
-});
+  var localStorageVersion = JSON.parse(
+    fs.readFileSync(localStorageVersionPath).toString()
+  );
+  var newLocalStorageVersion = ++localStorageVersion.version;
+  const newSetupVersion = { version: newLocalStorageVersion };
+  fs.writeFileSync(localStorageVersionPath, JSON.stringify(newSetupVersion));
+  console.log(
+    "Latest build date and time updated in localStorage_version.json file with new version"
+  );
+} catch (err) {
+  console.error(err);
+}
