@@ -5,10 +5,12 @@ import { AiOutlineCaretDown } from "react-icons/ai";
 import { styled } from "@mui/material/styles";
 import { useCoinEstimator } from "components";
 import Loader from "react-loader-spinner";
-import { userSelector } from "lib/store/features/auth/authSlice";
 import {
   networkSelector,
   balancesSelector,
+  userNameSelector,
+  userImageSelector,
+  userChainDetailsSelector,
 } from "lib/store/features/api/apiSlice";
 import { formatUSD } from "lib/utils";
 import api from "lib/api";
@@ -187,7 +189,9 @@ const LoaderContainer = styled("div")(({ theme }) => ({
 }));
 
 export const AccountDropdown = () => {
-  const user = useSelector(userSelector);
+  const userName = useSelector(userNameSelector);
+  const userImage = useSelector(userImageSelector);
+  const userChainDetails = useSelector(userChainDetailsSelector);
   const [tickers, setTickers] = useState([]);
   const network = useSelector(networkSelector);
   const balanceData = useSelector(balancesSelector);
@@ -195,7 +199,6 @@ export const AccountDropdown = () => {
   const [selectedLayer, setSelectedLayer] = useState(2);
   const [windowSize, setWindowSize] = useState(getWindowSize());
   const coinEstimator = useCoinEstimator();
-  const { profile } = user;
   const layers = [
     { id: 1, name: "L1" },
     { id: 2, name: "L2" },
@@ -212,7 +215,7 @@ export const AccountDropdown = () => {
       .sort();
 
     setTickers(tickers);
-  }, [user.id, network]);
+  }, [userChainDetails.userId, network]);
 
   const handleKeys = (e) => {
     if (~[32, 13, 27].indexOf(e.which)) {
@@ -254,10 +257,10 @@ export const AccountDropdown = () => {
     >
       <DropdownButton onClick={() => setShow(!show)} tabIndex="0">
         <AvatarImg
-          src={profile.image != null ? profile.image : logo}
-          alt={profile.name}
+          src={userImage != null ? userImage : logo}
+          alt={userName}
         />
-        {profile.name}
+        {userName}
         <AiOutlineCaretDown />
       </DropdownButton>
       <DropdownDisplay
