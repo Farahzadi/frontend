@@ -26,6 +26,7 @@ import {
   uuidSelector,
   resetData,
   providerStateSelector,
+  userChainDetailsSelector,
 } from "lib/store/features/api/apiSlice";
 import { userSelector } from "lib/store/features/auth/authSlice";
 import "./style.css";
@@ -35,6 +36,7 @@ const TradePage = () => {
   const [marketDataTab, updateMarketDataTab] = useState("pairs");
   const [rangePrice, setRangePrice] = useState(0);
   const user = useSelector(userSelector);
+  const userChainDetails = useSelector(userChainDetailsSelector);
   const network = useSelector(networkSelector);
   const providerState = useSelector(providerStateSelector);
   const currentMarket = useSelector(currentMarketSelector);
@@ -213,7 +215,7 @@ const TradePage = () => {
                               .connectWallet()
                               .finally(() => setIsLoading(false));
                           }}
-                          user={user}
+                          user={userChainDetails}
                           currentMarket={currentMarket}
                           activeLimitAndMarketOrders={
                             activeLimitAndMarketOrders
