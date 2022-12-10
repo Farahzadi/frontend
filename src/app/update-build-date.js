@@ -1,5 +1,5 @@
 const fs = require("fs");
-var localStorageVersionPath = "./src/localStorage_version.json";
+var localStorageVersionPath = "./src/local_storage_version.json";
 
 const jsonContent = {
   version: 1,
@@ -7,23 +7,17 @@ const jsonContent = {
 
 try {
   if (!fs.existsSync(localStorageVersionPath)) {
-    fs.writeFile(
-      localStorageVersionPath,
-      JSON.stringify(jsonContent),
-      "utf8",
-      function (error) {
-        if (error) {
-          console.log(
-            "An error occured while saving build date and time to localStorage_version.json"
-          );
-          return console.log(error);
-        }
-
-        console.log(
-          "Latest build date and time updated in localStorage_version.json file"
-        );
-      }
-    );
+    try {
+      fs.writeFileSync(localStorageVersionPath, JSON.stringify(jsonContent));
+      console.log(
+        "Latest build date and time updated in local_storage_version.json file"
+      );
+    } catch (err) {
+      console.error(
+        "An error occured while saving build date and time to local_storage_version.json",
+        err
+      );
+    }
     return;
   }
   var localStorageVersion = JSON.parse(
@@ -33,7 +27,7 @@ try {
   const newSetupVersion = { version: newLocalStorageVersion };
   fs.writeFileSync(localStorageVersionPath, JSON.stringify(newSetupVersion));
   console.log(
-    "Latest build date and time updated in localStorage_version.json file with new version"
+    "Latest build date and time updated in local_storage_version.json file with new version"
   );
 } catch (err) {
   console.error(err);
