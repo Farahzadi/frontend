@@ -1,9 +1,13 @@
 import { useSelector } from "react-redux";
-import React, { useState } from "react";
+import { useHistory, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
-import { Button, AccountDropdown, Menu, MenuItem } from "components";
-import { userSelector } from "lib/store/features/auth/authSlice";
-import { networkConfigSelector } from "lib/store/features/api/apiSlice";
+import { Button, Dropdown, AccountDropdown, Menu, MenuItem } from "components";
+import {
+  networkConfigSelector,
+  userChainDetailsSelector,
+  userAddressSelector,
+} from "lib/store/features/api/apiSlice";
 import api from "lib/api";
 import logo from "assets/images/logo.svg";
 import menu from "assets/icons/menu.png";
@@ -27,7 +31,8 @@ export const Header = () => {
   // state to open or close the sidebar in mobile
   const [show, setShow] = useState(false);
   const [connecting, setConnecting] = useState(false);
-  const user = useSelector(userSelector);
+  const userChainDetails = useSelector(userChainDetailsSelector);
+  const userAddress = useSelector(userAddressSelector);
   const networkConfig = useSelector(networkConfigSelector);
   const hasBridge = networkConfig.hasBridge;
   const links = [
