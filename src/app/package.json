@@ -123,7 +123,7 @@
     "start:prod": "env-cmd -f .env.prod node scripts/start.js",
     "build:local": "node scripts/build.js",
     "build:prod": "env-cmd -f .env.prod node scripts/build.js",
-    "migration": "node ./update-build-date.js"
+    "migrate": "node ./update-build-date.js"
   },
   "eslintConfig": {
     "extends": [

@@ -1,6 +1,6 @@
 import moment from "moment";
 
-import localStorageVersion from "../../localStorage_version.json";
+import localStorageVersion from "../../local_storage_version.json";
 
 export const sleep = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -21,16 +21,9 @@ export const checkLocalStorageVersion = () => {
     localStorage.getItem(localStorageVersionKey)
   ).version;
   const lastVersion = localStorageVersion.version;
-  if (currentVersion) {
-    if (currentVersion !== lastVersion) {
-      localStorage.clear();
 
-      localStorage.setItem(
-        localStorageVersionKey,
-        JSON.stringify(localStorageVersion)
-      );
-    }
-  } else {
+  if (currentVersion !== lastVersion) {
+    localStorage.clear();
     localStorage.setItem(
       localStorageVersionKey,
       JSON.stringify(localStorageVersion)

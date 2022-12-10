@@ -7,9 +7,10 @@ import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import { checkLocalStorageVersion } from "./lib/helpers/utils";
 import "App.css";
 
-api.start();
 // check if version of app is latest or not
 checkLocalStorageVersion();
+
+api.start();
 
 const App = () => {
   return (
