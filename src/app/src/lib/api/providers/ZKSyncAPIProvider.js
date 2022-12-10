@@ -207,7 +207,6 @@ export default class ZKSyncAPIProvider extends APIProvider {
       sellWithFee,
       tokenBuy,
       tokenSell,
-      quantity,
       tokenRatio,
       priceWithFee = 0;
 
@@ -231,17 +230,15 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
     if (side === "b") {
       [tokenBuy, tokenSell] = currencies;
-      quantity = parseFloat(amount.mul(price));
     }
 
     if (side === "s") {
       [tokenSell, tokenBuy] = currencies;
-      quantity = parseFloat(amount);
     }
 
     const parsedQuantity = this.syncProvider.tokenSet.parseToken(
       tokenSell,
-      quantity.toString()
+      amount.toString()
     );
 
     priceWithFee = side === "b" ? buyWithFee : sellWithFee;
