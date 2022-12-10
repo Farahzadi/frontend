@@ -104,8 +104,8 @@ export const apiSlice = createSlice({
     orderSide: false,
     uuid: null,
     user: {
-      address: "",
-      nonce: 1,
+      address: null,
+      nonce: null,
       // network main balances
       balances: null,
       chain_details: null,
