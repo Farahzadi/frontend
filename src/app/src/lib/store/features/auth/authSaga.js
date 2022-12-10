@@ -8,9 +8,9 @@ function* handleHydration({ payload, key }) {
   if (key === "api") {
     if (payload && payload.network) {
       const user = yield select((state) => state.auth?.user);
-      api.setNetwork(payload.network.name);
+      yield api.setNetwork(payload.network.name);
 
-      if (user?.id) {
+      if (user?.address) {
         try {
           yield apply(api, api.connectWallet, []);
         } catch (err) {

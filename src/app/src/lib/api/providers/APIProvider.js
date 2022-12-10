@@ -1,3 +1,5 @@
+import { State } from "lib/utils";
+
 const notImplemented = function (method) {
   const x = () => {
     throw new Error(`APIProvider method not implemented: ${method}`);
@@ -7,7 +9,7 @@ const notImplemented = function (method) {
 };
 
 export default class APIProvider {
-  static State = class {
+  static State = class extends State {
     static DISCONNECTED = "DISCONNECTED";
     static CONNECTING = "CONNECTING";
     static CONNECTED = "CONNECTED";
@@ -15,19 +17,6 @@ export default class APIProvider {
     static DISCONNECTING = "DISCONNECTING";
 
     _state = "DISCONNECTED";
-
-    onChange;
-
-    set = (state) => {
-      if (!Object.keys(APIProvider.State).includes(state)) return;
-      const prev = this._state;
-      this._state = state;
-      if (prev !== state) this.onChange?.(state);
-    };
-
-    get = () => {
-      return this._state;
-    };
   };
 
   /// Common fields
@@ -48,8 +37,7 @@ export default class APIProvider {
   start = notImplemented("start");
   stop = notImplemented("stop");
   getAccountState = notImplemented("getAccountState");
-  submitOrder = notImplemented("submitOrder");
-  submitSwap = notImplemented("submitSwap");
+  prepareOrder = notImplemented("submitOrder");
   depositL2 = notImplemented("depositL2");
   withdrawL2 = notImplemented("withdrawL2");
   depositL2Fee = notImplemented("depositL2Fee");
@@ -65,8 +53,12 @@ export default class APIProvider {
 
   onAccountChange = notImplemented("onAccountChange");
 
-  constructor(api, onStateChange) {
-    this.api = api;
+  emit = (msg, ...args) => {
+    this.networkInterface.emit(msg, ...args);
+  };
+
+  constructor(networkInterface, onStateChange) {
+    this.networkInterface = networkInterface;
     this.state.onChange = onStateChange;
   }
 }

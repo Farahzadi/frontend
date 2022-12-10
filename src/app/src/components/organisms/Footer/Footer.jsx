@@ -120,7 +120,7 @@ class Footer extends React.Component {
             }
 
             const orderWithoutFee = api.getOrderDetailsWithoutFee(order);
-            if (api.isZksyncChain()) {
+            if (["zksyncv1", "zksyncv1_goerli"].includes(this.props.network)) {
               price = orderWithoutFee.price;
               baseQuantity = orderWithoutFee.baseQuantity;
               remaining = orderWithoutFee.remaining;
@@ -317,11 +317,12 @@ class Footer extends React.Component {
 
             let feeText;
 
-            if (!api.isZksyncChain()) feeText = "0 " + baseCurrency;
+            if (["zksyncv1", "zksyncv1_goerli"].includes(this.props.network))
+              feeText = "0 " + baseCurrency;
             else feeText = fee.toPrecision(3) + " " + feeCurrency;
 
             const fillWithoutFee = api.getFillDetailsWithoutFee(fill);
-            if (api.isZksyncChain()) {
+            if (["zksyncv1", "zksyncv1_goerli"].includes(this.props.network)) {
               price = fillWithoutFee.price;
               amount = fillWithoutFee.baseQuantity;
             }
@@ -437,7 +438,7 @@ class Footer extends React.Component {
             date = api.hasOneDayPassed(time);
 
             const orderWithoutFee = api.getOrderDetailsWithoutFee(order);
-            if (api.isZksyncChain()) {
+            if (["zksyncv1", "zksyncv1_goerli"].includes(this.props.network)) {
               price = orderWithoutFee.price;
               baseQuantity = orderWithoutFee.baseQuantity;
             }

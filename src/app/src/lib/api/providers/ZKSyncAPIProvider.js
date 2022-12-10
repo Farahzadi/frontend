@@ -15,8 +15,6 @@ export default class ZKSyncAPIProvider extends APIProvider {
   static validSides = ["b", "s"];
   NETWORK = "zksyncv1";
   NETWORK_NAME = "mainnet";
-  BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
-  HAS_BRIDGE = true;
   ZKSYNC_BASE_URL = "https://api.zksync.io/api/v0.2";
 
   syncWallet = null;
@@ -70,7 +68,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
     }
 
     const web3Modal = new Web3Modal({
-      network: this.NETWORK,
+      network: this.NETWORK_NAME,
       cacheProvider: true,
       providerOptions,
       theme: "dark",
@@ -115,13 +113,12 @@ export default class ZKSyncAPIProvider extends APIProvider {
       throw err;
     }
 
-    let result;
     const accountState = await this.getAccountState();
-    if (!accountState.id) {
+
+    let result;
+    if (!(await this.isActivated())) {
+      await this.activateAccount(accountState);
       result = "redirectToBridge";
-    } else {
-      const isActivated = await this.syncWallet.isSigningKeySet();
-      if (!isActivated) await this.activateAccount(accountState);
     }
 
     this.state.set(APIProvider.State.CONNECTED);
@@ -138,7 +135,8 @@ export default class ZKSyncAPIProvider extends APIProvider {
   };
 
   getAddress = async () => {
-    const address = this.syncWallet?.cachedAddress ?? (await this.wallet?.getAddress());
+    const address =
+      this.syncWallet?.cachedAddress ?? (await this.wallet?.getAddress());
     return ethers.utils.getAddress(address);
   };
 
@@ -167,6 +165,10 @@ export default class ZKSyncAPIProvider extends APIProvider {
     }
   };
 
+  isActivated = async () => {
+    return this.syncWallet?.isSigningKeySet();
+  };
+
   getTransactionState = async (txHash) => {
     const { data } = await axios.get(
       `https://api.zksync.io/api/v0.2/transactions/${txHash}`
@@ -192,7 +194,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
     return feeUSD;
   };
 
-  submitOrder = async (
+  prepareOrder = async (
     product,
     side,
     price,
@@ -267,8 +269,8 @@ export default class ZKSyncAPIProvider extends APIProvider {
     // console.log("accountState", account);
     const balances = {};
 
-    Object.keys(this.api.currencies).forEach((ticker) => {
-      const currency = this.api.currencies[ticker];
+    Object.keys(this.networkInterface.core.currencies).forEach((ticker) => {
+      const currency = this.networkInterface.core.currencies[ticker];
       const balance = new Decimal(
         account && account.committed
           ? account.committed.balances[ticker] || 0
@@ -418,11 +420,9 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
     const amount = toBaseUnit(
       amountDecimals,
-      this.api.currencies[token].decimals
+      this.networkInterface.core.currencies[token].decimals
     );
-    const checksumAddress = ethers.utils.getAddress(
-      this.api._accountState.address
-    );
+    const checksumAddress = await this.getAddress();
     if (amount) {
       try {
         transfer = await this.syncWallet.withdrawFromSyncToEthereum({
@@ -435,14 +435,14 @@ export default class ZKSyncAPIProvider extends APIProvider {
           bridgeReceiptData.status = data.status;
         });
 
-        this.api.emit(
+        this.emit(
           "bridgeReceipt",
           this.handleBridgeReceipt(
             transfer,
             amountDecimals,
             token,
             "withdraw",
-            this.api._accountState.id,
+            this.networkInterface._accountState.id,
             checksumAddress,
             bridgeReceiptData.status
           )
@@ -461,11 +461,9 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
     const amount = toBaseUnit(
       amountDecimals,
-      this.api.currencies[token].decimals
+      this.networkInterface.core.currencies[token].decimals
     );
-    const checksumAddress = ethers.utils.getAddress(
-      this.api._accountState.address
-    );
+    const checksumAddress = await this.getAddress();
     if (amount) {
       try {
         transfer = await this.syncWallet.depositToSyncFromEthereum({
@@ -478,14 +476,14 @@ export default class ZKSyncAPIProvider extends APIProvider {
           bridgeReceiptData.status = data.status;
         });
 
-        this.api.emit(
+        this.emit(
           "bridgeReceipt",
           this.handleBridgeReceipt(
             transfer,
             amountDecimals,
             token,
             "deposit",
-            this.api._accountState.id,
+            this.networkInterface._accountState.id,
             checksumAddress,
             bridgeReceiptData.status
           )
@@ -542,7 +540,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
       const totalFee = new Decimal(parseInt(fee.totalFee));
       this._tokenWithdrawFees[token] = totalFee.div(
-        10 ** this.api.currencies[token].decimals
+        10 ** this.networkInterface.core.currencies[token].decimals
       );
     }
 
@@ -643,7 +641,9 @@ export default class ZKSyncAPIProvider extends APIProvider {
   getParsedSellQuantity = (tokenSell, sellQuantity) => {
     const parsedSellQuantity = this.syncProvider.tokenSet.parseToken(
       tokenSell,
-      sellQuantity.toFixed(this.api.currencies[tokenSell].decimals)
+      sellQuantity.toFixed(
+        this.networkInterface.core.currencies[tokenSell].decimals
+      )
     );
 
     return parsedSellQuantity;
@@ -685,11 +685,11 @@ export default class ZKSyncAPIProvider extends APIProvider {
   };
 
   approveSpendOfCurrency = async (currency, allowance, erc20ContractABI) => {
-    const netContract = this.api.getNetworkContract();
+    const netContract = this.networkInterface.getNetworkContract();
     if (netContract) {
       // const account = await this.getAddress();
       const { contract: contractAddress } =
-        this.api.currencies[currency].chain[this.NETWORK];
+        this.networkInterface.core.currencies[currency].chain[this.NETWORK];
       const contract = new ethers.Contract(
         contractAddress,
         erc20ContractABI,
@@ -701,12 +701,12 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
   getBalanceOfCurrency = async (currency, erc20ContractABI, maxAllowance) => {
     const { contract: contractAddress } =
-      this.api.currencies[currency].chain[this.NETWORK];
+      this.networkInterface.core.currencies[currency].chain[this.NETWORK];
     let result = { balance: 0, allowance: maxAllowance };
     if (/* !this.ethersProvider || */ !contractAddress) return result;
 
     try {
-      const netContract = this.api.getNetworkContract();
+      const netContract = this.networkInterface.getNetworkContract();
       const account = await this.getAddress();
       console.log("account", account);
       if (currency === "ETH") {

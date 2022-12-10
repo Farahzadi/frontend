@@ -42,7 +42,7 @@ const NetworkSelection = () => {
   const networks = useSelector(networkListSelector);
   const network = useSelector(networkSelector);
 
-  const [selectedNet, setSelectedNet] = useState('');
+  const [selectedNet, setSelectedNet] = useState(network ?? "");
   useEffect(() => {
     api.getNetworks();
   }, []);

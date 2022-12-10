@@ -71,3 +71,21 @@ export const validateNumberInputs = (value) => {
     return value;
   }
 }
+
+export class State {
+  _state = "";
+
+  onChange;
+
+  set = (state) => {
+    if (!Object.keys(this.constructor).includes(state)) return;
+    const prev = this._state;
+    this._state = state;
+    if (prev !== state) this.onChange?.(state);
+  };
+
+  get = () => {
+    return this._state;
+  };
+};
+

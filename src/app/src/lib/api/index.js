@@ -1,8 +1,8 @@
-import API from "./API";
-import EthAPIProvider from "./providers/EthAPIProvider";
-import EthGoerliAPIProvider from "./providers/EthGoerliAPIProvider";
-import ZKSyncAPIProvider from "./providers/ZKSyncAPIProvider";
-import ZKSyncGoerliAPIProvider from "./providers/ZKSyncGoerliAPIProvider";
+import Core from "./Core";
+import ZKSyncInterface from "./networks/ZKSyncInterface";
+import ZKSyncGoerliInterface from "./networks/ZKSyncGoerliInterface";
+import EthereumInterface from "./networks/EthereumInterface";
+import EthereumGoerliInterface from "./networks/EthereumGoerliInterface";
 
 const NODE_ENV = process.env.NODE_ENV;
 const INFURA_ID = process.env.REACT_APP_INFURA_ID;
@@ -14,28 +14,16 @@ if (!INFURA_ID) throw new Error("couldn't find Infura id");
 if (!WEBSOCKET_URL) throw new Error("couldn't find Websocket Url");
 if (!API_URL) throw new Error("couldn't find Backend API Url");
 
-const api = new API({
+const api = new Core({
   infuraId: INFURA_ID,
   websocketUrl: WEBSOCKET_URL,
   apiUrl: API_URL,
   signInMessage: SIGN_IN_MESSAGE,
-  networks: {
-    zksyncv1: {
-      apiProvider: ZKSyncAPIProvider,
-      contract: "0x0000000000000000000000000000000000000000",
-    },
-    zksyncv1_goerli: {
-      apiProvider: ZKSyncGoerliAPIProvider,
-      contract: "0x0000000000000000000000000000000000000000",
-    },
-    ethereum: {
-      apiProvider: EthAPIProvider,
-      contract: "0x0000000000000000000000000000000000000000",
-    },
-    ethereum_goerli: {
-      apiProvider: EthGoerliAPIProvider,
-      contract: "0x0000000000000000000000000000000000000000",
-    },
+  networkClasses: {
+    zksyncv1: ZKSyncInterface,
+    zksyncv1_goerli: ZKSyncGoerliInterface,
+    ethereum: EthereumInterface,
+    ethereum_goerli: EthereumGoerliInterface,
   },
   currencies: {
     ETH: {
@@ -213,6 +201,7 @@ const api = new API({
     ],
     zksyncv1_goerli: ["ETH-USDC", "ETH-DAI", "DAI-USDC"],
     ethereum: ["ETH-USDC", "ETH-DAI", "DAI-USDC"],
+    ethereum_goerli: ["ETH-USDC", "ETH-DAI", "DAI-USDC"],
   },
 });
 
@@ -220,5 +209,5 @@ if (NODE_ENV !== "production" && typeof window !== "undefined") {
   window.api = api;
 }
 
-export { API };
+export { Core };
 export default api;
