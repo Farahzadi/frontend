@@ -13,7 +13,7 @@ export const checkLocalStorageVersion = () => {
   const localStorageVersionKey = "localStorageVersion";
   const currentVersion = JSON.parse(
     localStorage.getItem(localStorageVersionKey)
-  ).version;
+  )?.version;
   const lastVersion = localStorageVersion.version;
 
   if (currentVersion !== lastVersion) {
