@@ -106,6 +106,7 @@ export const apiSlice = createSlice({
     user: {
       address: null,
       name: null,
+      image: null,
       nonce: null,
       // network main balances
       balances: null,
@@ -552,6 +553,7 @@ export const balancesSelector = (state) =>
 export const networkListSelector = (state) => state.api.networks;
 export const userAddressSelector = (state) => state.api.user.address;
 export const userNameSelector = (state) => state.api.user.name;
+export const userImageSelector = (state) => state.api.user.image;
 export const userNonceSelector = (state) => state.api.user.nonce;
 export const userBalancesSelector = (state) => state.api.user.balances;
 export const userChainDetailsSelector = (state) => state.api.user.chain_details;
