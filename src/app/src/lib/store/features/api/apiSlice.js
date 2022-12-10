@@ -375,9 +375,6 @@ export const apiSlice = createSlice({
         state.orders = {};
       }
     },
-    setUserAddress(state, { payload }) {
-      state.userAddress = payload;
-    },
     setNetwork(state, { payload }) {
       state.network.name = payload.name;
       state.network.hasBridge = payload.hasBridge;
@@ -482,6 +479,24 @@ export const apiSlice = createSlice({
     clearUuid(state) {
       state.uuid = null;
     },
+    setUserAddress(state, { payload }) {
+      state.user.address = payload;
+    },
+    setUserName(state, { payload }) {
+      state.user.name = payload;
+    },
+    setUserNonce(state, { payload }) {
+      state.user.nonce = payload;
+    },
+    setUserBalances(state, { payload }) {
+      state.user.balances = payload;
+    },
+    setUserChainDetails(state, { payload }) {
+      state.user.chain_details = {
+        ...(state.user.chain_details ?? {}),
+        ...payload,
+      };
+    },
   },
 });
 
@@ -491,7 +506,6 @@ export const {
   setProviderState,
   clearBridgeReceipts,
   setBalances,
-  setUserAddress,
   addBridgeReceipt,
   addbridgeReceiptStatus,
   setCurrentMarket,
@@ -503,6 +517,11 @@ export const {
   setOrderSide,
   resetOrderBook,
   clearUuid,
+  setUserAddress,
+  setUserName,
+  setUserNonce,
+  setUserBalances,
+  setUserChainDetails,
 } = apiSlice.actions;
 
 export const configSelector = (state) => state.api.config;
