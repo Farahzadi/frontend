@@ -103,6 +103,13 @@ export const apiSlice = createSlice({
     selectedPrice: 0,
     orderSide: false,
     uuid: null,
+    user: {
+      address: "",
+      nonce: 1,
+      // network main balances
+      balances: null,
+      chain_details: null,
+    },
   },
   reducers: {
     _connected_ws(state, { payload }) {
@@ -511,7 +518,6 @@ export const marketInfoSelector = (state) => state.api.marketinfo;
 export const liquiditySelector = (state) => state.api.liquidity;
 export const currentMarketSelector = (state) => state.api.currentMarket;
 export const bridgeReceiptsSelector = (state) => state.api.bridgeReceipts;
-export const userAddressSelector = (state) => state.api.userAddress;
 export const orderTypeSelector = (state) => state.api.orderType;
 export const unbroadcastedSelector = (state) => state.api.unbroadcasted;
 export const rangePriceSelector = (state) => state.api.rangePrice;
@@ -524,6 +530,10 @@ export const balancesSelector = (state) =>
   state.api.balances[makeScope(state.api)] || {};
 
 export const networkListSelector = (state) => state.api.networks;
+export const userAddressSelector = (state) => state.api.user.address;
+export const userNonceSelector = (state) => state.api.user.nonce;
+export const userBalancesSelector = (state) => state.api.user.balances;
+export const userChainDetailsSelector = (state) => state.api.user.chain_details;
 
 export const handleMessage = createAction("api/handleMessage");
 
