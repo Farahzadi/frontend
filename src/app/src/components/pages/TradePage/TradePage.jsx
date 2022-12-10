@@ -6,7 +6,6 @@ import { FaDiscord, FaTelegramPlane, FaTwitter } from "react-icons/fa";
 import { useHistory, useLocation } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import CacheHandling from "../../../CacheHandling";
 import TradeHead from "components/pages/TradePage/TradeHead/TradeHead";
 import TradePriceTable from "components/pages/TradePage/TradePriceTable/TradePriceTable";
 import TradePriceBtcTable from "components/pages/TradePage/TradePriceBtcTable/TradePriceBtcTable";
@@ -345,19 +344,6 @@ const TradePage = () => {
                 Powered By Dexpresso
               </div>
               <div className="mt-3 mt-lg-0 d-flex align-items-center justify-content-center">
-                <CacheHandling>
-                  {({ loading, isLatestVersion, refreshCacheAndReload }) => {
-                    if (loading) return null;
-                    if (!loading && !isLatestVersion) {
-                      refreshCacheAndReload();
-                    }
-                    return (
-                      <p>
-                        <code>v0.0.1</code>{" "}
-                      </p>
-                    );
-                  }}
-                </CacheHandling>
                 <p>v0.0.1</p>{" "}
               </div>
               <div className="head_left_socials my-1 my-lg-0 footer-icons">
