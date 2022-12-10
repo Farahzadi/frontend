@@ -4,9 +4,10 @@ import { SwapButton, Button, useCoinEstimator } from "components";
 import {
   networkSelector,
   balancesSelector,
+  userChainDetailsSelector,
+  userAddressSelector,
 } from "lib/store/features/api/apiSlice";
 import Loader from "react-loader-spinner";
-import { userSelector } from "lib/store/features/auth/authSlice";
 import ethLogo from "assets/images/currency/ETH.svg";
 import api from "lib/api";
 import { maxAllowance } from "lib/api/constants";
@@ -26,7 +27,8 @@ const defaultTransfer = {
 };
 
 const Bridge = () => {
-  const user = useSelector(userSelector);
+  const userAddress = useSelector(userAddressSelector);
+  const userChainDetails = useSelector(userChainDetailsSelector);
   const balanceData = useSelector(balancesSelector);
   const [loading, setLoading] = useState(false);
   const [isApproving, setApproving] = useState(false);
@@ -51,7 +53,7 @@ const Bridge = () => {
   const coinEstimator = useCoinEstimator();
   const currencyValue = coinEstimator(swapDetails.currency);
   // const activationFee = parseFloat(
-  //   (user.address && !user.id ? 15 / currencyValue : 0).toFixed(5)
+  //   (userAddress && !user.id ? 15 / currencyValue : 0).toFixed(5)
   // );
   const estimatedValue =
     +swapDetails.amount * coinEstimator(swapDetails.currency) || 0;
@@ -86,7 +88,7 @@ const Bridge = () => {
   useEffect(() => {
     (async () => {
       // update changePubKeyFee fee if needed
-      if (user.address && api.apiProvider?.zksyncCompatible) {
+      if (userAddress && api.apiProvider?.zksyncCompatible) {
         const usdFee = await api.apiProvider.changePubKeyFee();
         setUsdFee(usdFee);
         if (Number.isFinite(usdFee / currencyValue)) {
@@ -100,7 +102,7 @@ const Bridge = () => {
         }
       }
     })();
-  }, [fromNetwork, toNetwork, swapDetails.currency, user.address]);
+  }, [fromNetwork, toNetwork, swapDetails.currency, userAddress]);
   useEffect(() => {
     function handleWindowResize() {
       setWindowSize(getWindowSize());
@@ -337,7 +339,7 @@ const Bridge = () => {
             </div>
           </div>
           <div className="bridge_button">
-              {!user.address && (
+              {!userAddress && (
                 <Button
                   className="bg_btn bg_btn-transfer"
                   text="CONNECT WALLET"
@@ -345,7 +347,7 @@ const Bridge = () => {
                   onClick={() => api.connectWallet()}
                 />
               )}
-              {user.address && balances[swapDetails.currency] && !hasAllowance && (
+              {userAddress && balances[swapDetails.currency] && !hasAllowance && (
                 <Button
                   loading={isApproving}
                   className={cx("bg_btn bg_btn-transfer", {
@@ -357,14 +359,14 @@ const Bridge = () => {
                   onClick={approveSpend}
                 />
               )}
-              {user.address && hasError && (
+              {userAddress && hasError && (
                 <Button
                   className="bg_btn bg_btn-transfer zig_btn_disabled bg_err"
                   text={formErr}
                   icon={<BiError />}
                 />
               )}
-              {user.address && !hasError && (
+              {userAddress && !hasError && (
                 <Button
                   loading={loading}
                   className={cx("bg_btn bg_btn-transfer", {
@@ -380,12 +382,12 @@ const Bridge = () => {
               )}
             </div>
           <div>
-            {user.address ? (
+            {userAddress ? (
               <div className="bridge_connected_as">
                 {/* <span className="bridge_bubble_connected" />
                 <p className="small">
                   Connected as
-                  {`${user.address.substr(0, 6)}...${user.address.substr(-5)}`}
+                  {`${userAddress.substr(0, 6)}...${userAddress.substr(-5)}`}
                 </p> */}
                 <span onClick={disconnect} className="bridge_disconnect">
                   {" • "}
@@ -399,7 +401,7 @@ const Bridge = () => {
               </div>
             )}
           </div>
-          {transfer.type === "deposit" && user.address && !user.id && (
+          {transfer.type === "deposit" && userAddress && !userChainDetails.userId && (
             <div className="bridge_transfer_fee">
               <div>
                 One-Time Activation Fee: {activationFee} {swapDetails.currency}{" "}
@@ -410,8 +412,8 @@ const Bridge = () => {
             </div>
           )}
 
-          {user.address ? (
-            user.id && (
+          {userAddress ? (
+            userChainDetails.userId && (
               <div className="bridge_transfer_fee">
                 <div>
                   {transfer.type === "withdraw" ? (
@@ -660,7 +662,7 @@ const Bridge = () => {
               </div>
             </div>
             <div className="bridge_button">
-              {!user.address && (
+              {!userAddress && (
                 <Button
                   className="bg_btn bg_btn-transfer"
                   text="CONNECT WALLET"
@@ -668,7 +670,7 @@ const Bridge = () => {
                   onClick={() => api.connectWallet()}
                 />
               )}
-              {user.address && balances[swapDetails.currency] && !hasAllowance && (
+              {userAddress && balances[swapDetails.currency] && !hasAllowance && (
                 <Button
                   loading={isApproving}
                   className={cx("bg_btn bg_btn-transfer", {
@@ -680,14 +682,14 @@ const Bridge = () => {
                   onClick={approveSpend}
                 />
               )}
-              {user.address && hasError && (
+              {userAddress && hasError && (
                 <Button
                   className="bg_btn bg_btn-transfer zig_btn_disabled bg_err"
                   text={formErr}
                   icon={<BiError />}
                 />
               )}
-              {user.address && !hasError && (
+              {userAddress && !hasError && (
                 <Button
                   loading={loading}
                   className={cx("bg_btn bg_btn-transfer", {
@@ -703,10 +705,10 @@ const Bridge = () => {
               )}
             </div>
             <div>
-              {user.address ? (
+              {userAddress ? (
                 <div className="bridge_connected_as text-black">
                   {/* <span className="bridge_bubble_connected" /> <p className="small mb-0">Connected as
-                  {`${user.address.substr(0, 6)}...${user.address.substr(-5)}`}</p> */}
+                  {`${userAddress.substr(0, 6)}...${userAddress.substr(-5)}`}</p> */}
                   <span onClick={disconnect} className="bridge_disconnect">
                     {" • "}
                     <a href="#disconnect">Disconnect</a>
@@ -719,7 +721,7 @@ const Bridge = () => {
                 </div>
               )}
             </div>
-            {transfer.type === "deposit" && user.address && !user.id && (
+            {transfer.type === "deposit" && userAddress && !userChainDetails.userId && (
               <div className="bridge_transfer_fee">
                 <div>
                   One-Time Activation Fee: {activationFee}{" "}
@@ -730,8 +732,8 @@ const Bridge = () => {
               </div>
             )}
 
-            {user.address ? (
-              user.id && (
+            {userAddress ? (
+              userChainDetails.userId && (
                 <div className="bridge_transfer_fee">
                   <div>
                     {transfer.type === "withdraw" ? (

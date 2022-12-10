@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { networkSelector } from "lib/store/features/api/apiSlice";
-import { userSelector } from "lib/store/features/auth/authSlice";
+import { networkSelector, userChainDetailsSelector } from "lib/store/features/api/apiSlice";
 import styled, { css } from "@xstyled/styled-components";
 import { FiChevronDown } from "react-icons/fi";
 import { useCoinEstimator } from "components";
@@ -171,7 +170,7 @@ const BridgeCurrencySelector = ({
   const [windowSize, setWindowSize] = useState(getWindowSize());
   const [showingOptions, setShowingOptions] = useState(false);
   const network = useSelector(networkSelector);
-  const user = useSelector(userSelector);
+  const userChainDetails = useSelector(userChainDetailsSelector);
   const coinEstimator = useCoinEstimator();
 
   useEffect(() => {
@@ -183,7 +182,7 @@ const BridgeCurrencySelector = ({
 
     setTickers(tickers);
     onChange(api.currencies["ETH"] ? "ETH" : tickers[0]);
-  }, [user.id, network, currencies]);
+  }, [userChainDetails.userId, network, currencies]);
 
   const inputTest = (val) => {
     if (val.target.value === "") {
