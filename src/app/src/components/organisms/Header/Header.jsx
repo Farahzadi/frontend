@@ -117,7 +117,6 @@ export const Header = (props) => {
         <div className="nav_items">
           <NavLink exact to="/">
             <img src={logo} alt="logo" />
-            <span>DEXPERSSO</span> 
           </NavLink>
           <ul className="mx-0 px-0">
             <li>
