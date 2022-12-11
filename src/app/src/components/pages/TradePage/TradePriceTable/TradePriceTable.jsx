@@ -18,7 +18,12 @@ import {
 class TradePriceTable extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { rengId: -1, rangedData: 0, selectedPrice: 0 };
+    this.state = {
+      rengId: -1,
+      rangedData: 0,
+      selectedPrice: 0,
+      isScrolled: false,
+    };
   }
   scrollToBottom = () => {
     if (this.props.scrollToBottom) {
@@ -58,12 +63,14 @@ class TradePriceTable extends React.Component {
     this.setState(newState);
   }
 
-  componentDidMount() {
-    this.scrollToBottom();
-  }
-
-  componentDidUpdate() {
-    this.scrollToBottom();
+  componentDidUpdate(prevProps) {
+    if (
+      this.props.priceTableData.length !== prevProps.priceTableData.length ||
+      this.state.isScrolled === false
+    ) {
+      this.scrollToBottom();
+      this.setState({ isScrolled: true });
+    }
   }
   setRangedPrice() {
     if (!this.props.latestTrades) {
@@ -130,99 +137,34 @@ class TradePriceTable extends React.Component {
               this.props.isSell === "isSell" ? "flex-column-reverse d-flex" : ""
             }
           >
-            
-            {this.props.latestTrades && this.props.priceTableData.map((data, i) => {
-              const color = data.side === "b" ? "#27302F" : "#2C232D";
-              const breakpoint = Math.round(
-                (data.remaining / maxQuantity) * 100
-              );
-              let rowStyle;
-              if (this.props.useGradient) {
-                rowStyle = {
-                  backgroundImage: `linear-gradient(to left, ${color}, ${color} ${breakpoint}%, #14243C 0%)`,
-                };
-              } else {
-                rowStyle = {};
-              }
-              const price =
-                typeof data.price === "number"
-                  ? data.price.toPrecision(6)
-                  : Number(data.price).toPrecision(6);
-              const total = (
-                Number(data.price) * Number(data.remaining)
-              ).toFixed(5);
-              const time = data.time;
-              return (
-                <div
-                  key={i}
-                  style={rowStyle}
-                  className={` ${i <= this.state.rengId ? "bg-range" : ""}
-                 table-section`}
-                  onClick={() => {
-                    onClickRow(data);
-                    this.setRangedPrice();
-                  }}
-                  onMouseEnter={() => this.rangeUi(i)}
-                  onMouseLeave={() => this.rangeUi(-1)}
-                >
-                  <div>{time}</div>
-                  <div
-                    className={data.side === "b" ? "up_value" : "down_value"}
-                  >
-                    {price}
-                  </div>
-                  <div>{numStringToSymbol(total, 2)}</div>
-                </div>
-              );
-            })}
-            {!this.props.latestTrades && this.props.priceTableData.map((data, i) => {
-              const color = data.side === "b" ? "#27302F" : "#2C232D";
-              const breakpoint = Math.round(
-                (data.remaining / maxQuantity) * 100
-              );
-              let rowStyle;
-              if (this.props.useGradient) {
-                rowStyle = {
-                  backgroundImage: `linear-gradient(to left, ${color}, ${color} ${breakpoint}%, #14243C 0%)`,
-                };
-              } else {
-                rowStyle = {};
-              }
-              const price =
-                typeof data.price === "number"
-                  ? data.price.toPrecision(6)
-                  : Number(data.price).toPrecision(6);
-              const amount =
-                typeof data.remaining === "number"
-                  ? data.remaining.toFixed(5)
-                  : Number(data.remaining).toFixed(5);
-              const total = (
-                Number(data.price) * Number(data.remaining)
-              ).toFixed(5);
-              return (
-                <Tooltip
-                  arrow
-                  key={i}
-                  followCursor
-                  style={this.tooltipStyle}
-                  TransitionComponent={Fade}
-                  TransitionProps={{ timeout: 0 }}
-                  title={
-                    <div className={this.props.latestTrades ? "d-none" : ""}>
-                      <h6>
-                        <strong>
-                          ◄ Total Amount ≈ {this.state.rangedData}
-                        </strong>
-                      </h6>
-                    </div>
-                  }
-                  placement="right"
-                >
+            {this.props.latestTrades &&
+              this.props.priceTableData.map((data, i) => {
+                const color = data.side === "b" ? "#27302F" : "#2C232D";
+                const breakpoint = Math.round(
+                  (data.remaining / maxQuantity) * 100
+                );
+                let rowStyle;
+                if (this.props.useGradient) {
+                  rowStyle = {
+                    backgroundImage: `linear-gradient(to left, ${color}, ${color} ${breakpoint}%, #14243C 0%)`,
+                  };
+                } else {
+                  rowStyle = {};
+                }
+                const price =
+                  typeof data.price === "number"
+                    ? data.price.toPrecision(6)
+                    : Number(data.price).toPrecision(6);
+                const total = (
+                  Number(data.price) * Number(data.remaining)
+                ).toFixed(5);
+                const time = data.time;
+                return (
                   <div
                     key={i}
                     style={rowStyle}
                     className={` ${i <= this.state.rengId ? "bg-range" : ""}
-                  table-section`}
+                 table-section`}
                     onClick={() => {
                       onClickRow(data);
                       this.setRangedPrice();
@@ -230,17 +172,85 @@ class TradePriceTable extends React.Component {
                     onMouseEnter={() => this.rangeUi(i)}
                     onMouseLeave={() => this.rangeUi(-1)}
                   >
+                    <div>{time}</div>
                     <div
                       className={data.side === "b" ? "up_value" : "down_value"}
                     >
                       {price}
                     </div>
-                    <div>{numStringToSymbol(amount, 2)}</div>
                     <div>{numStringToSymbol(total, 2)}</div>
                   </div>
-                </Tooltip>
-              );
-            })}
+                );
+              })}
+            {!this.props.latestTrades &&
+              this.props.priceTableData.map((data, i) => {
+                const color = data.side === "b" ? "#27302F" : "#2C232D";
+                const breakpoint = Math.round(
+                  (data.remaining / maxQuantity) * 100
+                );
+                let rowStyle;
+                if (this.props.useGradient) {
+                  rowStyle = {
+                    backgroundImage: `linear-gradient(to left, ${color}, ${color} ${breakpoint}%, #14243C 0%)`,
+                  };
+                } else {
+                  rowStyle = {};
+                }
+                const price =
+                  typeof data.price === "number"
+                    ? data.price.toPrecision(6)
+                    : Number(data.price).toPrecision(6);
+                const amount =
+                  typeof data.remaining === "number"
+                    ? data.remaining.toFixed(5)
+                    : Number(data.remaining).toFixed(5);
+                const total = (
+                  Number(data.price) * Number(data.remaining)
+                ).toFixed(5);
+                return (
+                  <Tooltip
+                    arrow
+                    key={i}
+                    followCursor
+                    style={this.tooltipStyle}
+                    TransitionComponent={Fade}
+                    TransitionProps={{ timeout: 0 }}
+                    title={
+                      <div className={this.props.latestTrades ? "d-none" : ""}>
+                        <h6>
+                          <strong>
+                            ◄ Total Amount ≈ {this.state.rangedData}
+                          </strong>
+                        </h6>
+                      </div>
+                    }
+                    placement="right"
+                  >
+                    <div
+                      key={i}
+                      style={rowStyle}
+                      className={` ${i <= this.state.rengId ? "bg-range" : ""}
+                  table-section`}
+                      onClick={() => {
+                        onClickRow(data);
+                        this.setRangedPrice();
+                      }}
+                      onMouseEnter={() => this.rangeUi(i)}
+                      onMouseLeave={() => this.rangeUi(-1)}
+                    >
+                      <div
+                        className={
+                          data.side === "b" ? "up_value" : "down_value"
+                        }
+                      >
+                        {price}
+                      </div>
+                      <div>{numStringToSymbol(amount, 2)}</div>
+                      <div>{numStringToSymbol(total, 2)}</div>
+                    </div>
+                  </Tooltip>
+                );
+              })}
           </div>
         </div>
       </>
