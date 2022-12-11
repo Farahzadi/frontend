@@ -35,7 +35,7 @@ const DropdownDisplay = styled("div")(({ show, theme }) => ({
   border: `1px solid ${theme.palette.primary.main}`,
 }));
 
-const DropdownButton = styled("div")(({}) => ({
+const DropdownButton = styled("div")(() => ({
   display: "flex",
   flexDirection: "row",
   alignItems: "center",
@@ -58,13 +58,13 @@ const DropdownButton = styled("div")(({}) => ({
   },
 }));
 
-const AvatarImg = styled("img")(({}) => ({
+const AvatarImg = styled("img")(() => ({
   width: "26px",
   height: "26px",
   borderRadius: "35px",
   marginRight: "10px",
 }));
-const DropdownContainer = styled("div")(({}) => ({
+const DropdownContainer = styled("div")(() => ({
   position: "relative",
 }));
 
@@ -138,7 +138,7 @@ const CurrencyListItem = styled("li")(({ theme }) => ({
   },
 }));
 
-const DropdownContent = styled("div")(({}) => ({
+const DropdownContent = styled("div")(() => ({
   flex: "1 1 auto",
   overflowY: "auto",
 }));

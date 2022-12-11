@@ -1,8 +1,7 @@
 import { useSelector } from "react-redux";
-import { useHistory, useLocation } from "react-router-dom";
-import React, { useState,useEffect } from "react";
+import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { Button, Dropdown, AccountDropdown, Menu, MenuItem } from "components";
+import { Button, AccountDropdown, Menu, MenuItem } from "components";
 import { userSelector } from "lib/store/features/auth/authSlice";
 import { networkConfigSelector } from "lib/store/features/api/apiSlice";
 import api from "lib/api";
@@ -31,7 +30,6 @@ export const Header = (props) => {
     }
   };
 
- 
   const dropdownMenu = (
     <Menu onSelect={handleMenu}>
       <MenuItem key="signOut">Disconnect</MenuItem>
@@ -48,7 +46,11 @@ export const Header = (props) => {
   return (
     <header>
       <div className="mobile_header mb_h">
-        <img src={logo} alt="logo" className="logo-container" />
+        <div>
+          <img src={logo} alt="logo" className="logo-container" />
+          <small>DEXPERSSO</small>
+        </div>
+
         {/* open sidebar function */}
         <img
           onClick={() => {
@@ -59,52 +61,56 @@ export const Header = (props) => {
         />
       </div>
       {/* mobile sidebar */}
-      {show ? (
-        <div className="mb_header_container mb_h">
-          <img src={logo} alt="logo" />
-          <div className="nav_items">
-            <ul>
+      <div
+        className="mb_header_container mb_h"
+        style={
+          show ? { width: "100%", left: "0" } : { width: "0%", left: "-187%" }
+        }
+      >
+        <img src={logo} alt="logo" />
+        <div className="nav_items">
+          <ul>
+            <li>
+              <NavLink exact to="/" activeClassName="active_link">
+                Trade
+              </NavLink>
+            </li>
+            {hasBridge && (
               <li>
-                <NavLink exact to="/" activeClassName="active_link">
-                  Trade
+                <NavLink exact to="/bridge" activeClassName="active_link">
+                  Bridge
                 </NavLink>
               </li>
-              {hasBridge && (
-                <li>
-                  <NavLink exact to="/bridge" activeClassName="active_link">
-                    Bridge
-                  </NavLink>
-                </li>
-              )}
-              <li>
-                <a href="https://docs.dexpresso.exchange/">Docs</a>
-              </li>
-            </ul>
-          </div>
-          <div className="wallet">
-            <div className="d-flex align-items-center justify-content-between mb-3 mb-lg-0">
-              {user.id && user.address ? (
-                // <Dropdown overlay={dropdownMenu}>
-                //   <button className="address_button">
-                //     {user.address.slice(0, 6)}...
-                //     {user.address.slice(-4)}
-                //   </button>
-                // </Dropdown>
-                <AccountDropdown/>
-              ) : (
-                <Button
-                  loading={connecting}
-                  className="bg_btn"
-                  onClick={connect}
-                >
-                  <img src={darkPlugHead} alt="..." /> CONNECT WALLET
-                </Button>
-              )}
-            </div>
-            <NetworkSelection />
+            )}
+            <li>
+              <NavLink exact to="/security" activeClassName="active_link">
+                Security
+              </NavLink>
+            </li>
+            <li>
+              <a href="https://docs.dexpresso.exchange/">Docs</a>
+            </li>
+          </ul>
+        </div>
+        <div className="wallet justify-content-start">
+          <NetworkSelection />
+          <div className="d-flex align-items-center justify-content-between mb-3 mb-lg-0">
+            {user.id && user.address ? (
+              // <Dropdown overlay={dropdownMenu}>
+              //   <button className="address_button">
+              //     {user.address.slice(0, 6)}...
+              //     {user.address.slice(-4)}
+              //   </button>
+              // </Dropdown>
+              <AccountDropdown />
+            ) : (
+              <Button loading={connecting} className="bg_btn" onClick={connect}>
+                <img src={darkPlugHead} alt="..." /> CONNECT WALLET
+              </Button>
+            )}
           </div>
         </div>
-      ) : null}
+      </div>
 
       {/* desktop header */}
       <div className="head_wrapper_desktop dex_h">
@@ -125,13 +131,11 @@ export const Header = (props) => {
                 </NavLink>
               </li>
             )}
-            {/* {user.id ? */}
             <li>
               <NavLink exact to="/security" activeClassName="active_link">
                 Security
               </NavLink>
             </li>
-            {/* :null} */}
             <li>
               <a href="https://docs.dexpresso.exchange/">Docs</a>
             </li>

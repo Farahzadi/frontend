@@ -130,6 +130,7 @@ class TradePriceTable extends React.Component {
               this.props.isSell === "isSell" ? "flex-column-reverse d-flex" : ""
             }
           >
+            
             {this.props.latestTrades && this.props.priceTableData.map((data, i) => {
               const color = data.side === "b" ? "#27302F" : "#2C232D";
               const breakpoint = Math.round(
