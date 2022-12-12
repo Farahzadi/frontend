@@ -1,5 +1,5 @@
 import { createIcon } from "@download/blockies";
-import { State } from "lib/utils";
+import { formatBalances, State } from "lib/utils";
 import { toast } from "react-toastify";
 import APIProvider from "../providers/APIProvider";
 
@@ -24,6 +24,7 @@ export default class NetworkInterface {
   state = new NetworkInterface.State();
 
   NETWORK = "unknown";
+  CURRENCY = "CURRENCY_SYMBOL";
   HAS_BRIDGE = false;
   BRIDGE_CONTRACT = "";
   securityType = null;
@@ -231,11 +232,7 @@ export default class NetworkInterface {
     return this.userDetails.nonce;
   }
 
-  async updateBalances() {
-    if (!this.apiProvider) return;
-    const balances = await this.apiProvider.getBalances();
-    this.userDetails.balances = balances;
-  }
+  async updateBalances() {}
 
   async getBalances() {
     return this.userDetails.balances;
