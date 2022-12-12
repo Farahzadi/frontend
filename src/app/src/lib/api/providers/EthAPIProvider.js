@@ -2,20 +2,78 @@ import get from "lodash/get";
 import { ethers } from "ethers";
 import { toast } from "react-toastify";
 import APIProvider from "./APIProvider";
-import Web3 from "web3";
-import { maxAllowance } from "../constants";
 import axios from "axios";
+import Web3Modal from "web3modal";
 
 export default class EthAPIProvider extends APIProvider {
   static validSides = ["b", "s"];
   static ETH_CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 
-  wallet = null;
-  ethWallet = null;
-  provider = null;
-  signedMsg = null;
-  accountState = null;
-  _tokenWithdrawFees = {};
+  async start(emitChanges = true) {
+    if (emitChanges) this.state.set(APIProvider.State.CONNECTING);
+
+    const providerOptions = {
+      walletconnect: {
+        package: WalletConnectProvider,
+      },
+    };
+
+    if (typeof window === "undefined") {
+      toast.error("Browser doesn't support Web3.");
+      return;
+    }
+
+    this.web3Modal = new Web3Modal({
+      network: this.NETWORK_NAME,
+      cacheProvider: true,
+      providerOptions,
+      theme: "dark",
+    });
+
+    const provider = await this.web3Modal.connect();
+
+    this.provider = new ethers.providers.Web3Provider(provider);
+
+    const networkChanged = await this.switchNetwork();
+
+    if (networkChanged) return await this.start();
+
+    const signer = this.provider.getSigner();
+
+    // const address = await signer.getAddress();
+
+    // const network = await this.provider.getNetwork();
+
+    this.wallet = signer;
+
+    if (emitChanges) this.state.set(APIProvider.State.CONNECTED);
+    return result;
+  }
+
+  async getAddress() {
+    const address = await this.wallet?.getAddress();
+    return ethers.utils.getAddress(address);
+  }
+
+  async switchNetwork() {
+    const chainId = this.networkToChainId(this.NETWORK);
+    if (!chainId) return false;
+    try {
+      const currentChainId = ethers.utils.hexStripZeros(
+        (await this.provider.getNetwork())?.chainId ?? 0
+      );
+      if (currentChainId === chainId) return false;
+
+      await this.provider.provider.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId }],
+      });
+    } catch (err) {
+      console.error("Error on switching network!", err);
+      return false;
+    }
+    return true;
+  }
 
   getProfile = async (address) => {
     if (address) {
@@ -58,53 +116,62 @@ export default class EthAPIProvider extends APIProvider {
     }
   };
 
-  signMessage = async () => {
-    const message = "Login to Dexpresso";
-    if (
-      sessionStorage.getItem("login") === null ||
-      this.api.changingWallet === true
-    ) {
-      try {
-        const from = this.ethWallet.address;
-        this.signedMsg = await window.ethereum.request({
-          method: "personal_sign",
-          params: [message, from],
-        });
-        sessionStorage.setItem("login", this.signedMsg);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-  };
-
-  verifyMessage = async () => {
-    const message = "Login to Dexpresso";
+  async signMessage(message) {
+    const address = await this.getAddress();
     try {
-      const from = this.ethWallet.address;
-      new TextEncoder("utf-8").encode(message).toString("hex");
-      const recoveredAddr = await Web3.eth.accounts.recover(
-        message,
-        this.globalSignature
-      );
-
-      if (recoveredAddr.toLowerCase() === from.toLowerCase()) {
-        console.log(`Successfully ecRecovered signer as ${recoveredAddr}`);
-      } else {
-        console.log(
-          `Failed to verify signer when comparing ${recoveredAddr} to ${from}`
-        );
-      }
+      const signature = await this.provider.provider.request({
+        method: "personal_sign",
+        params: [message, address],
+      });
+      return signature;
     } catch (err) {
       console.error(err);
+      return null;
     }
-  };
+  }
 
-  getTransactionState = async (txHash) => {
-    const tx = await this.provider.getTransactionInfo(txHash);
+  async verifyMessage(message, signature) {
+    const address = await this.getAddress();
+    try {
+      const signedAddress = ethers.utils.verifyMessage(message, signature);
+      return signedAddress === address;
+    } catch (err) {
+      console.error("Error on verifying signature:", err);
+      return false;
+    }
+  }
+
+  async getTransactionState(txHash) {
+    const tx = await this.provider.getTransaction(txHash);
     return tx;
-  };
+  }
 
-  submitOrder = async (
+  async getAllowance(userAddress, spenderAddress, tokenAddress) {
+    const ERC20_ABI = [
+      "function allowance(address owner, address spender) view returns (uint256)",
+    ];
+    const token = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+    const allowance = await token.allowance(userAddress, spenderAddress);
+    return allowance;
+  }
+
+  async getBalance(userAddress) {
+    if (!userAddress) userAddress = await this.getAddress();
+    const ethBalance = await this.provider.getBalance(userAddress);
+    return ethBalance;
+  }
+
+  async getTokenBalance(tokenAddress, userAddress) {
+    if (!userAddress) userAddress = await this.getAddress();
+    const ERC20_ABI = [
+      "function balanceOf(address account) view returns (uint256)",
+    ];
+    const token = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+    const balance = await token.balanceOf(userAddress);
+    return balance;
+  }
+
+  async signOrder(
     market,
     side,
     price,
@@ -114,9 +181,9 @@ export default class EthAPIProvider extends APIProvider {
     buyTokenAddress,
     fee,
     orderType
-  ) => {
-    amount = parseFloat(amount);
-    price = parseFloat(price).toPrecision(8).toString();
+  ) {
+    amount = Number(amount);
+    price = Number(price).toPrecision(8);
     price = ethers.utils.parseUnits(price, 18);
     fee = ethers.utils.parseUnits(fee, 18);
 
@@ -125,7 +192,7 @@ export default class EthAPIProvider extends APIProvider {
     const validUntil = nowUnix + 24 * 3600;
 
     if (currencies[0] === "USDC" || currencies[0] === "USDT") {
-      amount = parseFloat(amount).toFixed(7).slice(0, -1);
+      amount = Number(amount).toFixed(7).slice(0, -1);
     }
 
     if (!EthAPIProvider.validSides.includes(side)) {
@@ -133,7 +200,7 @@ export default class EthAPIProvider extends APIProvider {
     }
 
     if (side === "s") {
-      const allowance = await this.checkAllowance(
+      const allowance = await this.getAllowance(
         this.wallet,
         EthAPIProvider.ETH_CONTRACT_ADDRESS,
         sellTokenAddress
@@ -144,7 +211,7 @@ export default class EthAPIProvider extends APIProvider {
     }
 
     if (side === "b") {
-      const allowance = await this.checkAllowance(
+      const allowance = await this.getAllowance(
         this.wallet,
         EthAPIProvider.ETH_CONTRACT_ADDRESS,
         buyTokenAddress
@@ -174,10 +241,7 @@ export default class EthAPIProvider extends APIProvider {
       ]
     );
 
-    const signer = new ethers.providers.Web3Provider(
-      window.ethereum
-    ).getSigner();
-    const signature = await signer.signMessage(
+    const signature = await this.wallet.signMessage(
       ethers.utils.arrayify(orderHash)
     );
     const signedOrder = {
@@ -185,66 +249,15 @@ export default class EthAPIProvider extends APIProvider {
       signature,
     };
 
-    this.api.sendRequest(
-      "user/order",
-      "POST",
-      {
-        tx: signedOrder,
-        market,
-        amount,
-        price,
-        side,
-        type: orderType,
-      },
-      true
-    );
-
-    return signedOrder;
-  };
-
-  checkAllowance = async (userAddress, spenderAddress, tokenAddress) => {
-    const ERC20_ABI = [
-      "function allowance(address owner, address spender) view returns (uint256)",
-    ];
-
-    const token = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
-    const allowance = await token.allowance(userAddress, spenderAddress);
-
-    return allowance;
-  };
-
-  getBalance = async () => {
-    const account = this.wallet;
-    const balances = {};
-
-    Object.keys(this.api.currencies).forEach((ticker) => {
-      const currency = this.api.currencies[ticker];
-      const balance = account ? this.getTokenBalance("", account) || 0 : 0;
-      balances[ticker] = {
-        value: balance,
-        valueReadable: balance && balance / 10 ** currency.decimals,
-        allowance: maxAllowance,
-      };
-    });
-
-    return balances;
-  };
-
-  getTokenBalance = async (userAddress, tokenAddress) => {
-    const ERC20_ABI = [
-      "function balanceOf(address account) view returns (uint256)",
-    ];
-
-    const token = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
-    const balance = await token.balanceOf(userAddress);
-    return balance;
-  };
-
-  getEthBalance = async () => {
-    const ethBalance = await this.provider.getBalance(this.ethWallet.address);
-
-    return ethBalance;
-  };
+    return {
+      tx: signedOrder,
+      market,
+      amount,
+      price,
+      side,
+      type: orderType,
+    };
+  }
 
   getChainName = (chainId) => {
     if (Number(chainId) === "ethereum") {
@@ -256,24 +269,13 @@ export default class EthAPIProvider extends APIProvider {
     }
   };
 
-  signIn = async () => {
-    try {
-      this.provider = ethers.providers.Web3Provider(window.ethereum);
-    } catch (e) {
-      toast.error(`Connection to ${this.networkName} network is lost`);
-      throw e;
-    }
-
-    try {
-      this.wallet = this.provider.getSigner();
-      this.ethWallet = new ethers.Wallet(
-        this.wallet._signingKey().privateKey,
-        this.provider
-      );
-    } catch (err) {
-      throw err;
-    }
-
-    return true;
+  networkToChainId = (network) => {
+    const map = {
+      zksyncv1: "0x1",
+      ethereum: "0x1",
+      zksyncv1_goerli: "0x5",
+      ethereum_goerli: "0x5",
+    };
+    return map[network];
   };
 }
