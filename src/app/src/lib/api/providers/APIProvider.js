@@ -36,18 +36,16 @@ export default class APIProvider {
 
   start = notImplemented("start");
   stop = notImplemented("stop");
-  getAccountState = notImplemented("getAccountState");
   prepareOrder = notImplemented("submitOrder");
   depositL2 = notImplemented("depositL2");
   withdrawL2 = notImplemented("withdrawL2");
   depositL2Fee = notImplemented("depositL2Fee");
   withdrawL2Fee = notImplemented("withdrawL2Fee");
   getBalances = notImplemented("getBalances");
-  getProfile = notImplemented("getProfile");
 
   signMessage = notImplemented("signMessage");
   verifyMessage = notImplemented("verifyMessage");
-  
+
   // returns true if the network did switch and false if it didn't (or didn't need to)
   switchNetwork = notImplemented("switchNetwork");
 
