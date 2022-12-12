@@ -6,9 +6,9 @@ import { toast } from 'react-toastify';
 import Web3Modal from 'web3modal';
 import WalletConnectProvider from '@walletconnect/web3-provider';
 
-import { toBaseUnit } from 'lib/utils';
-import APIProvider from './APIProvider';
-import { maxAllowance } from '../constants';
+import { fromBaseUnit, toBaseUnit } from "lib/utils";
+import APIProvider from "./APIProvider";
+import { maxAllowance } from "../constants";
 
 export default class ZKSyncAPIProvider extends APIProvider {
   static seedStorageKey = '@ZZ/ZKSYNC_SEEDS';
@@ -238,33 +238,15 @@ export default class ZKSyncAPIProvider extends APIProvider {
     };
   };
 
-  getBalances = async () => {
-    const account = await this.getAccountState();
-    // console.log("accountState", account);
-    const balances = {};
-
-    Object.keys(this.networkInterface.core.currencies).forEach((ticker) => {
-      const currency = this.networkInterface.core.currencies[ticker];
-      const balance = new Decimal(
-        account && account.committed ? account.committed.balances[ticker] || 0 : 0
-      );
-
-      balances[ticker] = {
-        value: balance,
-        valueReadable: balance && balance.div(10 ** currency.decimals),
-        allowance: maxAllowance
-      };
-    });
-
-    return balances;
-  };
-
-  getAccountState = async () => {
-    let accountState = (await this.syncWallet?.getAccountState()) ?? {};
-    return accountState;
-  };
-
-  handleBridgeReceipt = (_receipt, amount, token, type, userId, userAddress, status) => {
+  handleBridgeReceipt = (
+    _receipt,
+    amount,
+    token,
+    type,
+    userId,
+    userAddress,
+    status
+  ) => {
     let receipt = {
       date: +new Date(),
       network: this.network,
@@ -628,6 +610,31 @@ export default class ZKSyncAPIProvider extends APIProvider {
     return map[network];
   };
 
+  getUserDetails = async () => {
+    const accountState = await this.getAccountState();
+    
+  }
+
+  getAccountState = async () => {
+    let accountState = (await this.syncWallet?.getAccountState()) ?? {};
+    return accountState;
+  };
+
+  getBalances = async (_accountState) => {
+    const accountState = _accountState ?? (await this.getAccountState());
+    const balances = {};
+    Object.keys(this.networkInterface.core.currencies).forEach((ticker) => {
+      const currency = this.networkInterface.core.currencies[ticker];
+      const balance = accountState?.committed.balances[ticker];
+      if (!balance) return;
+      balances[ticker] = {
+        value: balance,
+        valueReadable: fromBaseUnit(balance, currency.decimals),
+      };
+    });
+    return balances;
+  };
+
   approveSpendOfCurrency = async (currency, allowance, erc20ContractABI) => {
     const netContract = this.networkInterface.getNetworkContract();
     if (netContract) {
@@ -639,29 +646,59 @@ export default class ZKSyncAPIProvider extends APIProvider {
     }
   };
 
-  getBalanceOfCurrency = async (currency, erc20ContractABI, maxAllowance) => {
+  getL1BalanceOfCurrency = async (currency, erc20ContractABI, maxAllowance) => {
     const { contract: contractAddress } =
       this.networkInterface.core.currencies[currency].chain[this.NETWORK];
     let result = { balance: 0, allowance: maxAllowance };
-    if (/* !this.ethersProvider || */ !contractAddress) return result;
+    if (!contractAddress) return result;
 
     try {
       const netContract = this.networkInterface.getNetworkContract();
       const account = await this.getAddress();
-      console.log('account', account);
-      if (currency === 'ETH') {
+      if (currency === "ETH") {
         result.balance = await this.provider.getBalance(account);
         return result;
       }
-      const contract = new ethers.Contract(contractAddress, erc20ContractABI, this.provider);
-      result.balance = await contract.functions.balanceOf(account);
+      const contract = new ethers.Contract(
+        contractAddress,
+        erc20ContractABI,
+        this.provider
+      );
+      result.balance = (await contract.functions.balanceOf(account)).toString();
       if (netContract) {
-        result.allowance = await contract.functions.allowance(account, netContract);
+        result.allowance = (
+          await contract.functions.allowance(account, netContract)
+        ).toString();
       }
-      return result;
     } catch (e) {
       console.log(e);
-      return result;
     }
+    return result;
   };
+
+  getL1Balances = async () => {
+    const balances = {};
+
+    const getBalance = async (ticker) => {
+      const { balance, allowance } = await this.getL1BalanceOfCurrency(ticker);
+      balances[ticker] = {
+        value: balance,
+        valueReadable: fromBaseUnit(balance, this.core.currencies[ticker].decimals),
+      };
+
+      this.emit("balanceUpdate", "wallet", { ...balances });
+    };
+    let tickers;
+    try {
+      tickers = Object.keys(this.core.currencies).filter(
+        (ticker) => this.core.currencies[ticker].chain[this.network]
+      );
+    } catch (err) {
+      return null;
+    }
+
+    await Promise.all(tickers.map((ticker) => getBalance(ticker)));
+
+    return balances;
+  }
 }
