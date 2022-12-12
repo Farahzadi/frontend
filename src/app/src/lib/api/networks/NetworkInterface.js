@@ -1,13 +1,5 @@
-import Decimal from "decimal.js";
 import { createIcon } from "@download/blockies";
-import Emitter from "tiny-emitter";
-import { ethers } from "ethers";
-
-import { getENSName } from "lib/ens";
-import { formatAmount, State } from "lib/utils";
-import erc20ContractABI from "lib/contracts/ERC20.json";
-import { maxAllowance } from "../constants";
-import axios from "axios";
+import { State } from "lib/utils";
 import { toast } from "react-toastify";
 import APIProvider from "../providers/APIProvider";
 
@@ -25,6 +17,8 @@ export default class NetworkInterface {
     _state = "DISCONNECTED";
   };
 
+  static Actions = ["connectWallet", "disconnectWallet"];
+
   static Provider = APIProvider;
 
   state = new NetworkInterface.State();
@@ -37,6 +31,13 @@ export default class NetworkInterface {
 
   apiProvider = null;
 
+  userDetails = {
+    address: null,
+    nonce: null,
+    balances: null,
+    chainDetails: null,
+  };
+
   shouldSignOut = false;
 
   constructor({ core, signInMessage }) {
@@ -44,17 +45,17 @@ export default class NetworkInterface {
     this.signInMessage = signInMessage ?? "Login to Dexpresso";
   }
 
-  stop = async () => {
+  async stop() {
     await this.stopAPIProvider();
-  };
+  }
 
-  getConfig = () => {
+  getConfig() {
     return {
       HAS_BRIDGE: this.HAS_BRIDGE,
     };
-  };
+  }
 
-  connectWallet = async () => {
+  async connectWallet() {
     await this.disconnectWallet();
     try {
       await this.startAPIProvider();
@@ -63,18 +64,18 @@ export default class NetworkInterface {
       console.log("Wallet connection failed with error, disconnecting.", err);
       await this.disconnectWallet();
     }
-  };
+  }
 
-  disconnectWallet = async () => {
+  async disconnectWallet() {
     await this.signOut();
     await this.stopAPIProvider();
     this.emit("balanceUpdate", "wallet", {});
     this.emit("balanceUpdate", this.NETWORK, {});
     this.emit("accountState", {});
     this.emit("signOut");
-  };
+  }
 
-  onProviderStateChange = async (state) => {
+  async onProviderStateChange(state) {
     const mapping = {
       DISCONNECTED: "DISCONNECTED",
       CONNECTING: "PROVIDER_CONNECTING",
@@ -88,9 +89,9 @@ export default class NetworkInterface {
       this.state.set(translatedState);
     }
     this.emit("providerStateChange", state);
-  };
+  }
 
-  startAPIProvider = async () => {
+  async startAPIProvider() {
     if (this.apiProvider) return;
     const APIProviderClass = this.getAPIProviderClass();
     this.apiProvider = new APIProviderClass(this, this.onProviderStateChange);
@@ -128,36 +129,15 @@ export default class NetworkInterface {
     }
 
     this.apiProvider.onAccountChange(this.disconnectWallet);
-  };
+  }
 
-  stopAPIProvider = async () => {
+  async stopAPIProvider() {
     this.apiProvider?.stop();
     delete this.apiProvider;
     this.apiProvider = null;
-  };
+  }
 
-  _fetchENSName = async (address) => {
-    let ENS = {};
-    try {
-      await getENSName(address).then((res) => (ENS.name = res));
-      if (ENS.name) return ENS;
-      return {};
-    } catch (err) {
-      console.log(`ENS error: ${err}`);
-    }
-  };
-
-  getAccountState = async () => {
-    // if(![NetworkInterface.State.PROVIDER_CONNECTED, NetworkInterface.State.SIGNED_IN, NetworkInterface.State.SIGNING_IN
-    //   NetworkInterface.State.].includes(this.state.get()))
-    if (!this.apiProvider) return {};
-    const accountState = { ...(await this.apiProvider.getAccountState()) };
-    accountState.profile = await this.core.getProfile(accountState.address);
-    this.emit("accountState", accountState);
-    return accountState;
-  };
-
-  signIn = async () => {
+  async signIn() {
     const { uuid } = this.core.ws;
     const network = this.NETWORK;
     let accountState;
@@ -213,9 +193,9 @@ export default class NetworkInterface {
     if (this.shouldSignOut) this.signOut();
 
     return accountState;
-  };
+  }
 
-  signOut = async () => {
+  async signOut() {
     const state = this.state.get();
     this.shouldSignOut = false;
     if (state !== NetworkInterface.State.SIGNED_IN) {
@@ -227,116 +207,78 @@ export default class NetworkInterface {
     this._accountState = null;
     sessionStorage.removeItem("access_token");
     this.state.set(NetworkInterface.State.SIGNED_OUT);
-  };
+  }
 
-  verifiedAccountNonce = async () => {
-    return await this._accountState.verified.nonce;
-  };
+  async updateAddress() {
+    if (!this.apiProvider) return;
+    const address = await this.apiProvider.getAddress();
+    this.userDetails.address = address;
+  }
 
-  increaseWalletNonce = async () => {
-    let increaseNonceResult = {};
+  async getAddress() {
+    return this.userDetails.address;
+  }
 
-    const increaseNonceRes = await this.apiProvider.increaseWalletNonce();
-    // cancel all orders if wallet nonce is increased
-    this.cancelAllOrders();
-    const verifiedAccountNonce = await this._accountState.verified.nonce;
-    if (increaseNonceRes) {
-      increaseNonceResult.response = increaseNonceRes;
-      increaseNonceResult.verifiedAccountNonce = verifiedAccountNonce;
-    }
+  async updateNonce() {
+    if (!this.apiProvider) return;
+    const address = await this.apiProvider.getNonce();
+    this.userDetails.address = address;
+  }
 
-    return increaseNonceResult;
-  };
+  async getNonce() {
+    return this.userDetails.nonce;
+  }
 
-  depositL2 = async (amount, token) => {
-    return this.apiProvider.depositL2(amount, token);
-  };
-
-  withdrawL2 = async (amount, token) => {
-    return this.apiProvider.withdrawL2(amount, token);
-  };
-
-  depositL2Fee = async (token) => {
-    return this.apiProvider.depositL2Fee(token);
-  };
-
-  withdrawL2Fee = async (token) => {
-    return this.apiProvider.withdrawL2Fee(token);
-  };
-
-  getCommitedBalance = async () => {
-    const commitedBalance = this.apiProvider.getCommitedBalance();
-    if (commitedBalance) {
-      return commitedBalance;
-    } else {
-      return 0;
-    }
-  };
-
-  getNetworkContract = () => {
-    return this.BRIDGE_CONTRACT;
-  };
-
-  approveSpendOfCurrency = async (currency, allowance = maxAllowance) => {
-    return await this.apiProvider?.approveSpendOfCurrency(
-      currency,
-      allowance || maxAllowance,
-      erc20ContractABI
-    );
-  };
-
-  getBalanceOfCurrency = async (currency) => {
-    return await this.apiProvider?.getBalanceOfCurrency(
-      currency,
-      erc20ContractABI,
-      maxAllowance
-    );
-  };
-
-  getWalletBalances = async () => {
-    if (!this.apiProvider) return null;
-    const balances = {};
-
-    const getBalance = async (ticker) => {
-      const { balance, allowance } = await this.getBalanceOfCurrency(ticker);
-      balances[ticker] = {
-        value: balance,
-        allowance,
-        valueReadable: formatAmount(balance, this.core.currencies[ticker]),
-      };
-
-      this.emit("balanceUpdate", "wallet", { ...balances });
-    };
-    let tickers;
-    try {
-      tickers = Object.keys(this.core.currencies).filter(
-        (ticker) => this.core.currencies[ticker].chain[this.network]
-      );
-    } catch (err) {
-      return null;
-    }
-
-    await Promise.all(tickers.map((ticker) => getBalance(ticker)));
-
-    return balances;
-  };
-
-  getBalances = async () => {
-    if (!this.apiProvider) return null;
+  async updateBalances() {
+    if (!this.apiProvider) return;
     const balances = await this.apiProvider.getBalances();
-    this.emit("balanceUpdate", this.network, balances);
-    return balances;
-  };
+    this.userDetails.balances = balances;
+  }
 
-  prepareOrder = async (
-    product,
-    side,
-    price,
-    amount,
-    feeType,
-    fee,
-    orderType
-  ) => {
+  async getBalances() {
+    return this.userDetails.balances;
+  }
+
+  async updateChainDetails() {
+    // if (!this.apiProvider) return;
+    // const allowances = await this.apiProvider.getAllowances(...args);
+    // if (!this.userDetails.chainDetails) this.userDetails.chainDetails = {};
+    // this.userDetails.chainDetails.allowances = allowances;
+  }
+
+  async getChainDetails() {
+    return this.userDetails.chainDetails;
+  }
+
+  async updateUserDetails(...args) {
+    await Promise.all([
+      this.updateAddress(...args),
+      this.updateNonce(...args),
+      this.updateBalances(...args),
+      this.updateChainDetails(...args),
+    ]);
+  }
+
+  async getUserDetails() {
+    const { userDetails } = this;
+    const address = this.getAddress();
+    return {
+      ...userDetails,
+      name: await this.getProfileName(address),
+      image: await this.getProfileImage(address),
+    };
+  }
+
+  async getProfileImage(address) {
+    if (!address) throw new Error("profile request for undefined address");
+    return createIcon({ seed: address }).toDataURL();
+  }
+
+  async getProfileName(address) {
+    return `${address.substr(0, 6)}…${address.substr(-6)}`;
+  }
+
+  async prepareOrder(product, side, price, amount, feeType, fee, orderType) {
     if (!this.isSignedIn()) return;
     return await this.apiProvider.prepareOrder(
       product,
@@ -347,17 +289,17 @@ export default class NetworkInterface {
       fee,
       orderType
     );
-  };
+  }
 
-  isSignedIn = () => {
+  isSignedIn() {
     return sessionStorage.getItem("access_token") !== null;
-  };
+  }
 
-  getAPIProviderClass = () => {
+  getAPIProviderClass() {
     return this.constructor.Provider;
-  };
+  }
 
-  emit = (msg, ...args) => {
+  emit(msg, ...args) {
     this.core.emit(msg, ...args);
-  };
+  }
 }
