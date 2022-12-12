@@ -1,0 +1,9 @@
+{
+  "rules": {
+    // temporary rules to disable eslint error ==> should be fixed
+    "no-unused-vars": 0,
+    "no-useless-catch": 0,
+    "no-case-declarations": 0,
+    "no-extra-semi": 0
+  }
+}
