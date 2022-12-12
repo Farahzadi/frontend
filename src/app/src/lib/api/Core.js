@@ -303,6 +303,22 @@ export default class Core extends Emitter {
     });
   }
 
+  getNetworkCurrencies(network) {
+    const entries = Object.entries(this.currencies)
+      .filter(([_, currency]) => currency.chain[network])
+      .map(([ticker, currency]) => {
+        const { chain, ...curr } = currency;
+        return [
+          ticker,
+          {
+            ...curr,
+            info: chain[network],
+          },
+        ];
+      });
+    return Object.fromEntries(entries);
+  }
+
   getOrderDetailsWithoutFee(order) {
     const side = order.side;
     const baseQuantity = new Decimal(order.baseQuantity);
