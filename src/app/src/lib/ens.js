@@ -39,6 +39,7 @@ function getContract() {
 }
 
 export const getENSName = async (address) => {
+  if (!address) return null;
   const ReverseRecords = getContract();
   const name = await ReverseRecords.methods.getNames([address]).call();
   if (name && name[0] && name[0] !== "") return name;
