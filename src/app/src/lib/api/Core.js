@@ -225,6 +225,11 @@ export default class Core extends Emitter {
             (error.response.data.error && error.response.data.message) ||
               error.message
           );
+          toast.error(
+            `API Error ${error.response.status}: ${
+              (error.response.data.error && error.response.data.message) || error.message
+            }`
+          );
           // console.log("status", error.response.status);
           // console.log("headers", error.response.headers);
           // console.log("request", error.request);
