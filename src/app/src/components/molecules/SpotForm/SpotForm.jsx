@@ -78,7 +78,7 @@ class SpotForm extends React.Component {
     let totalActiveLimitOrderBaseQuantity = 0;
     const baseCurrency = this.props.currentMarket.split("-")[0];
     let committedBaseBalance = new Decimal(
-      this.props.user.committed.balances[baseCurrency]
+      this.props.user.committed.balances?.[baseCurrency] || 0
     );
     let baseBalance = committedBaseBalance.dividedBy(
       Math.pow(10, api.currencies[baseCurrency].decimals)
@@ -95,7 +95,7 @@ class SpotForm extends React.Component {
     let totalActiveLimitOrderQuoteQuantity = 0;
     const quoteCurrency = this.props.currentMarket.split("-")[1];
     let committedQuoteBalance = new Decimal(
-      this.props.user.committed.balances[quoteCurrency]
+      this.props.user.committed.balances?.[quoteCurrency] || 0
     );
     let quoteBalance = committedQuoteBalance.dividedBy(
       Math.pow(10, api.currencies[quoteCurrency].decimals)

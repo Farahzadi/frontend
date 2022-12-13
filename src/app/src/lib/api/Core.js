@@ -7,6 +7,7 @@ import { formatAmount } from "lib/utils";
 import erc20ContractABI from "lib/contracts/ERC20.json";
 import { maxAllowance } from "./constants";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const DEFAULT_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK;
 
