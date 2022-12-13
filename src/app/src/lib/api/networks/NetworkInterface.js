@@ -26,6 +26,7 @@ export default class NetworkInterface {
   NETWORK = "unknown";
   HAS_BRIDGE = false;
   BRIDGE_CONTRACT = "";
+  securityType = null;
 
   core = null;
 
@@ -51,7 +52,8 @@ export default class NetworkInterface {
 
   getConfig() {
     return {
-      HAS_BRIDGE: this.HAS_BRIDGE,
+      hasBridge: this.hasBridge,
+      securityType: this.securityType,
     };
   }
 
@@ -118,7 +120,7 @@ export default class NetworkInterface {
           <a
             href="https://wallet.zksync.io/?network=goerli"
             style={{ color: "white" }}
-            target="_blank"
+            target="_blank" rel="noreferrer"
           >
             {" "}
             go to wallet.zksync.io

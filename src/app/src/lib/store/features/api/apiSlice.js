@@ -81,6 +81,7 @@ export const apiSlice = createSlice({
     network: {
       name: null,
       hasBridge: null,
+      securityType: null
     },
     providerState: "DISCONNECTED",
     userAddress: null,
@@ -377,8 +378,7 @@ export const apiSlice = createSlice({
       }
     },
     setNetwork(state, { payload }) {
-      state.network.name = payload.name;
-      state.network.hasBridge = payload.hasBridge;
+      state.network = payload;
     },
     setProviderState(state, { payload }) {
       state.providerState = payload;

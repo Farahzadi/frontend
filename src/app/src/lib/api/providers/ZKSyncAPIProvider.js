@@ -9,13 +9,15 @@ import WalletConnectProvider from '@walletconnect/web3-provider';
 import { fromBaseUnit, toBaseUnit } from "lib/utils";
 import APIProvider from "./APIProvider";
 import { maxAllowance } from "../constants";
+import SecurityComp from "components/pages/Security";
 
 export default class ZKSyncAPIProvider extends APIProvider {
-  static seedStorageKey = '@ZZ/ZKSYNC_SEEDS';
-  static validSides = ['b', 's'];
-  NETWORK = 'zksyncv1';
-  NETWORK_NAME = 'mainnet';
-  ZKSYNC_BASE_URL = 'https://api.zksync.io/api/v0.2';
+  static seedStorageKey = "@ZZ/ZKSYNC_SEEDS";
+  static validSides = ["b", "s"];
+  NETWORK = "zksyncv1";
+  NETWORK_NAME = "mainnet";
+  ZKSYNC_BASE_URL = "https://api.zksync.io/api/v0.2";
+  securityType = SecurityComp.Nonce;
 
   syncWallet = null;
   syncProvider = null;
@@ -612,7 +614,7 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
   getUserDetails = async () => {
     const accountState = await this.getAccountState();
-    
+
   }
 
   getAccountState = async () => {

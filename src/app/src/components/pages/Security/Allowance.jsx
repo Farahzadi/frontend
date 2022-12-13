@@ -89,8 +89,8 @@ const BtnContainer = styled("div")(() => ({
 }));
 
 const Allowance = () => {
-  const balance = useSelector(balancesSelector)?.wallet;
-  const [allowance, setAllowance] = useState("");
+  const allowances = useSelector(userChainDetailsSelector)?.allowances;
+  const [allowance, setAllowance] = useState('');
   const [preAllowance, setPreAllowance] = useState();
   const [truncated, setTruncated] = useState(true);
   const [allowanceInfo, setAllowanceInfo] = useState(true);
@@ -100,8 +100,8 @@ const Allowance = () => {
   const matches = useMediaQuery(theme.breakpoints.down('sm'));
   useEffect(() => {
     if (currency) {
-      setAllowance(balance?.[currency]?.allowance?.hex?.toString() || "");
-      setPreAllowance(+balance?.[currency]?.allowance?.hex?.toString() || "");
+      setAllowance(allowances?.[currency]?.allowance?.hex?.toString() || '');
+      setPreAllowance(+allowances?.[currency]?.allowance?.hex?.toString() || '');
     }
   }, [currency]);
   useEffect(() => {

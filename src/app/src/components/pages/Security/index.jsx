@@ -1,17 +1,12 @@
-import { networkSelector } from 'lib/store/features/api/apiSlice';
+import { networkConfigSelector } from 'lib/store/features/api/apiSlice';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import NonceIncreasement from '../NonceIncreasement/NonceIncreasement';
-import Allowance from './Allowance';
+import SecurityComp  from './types.js';
 
 const Security = () => {
-  const network = useSelector(networkSelector);
-
-  if (network === 0) {
-    return <Allowance />;
-  } else {
-    return <NonceIncreasement />;
-  }
+  const securityType = useSelector(networkConfigSelector)?.securityType;
+  const Comp = SecurityComp[securityType];
+  return <Comp />;
 };
 
 export default Security;

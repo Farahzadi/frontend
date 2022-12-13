@@ -11,7 +11,7 @@ export default class ZKSyncInterface extends NetworkInterface {
 
   static Provider = ZKSyncAPIProvider;
   NETWORK = "zksyncv1";
-  HAS_BRIDGE = true;
+  hasBridge = true;
   BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
 
   async increaseNonce() {
