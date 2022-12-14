@@ -197,18 +197,12 @@ header.bridge_header {
 .head_social_link {
   font-size: 20px;
 }
-.nav_items a {
-  display: flex;
-  align-items: flex-end;
-  text-decoration: none;
-  flex: 10%;
+.nav_items a{
+    display: flex;
 }
 .nav_items a img {
   height: 2.5rem;
   padding: 3px;
-}
-.nav_items ul{
-    flex: 70%;
 }
 .mobile_header img:nth-child(1) {
   margin-left: 20px;
@@ -217,15 +211,15 @@ header.bridge_header {
   right: -65px !important;
   top: -450px !important;
 }
-.Navbar_brandName {
-  display: inline-block;
-  letter-spacing: 1.5px;
-  font-size: 1.47rem;
-  font-weight: 900;
-  -webkit-margin-start: 5px;
-  margin-inline-start: 5px;
-  color: #fcf5ed;
-  font-family: Ostrich Sans;
+.Navbar_brandName{
+    display: inline-block;
+    letter-spacing: 1.5px;
+    font-size: 1.17rem;
+    font-weight: 900;
+    -webkit-margin-start: 5px;
+    margin-inline-start: 5px;
+    color: var(--neutralColor);
+    font-family: Ostrich Sans;
 }
 
 @media screen and (max-width: 991px) {
@@ -286,8 +280,8 @@ header.bridge_header {
     width: 100%;
     flex-direction: column;
   }
-  .wallet > div {
-    margin: 30px auto;
+  .wallet> div{
+    margin:30px auto ;
   }
   .wallet img:nth-child(1) {
     object-fit: contain;

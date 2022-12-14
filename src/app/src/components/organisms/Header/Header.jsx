@@ -46,9 +46,9 @@ export const Header = (props) => {
   return (
     <header>
       <div className="mobile_header mb_h">
-        <div>
+        <div className="d-flex align-items-end">
           <img src={logo} alt="logo" className="logo-container" />
-          <small>DEXPERSSO</small>
+          <span class="Navbar_brandName">DEXPRESSO</span>
         </div>
 
         {/* open sidebar function */}
@@ -96,12 +96,6 @@ export const Header = (props) => {
           <NetworkSelection />
           <div className="d-flex align-items-center justify-content-between mb-3 mb-lg-0">
             {user.id && user.address ? (
-              // <Dropdown overlay={dropdownMenu}>
-              //   <button className="address_button">
-              //     {user.address.slice(0, 6)}...
-              //     {user.address.slice(-4)}
-              //   </button>
-              // </Dropdown>
               <AccountDropdown />
             ) : (
               <Button loading={connecting} className="bg_btn" onClick={connect}>
