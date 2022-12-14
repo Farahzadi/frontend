@@ -100,8 +100,8 @@ const Allowance = () => {
   const matches = useMediaQuery(theme.breakpoints.down('sm'));
   useEffect(() => {
     if (currency) {
-      setAllowance(allowances?.[currency]?.allowance?.hex?.toString() || '');
-      setPreAllowance(+allowances?.[currency]?.allowance?.hex?.toString() || '');
+      setAllowance(allowances?.[currency]?.allowance?.valueReadable?.toString() || '');
+      setPreAllowance(+allowances?.[currency]?.allowance?.valueReadable?.toString() || '');
     }
   }, [currency]);
   useEffect(() => {
@@ -109,7 +109,7 @@ const Allowance = () => {
       const trimNum = matches ? 320 : 550;
       setAllowanceInfo(ALLOWANCE_INFO.substring(0, trimNum) + "...");
     } else {
-      setAllowanceInfo(ALLOWANCE_INFO.substring(0, ALLOWANCE_INFO.length - 1));
+      setAllowanceInfo(ALLOWANCE_INFO);
     }
   }, [truncated]);
   const handleCurrencyChange = (value) => {
