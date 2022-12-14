@@ -46,7 +46,7 @@ export const Header = (props) => {
   return (
     <header>
       <div className="mobile_header mb_h">
-        <div className="d-flex align-items-end">
+        <div >
           <img src={logo} alt="logo" className="logo-container" />
           <span class="Navbar_brandName">DEXPRESSO</span>
         </div>
