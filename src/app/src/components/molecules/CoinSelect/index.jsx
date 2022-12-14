@@ -37,10 +37,10 @@ const CoinBtn = styled('button')(() => ({
     top: 'calc(50% - 10.2px)',
   },
 }));
-const Title = styled('div')(() => ({
+const Title = styled('div')(({theme}) => ({
   padding: '10px',
   fontSize: '0.9rem',
-  borderBottom: `1px solid #5e35b1`,
+  borderBottom: `1px solid ${theme.palette.primary.main}`,
 }));
 const StyledAutocompletePopper = styled('div')(({ theme }) => ({
   [`& .${autocompleteClasses.paper}`]: {
@@ -48,24 +48,22 @@ const StyledAutocompletePopper = styled('div')(({ theme }) => ({
     margin: 0,
     color: 'white',
     fontSize: 13,
-    backgroundColor: '#1d1d2c',
+    backgroundColor: theme.palette.secondary.dark,
   },
   [`& .${autocompleteClasses.listbox}`]: {
     backgroundColor: 'inherit',
     padding: 0,
+    maxHeight: '221px',
     [`& .${autocompleteClasses.option}`]: {
       minHeight: 'auto',
       alignItems: 'flex-start',
       padding: '13px 7px',
-      // borderBottom: `1px solid #5e35b1`,
-      backgroundColor: '#1d1d2c',
       color: 'white',
       fontSize: '1rem',
       '& img': {
         marginInline: '7px 11px',
       },
       '&[aria-selected="true"]': {
-        // backgroundColor: '#1d1d2c',
       },
       [`&.${autocompleteClasses.focused}, &.${autocompleteClasses.focused}[aria-selected="true"]`]:
         {
@@ -80,30 +78,26 @@ const StyledAutocompletePopper = styled('div')(({ theme }) => ({
 }));
 
 const StyledPopper = styled(Popper)(({ theme }) => ({
-  border: `1px solid #5e35b1`,
+  border: `1px solid ${theme.palette.primary.main}`,
   boxShadow: `0 8px 24px rgba(149, 157, 165, 0.2)`,
   borderRadius: 10,
   width: 173,
   zIndex: theme.zIndex.modal,
   fontSize: 13,
   color: 'white',
-  backgroundColor: '#1d1d2c',
+  backgroundColor: theme.palette.secondary.dark,
 }));
 const StyledInput = styled(TextField)(({ theme }) => ({
-  padding: 10,
   width: '100%',
-  borderBottom: `1px solid #5e35b1`,
+  borderBottom: `1px solid ${theme.palette.primary.main}`,
   color: 'white',
   '& input': {
     borderRadius: 15,
-    backgroundColor: '#1d1d2c',
     color: 'white',
     padding: 8,
     transition: theme.transitions.create(['border-color', 'box-shadow']),
-    border: `1px solid #1d1d2c `,
     fontSize: 14,
     '&:focus': {
-      // boxShadow: `0px 0px 0px 3px  rgba(3, 102, 214, 0.3) `,
       borderColor: '#3f4851',
       outline: 'none',
     },
