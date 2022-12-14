@@ -5,7 +5,7 @@ import { Button, AccountDropdown, Menu, MenuItem } from "components";
 import { userSelector } from "lib/store/features/auth/authSlice";
 import { networkConfigSelector } from "lib/store/features/api/apiSlice";
 import api from "lib/api";
-import logo from "assets/images/LogoMarkCremeLight.svg";
+import logo from "assets/images/logo.svg";
 import menu from "assets/icons/menu.png";
 import darkPlugHead from "assets/icons/dark-plug-head.png";
 import "./Header.css";
@@ -117,6 +117,7 @@ export const Header = (props) => {
         <div className="nav_items">
           <NavLink exact to="/">
             <img src={logo} alt="logo" />
+            <span class="Navbar_brandName">DEXPRESSO</span>
           </NavLink>
           <ul className="mx-0 px-0">
             <li>
