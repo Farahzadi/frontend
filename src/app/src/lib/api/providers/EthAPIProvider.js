@@ -4,9 +4,9 @@ import { toast } from "react-toastify";
 import APIProvider from "./APIProvider";
 import axios from "axios";
 import Web3Modal from "web3modal";
+import WalletConnectProvider from "@walletconnect/web3-provider";
 
 export default class EthAPIProvider extends APIProvider {
-  static validSides = ["b", "s"];
   static ETH_CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 
   async start(emitChanges = true) {
@@ -16,6 +16,28 @@ export default class EthAPIProvider extends APIProvider {
       walletconnect: {
         package: WalletConnectProvider,
       },
+      // "custom-walletlink": {
+      //   display: {
+      //     logo: "https://play-lh.googleusercontent.com/PjoJoG27miSglVBXoXrxBSLveV6e3EeBPpNY55aiUUBM9Q1RCETKCOqdOkX2ZydqVf0",
+      //     name: "Coinbase",
+      //     description: "Connect to Coinbase Wallet (not Coinbase App)",
+      //   },
+      //   options: {
+      //     appName: "Coinbase", // Your app name
+      //     networkUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
+      //     chainId: 1,
+      //   },
+      //   package: WalletLink,
+      //   connector: async (_, options) => {
+      //     const { appName, networkUrl, chainId } = options;
+      //     const walletLink = new WalletLink({
+      //       appName,
+      //     });
+      //     const provider = walletLink.makeWeb3Provider(networkUrl, chainId);
+      //     await provider.enable();
+      //     return provider;
+      //   },
+      // },
     };
 
     if (typeof window === "undefined") {
@@ -47,7 +69,13 @@ export default class EthAPIProvider extends APIProvider {
     this.wallet = signer;
 
     if (emitChanges) this.state.set(APIProvider.State.CONNECTED);
-    return result;
+  }
+
+  async stop(emitChanges = true) {
+    // this.web3Modal.clearCachedProvider();
+    delete this.provider;
+    delete this.wallet;
+    if (emitChanges) this.state.set(APIProvider.State.DISCONNECTED);
   }
 
   async getAddress() {
@@ -56,8 +84,9 @@ export default class EthAPIProvider extends APIProvider {
   }
 
   async switchNetwork() {
-    const chainId = this.networkToChainId(this.NETWORK);
-    if (!chainId) return false;
+    const chainId = ethers.utils.hexStripZeros(
+      this.networkInterface.CHAIN_ID ?? 0
+    );
     try {
       const currentChainId = ethers.utils.hexStripZeros(
         (await this.provider.getNetwork())?.chainId ?? 0
@@ -74,47 +103,6 @@ export default class EthAPIProvider extends APIProvider {
     }
     return true;
   }
-
-  getProfile = async (address) => {
-    if (address) {
-      try {
-        const { data } = await axios
-          .get(`https://ipfs.3box.io/profile?address=${address}`)
-          .catch((err) => {
-            if (err.response.status === 404) {
-              throw err;
-            }
-          });
-
-        if (data) {
-          const profile = {
-            coverPhoto: get(data, "coverPhoto.0.contentUrl./"),
-            image: get(data, "image.0.contentUrl./"),
-            description: data.description,
-            emoji: data.emoji,
-            website: data.website,
-            location: data.location,
-            twitter_proof: data.twitter_proof,
-          };
-
-          if (data.name) {
-            profile.name = data.name;
-          }
-          if (profile.image) {
-            profile.image = `https://gateway.ipfs.io/ipfs/${profile.image}`;
-          }
-
-          return profile;
-        }
-      } catch (err) {
-        if (!err.response) {
-          throw err;
-        }
-      }
-    } else {
-      return;
-    }
-  };
 
   async signMessage(message) {
     const address = await this.getAddress();
@@ -146,13 +134,24 @@ export default class EthAPIProvider extends APIProvider {
     return tx;
   }
 
-  async getAllowance(userAddress, spenderAddress, tokenAddress) {
+  async getAllowance(tokenAddress, userAddress, spenderAddress) {
     const ERC20_ABI = [
       "function allowance(address owner, address spender) view returns (uint256)",
     ];
     const token = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
     const allowance = await token.allowance(userAddress, spenderAddress);
     return allowance;
+  }
+
+  async approve(tokenAddress, spenderAddress, amount) {
+    amount = ethers.BigNumber.from(amount);
+    const erc20ContractABI = "";
+    const contract = new ethers.Contract(
+      tokenAddress,
+      erc20ContractABI,
+      this.provider
+    );
+    await contract.approve(spenderAddress, amount);
   }
 
   async getBalance(userAddress) {
@@ -171,111 +170,10 @@ export default class EthAPIProvider extends APIProvider {
     return balance;
   }
 
-  async signOrder(
-    market,
-    side,
-    price,
-    chainId,
-    amount,
-    sellTokenAddress,
-    buyTokenAddress,
-    fee,
-    orderType
-  ) {
-    amount = Number(amount);
-    price = Number(price).toPrecision(8);
-    price = ethers.utils.parseUnits(price, 18);
-    fee = ethers.utils.parseUnits(fee, 18);
-
-    const currencies = market.split("-");
-    const nowUnix = (Date.now() / 1000) | 0;
-    const validUntil = nowUnix + 24 * 3600;
-
-    if (currencies[0] === "USDC" || currencies[0] === "USDT") {
-      amount = Number(amount).toFixed(7).slice(0, -1);
-    }
-
-    if (!EthAPIProvider.validSides.includes(side)) {
-      throw new Error("Invalid side");
-    }
-
-    if (side === "s") {
-      const allowance = await this.getAllowance(
-        this.wallet,
-        EthAPIProvider.ETH_CONTRACT_ADDRESS,
-        sellTokenAddress
-      );
-      if (allowance < amount) {
-        throw new Error("Insufficient allowance");
-      }
-    }
-
-    if (side === "b") {
-      const allowance = await this.getAllowance(
-        this.wallet,
-        EthAPIProvider.ETH_CONTRACT_ADDRESS,
-        buyTokenAddress
-      );
-      if (allowance < amount) {
-        throw new Error("Insufficient allowance");
-      }
-    }
-
-    const order = {
-      validUntil,
-      price,
-      sellTokenAddress,
-      buyTokenAddress,
-      chainId,
-      fee,
-    };
-    const orderHash = ethers.utils.solidityKeccak256(
-      ["uint256", "uint256", "address", "address", "uint256", "uint256"],
-      [
-        order.validUntil,
-        order.price,
-        order.sellTokenAddress,
-        order.buyTokenAddress,
-        order.chainId,
-        order.fee,
-      ]
-    );
-
-    const signature = await this.wallet.signMessage(
+  async signOrder({ orderHash }) {
+    const result = await this.wallet.signMessage(
       ethers.utils.arrayify(orderHash)
     );
-    const signedOrder = {
-      ...order,
-      signature,
-    };
-
-    return {
-      tx: signedOrder,
-      market,
-      amount,
-      price,
-      side,
-      type: orderType,
-    };
+    return result;
   }
-
-  getChainName = (chainId) => {
-    if (Number(chainId) === "ethereum") {
-      return "mainnet";
-    } else if (Number(chainId) === "ethereum_goerli") {
-      return "goerli";
-    } else {
-      throw Error("Chain ID not understood");
-    }
-  };
-
-  networkToChainId = (network) => {
-    const map = {
-      zksyncv1: "0x1",
-      ethereum: "0x1",
-      zksyncv1_goerli: "0x5",
-      ethereum_goerli: "0x5",
-    };
-    return map[network];
-  };
 }
