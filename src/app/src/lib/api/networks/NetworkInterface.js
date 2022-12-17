@@ -1,5 +1,13 @@
 import { createIcon } from "@download/blockies";
-import { formatBalances, State } from "lib/utils";
+import Decimal from "decimal.js";
+import store from "lib/store";
+import {
+  lastPricesSelector,
+  marketInfoSelector,
+  userOrdersSelector,
+} from "lib/store/features/api/apiSlice";
+import { getCurrentValidUntil, State, toBaseUnit } from "lib/utils";
+import { isString } from "lodash";
 import { toast } from "react-toastify";
 import APIProvider from "../providers/APIProvider";
 
@@ -21,13 +29,16 @@ export default class NetworkInterface {
 
   static Provider = APIProvider;
 
+  static ValidSides = ["s", "b"];
+
   state = new NetworkInterface.State();
 
   NETWORK = "unknown";
   CURRENCY = "CURRENCY_SYMBOL";
   HAS_BRIDGE = false;
-  BRIDGE_CONTRACT = "";
-  securityType = null;
+  SECURITY_TYPE = null;
+  BRIDGE_CONTRACT = null;
+  DEX_CONTRACT = null;
 
   core = null;
 
@@ -53,8 +64,8 @@ export default class NetworkInterface {
 
   getConfig() {
     return {
-      hasBridge: this.hasBridge,
-      securityType: this.securityType,
+      hasBridge: this.HAS_BRIDGE,
+      securityType: this.SECURITY_TYPE,
     };
   }
 
@@ -121,7 +132,8 @@ export default class NetworkInterface {
           <a
             href="https://wallet.zksync.io/?network=goerli"
             style={{ color: "white" }}
-            target="_blank" rel="noreferrer"
+            target="_blank"
+            rel="noreferrer"
           >
             {" "}
             go to wallet.zksync.io
@@ -261,15 +273,17 @@ export default class NetworkInterface {
   async getUserDetails() {
     const { userDetails } = this;
     const address = this.getAddress();
+    const name = address && (await this.getProfileName(address));
+    const image = address && (await this.getProfileImage(address));
     return {
       ...userDetails,
-      name: await this.getProfileName(address),
-      image: await this.getProfileImage(address),
+      name,
+      image,
     };
   }
 
   async getProfileImage(address) {
-    if (!address) throw new Error("profile request for undefined address");
+    if (!address) return null;
     return createIcon({ seed: address }).toDataURL();
   }
 
@@ -277,17 +291,159 @@ export default class NetworkInterface {
     return `${address.substr(0, 6)}…${address.substr(-6)}`;
   }
 
-  async prepareOrder(product, side, price, amount, feeType, fee, orderType) {
-    if (!this.isSignedIn()) return;
-    return await this.apiProvider.prepareOrder(
-      product,
+  async getAvailableBalance(currency, decimals, giveDecimal = false) {
+    const balances = await this.getBalances();
+    if (!balances[currency]?.value) return "0";
+    const balance = new Decimal(balances[currency].value);
+    Object.entries(userOrdersSelector(store.getState())).forEach(
+      (id, order) => {
+        if (this.NETWORK !== order.chainId) return;
+        const [base, quote] = order.market.split("-");
+        if (order.side === "b" && quote === currency)
+          balance = balance.sub(toBaseUnit(order.quoteQuantity, decimals));
+        if (order.side === "s" && base === currency)
+          balance = balance.sub(toBaseUnit(order.baseQuantity, decimals));
+      }
+    );
+    return giveDecimal ? balance : balance.toFixed(0);
+  }
+
+  async validateOrder({ market, price, amount, side, fee, type }) {
+    class VError extends Error() {}
+    try {
+      if (!market) throw new VError("Invalid market");
+
+      const currencies = this.core.getNetworkCurrencies(this.NETWORK);
+      const [baseCurrency, quoteCurrency] = market.split("-");
+      const [baseDecimals, quoteDecimals] = [
+        currencies[baseCurrency].decimals,
+        currencies[quoteCurrency].decimals,
+      ];
+      const [baseTokenAddress, quoteTokenAddress] = [
+        currencies[baseCurrency].info.contract,
+        currencies[quoteCurrency].info.contract,
+      ];
+
+      try {
+        amount = new Decimal(toBaseUnit(amount, baseDecimals));
+      } catch (err) {
+        throw new VError("Invalid amount");
+      }
+
+      try {
+        price = new Decimal(price).toFixed();
+      } catch (err) {
+        throw new VError("Invalid price");
+      }
+      if (price.eq(0)) throw new VError(`Price should not be equal to 0`);
+
+      if (side === "buy") side = "b";
+      if (side === "sell") side = "s";
+      if (!isString(side) || !["b", "s"].includes(side))
+        throw new VError("Invalid side");
+
+      const [buyTokenAddress, sellTokenAddress] =
+        side === "b"
+          ? [baseTokenAddress, quoteTokenAddress]
+          : [quoteTokenAddress, baseTokenAddress];
+
+      try {
+        fee = new Decimal(fee);
+        if (fee.gt(1)) throw new Error();
+        if (fee.lt(0)) throw new Error();
+      } catch (err) {
+        throw new VError("Invalid fee");
+      }
+
+      if (!isString(type) || !["l", "m"].includes(type))
+        throw new VError("Invalid order type");
+
+      await this.updateBalances();
+
+      const baseBalance = await this.getAvailableBalance(
+        baseCurrency,
+        baseDecimals,
+        true
+      );
+      const quoteBalance = await this.getAvailableBalance(
+        quoteCurrency,
+        quoteDecimals,
+        true
+      );
+
+      const state = store.getState();
+
+      if (side === "s" && baseBalance.lt(amount))
+        throw new VError(`Amount exceeds ${baseCurrency} balance`);
+
+      if (side === "b" && quoteBalance.lt(amount.mul(price)))
+        throw new VError(`Total exceeds ${quoteCurrency} balance`);
+
+      const minOrderSize = new Decimal(
+        marketInfoSelector(state).min_order_size
+      );
+      if (amount.lt(minOrderSize))
+        throw new VError(
+          `Minimum order size is ${minOrderSize.toFixed()} ${baseCurrency}`
+        );
+
+      const lastPrice = new Decimal(lastPricesSelector(state));
+
+      const warnings = [];
+
+      if (price > lastPrice.mul(1.2))
+        warnings.push("Price is 20% above the spot");
+      if (price < lastPrice.mul(0.8))
+        warnings.push("Price is 20% lower than the spot");
+
+      const validUntil = getCurrentValidUntil();
+
+      const data = {
+        market,
+        amount: amount.toFixed(),
+        price: price.toFixed(),
+        side,
+        buyTokenAddress,
+        sellTokenAddress,
+        fee: fee.toFixed(),
+        type,
+        validUntil,
+      };
+
+      return data;
+    } catch (err) {
+      if (err instanceof VError) throw err;
+      console.error("Order Validation Error:", err);
+      throw new Error("Unknown Error: Check console for more info");
+    }
+  }
+
+  async prepareOrder({
+    market,
+    amount,
+    price,
+    side,
+    buyTokenAddress,
+    sellTokenAddress,
+    fee,
+    type,
+    validUntil,
+  }) {
+    const tx = this.apiProvider.signOrder({
+      market,
       side,
       price,
       amount,
-      feeType,
       fee,
-      orderType
-    );
+      type,
+    });
+    return {
+      tx,
+      market,
+      amount,
+      price,
+      type,
+    };
   }
 
   isSignedIn() {
