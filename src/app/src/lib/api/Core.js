@@ -270,28 +270,32 @@ export default class Core extends Emitter {
     });
   }
 
-  async submitOrder(product, side, price, amount, feeType, fee, orderType) {
+  async validateOrder({ market, amount, price, side, fee, type }) {
+    const data = await this.networkInterface?.validateOrder({
+      market,
+      amount,
+      price,
+      side,
+      fee,
+      type,
+    });
+    return data;
+  }
+
+  async submitOrder(data) {
     if (!this.isSignedIn()) return;
 
-    const data = await this.networkInterface.prepareOrder(
-      product,
-      side,
-      price,
-      amount,
-      feeType,
-      fee,
-      orderType
-    );
+    const order = await this.networkInterface.prepareOrder(data);
 
     this.sendRequest(
       "user/order",
       "POST",
       {
-        tx: data.tx,
+        tx: order,
         market: data.market,
         amount: data.amount,
         price: data.price,
-        type: orderType,
+        type: data.type,
       },
       true
     );
@@ -317,6 +321,11 @@ export default class Core extends Emitter {
         ];
       });
     return Object.fromEntries(entries);
+  }
+
+  getNetworkCurrency(network, ticker) {
+    const { chain, ...curr } = this.currencies[ticker];
+    return { ...curr, info: chain?.[network] };
   }
 
   getOrderDetailsWithoutFee(order) {
