@@ -10,56 +10,18 @@ export function formatUSD(floatNum) {
   return num.join(".");
 }
 
-export function fromBaseUnit(amount, decimals, precision = 5) {
-  return Decimal.div(amount, Decimal.pow(10, decimals)).toFixed(
+export function fromBaseUnit(amount, decimals, options) {
+  const { precision, zeros } = options ?? {};
+  zeros = zeros ?? false;
+  precision = precision ?? 5;
+  const res = Decimal.div(amount, Decimal.pow(10, decimals)).toFixed(
     Decimal.min(precision, decimals).toNumber()
   );
+  return zeros ? res : new Decimal(res).toFixed();
 }
 
 export function toBaseUnit(value, decimals) {
-  if (!isString(value)) {
-    throw new Error("Pass strings to prevent floating point precision issues.");
-  }
-
-  const base = BigNumber.from(10).pow(decimals);
-
-  if (value.charAt(0) === "-") {
-    value = value.substring(1);
-  }
-
-  if (value === ".") {
-    throw new Error(
-      `Invalid value ${value} cannot be converted to` +
-        ` base unit with ${decimals} decimals.`
-    );
-  }
-
-  // Split it into a whole and fractional part
-  let comps = value.split(".");
-  if (comps.length > 2) {
-    throw new Error("Too many decimal points");
-  }
-
-  let whole = comps[0],
-    fraction = comps[1];
-
-  if (!whole) {
-    whole = "0";
-  }
-  if (!fraction) {
-    fraction = "0";
-  }
-  if (fraction.length > decimals) {
-    throw new Error("Too many decimal places");
-  }
-
-  while (fraction.length < decimals) {
-    fraction += "0";
-  }
-
-  whole = BigNumber.from(whole);
-  fraction = BigNumber.from(fraction);
-  return BigNumber.from(whole.mul(base).add(fraction).toString(10));
+  return Decimal.mul(value, Decimal.pow(10, decimals)).toFixed(0);
 }
 
 export function numStringToSymbol(str, decimals) {
@@ -110,4 +72,8 @@ export function formatBalances(balances, currencies) {
     };
   }
   return result;
+}
+
+export function getCurrentValidUntil() {
+  return ((Date.now() / 1000) | 0) + 24 * 3600;
 }
