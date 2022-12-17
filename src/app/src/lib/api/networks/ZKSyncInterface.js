@@ -1,18 +1,20 @@
-import { getENSName } from "lib/ens";
 import { formatBalances } from "lib/utils";
-import erc20ContractABI from "lib/contracts/ERC20.json";
-import { maxAllowance } from "../constants";
 import ZKSyncAPIProvider from "../providers/ZKSyncAPIProvider";
-import NetworkInterface from "./NetworkInterface";
 import { ethers } from "ethers";
+import EthereumInterface from "./EthereumInterface";
+import { SecurityComp } from "components/pages/Security/types";
+import Decimal from "decimal.js";
+import NetworkInterface from "./NetworkInterface";
+import * as zksync from "zksync";
 
-export default class ZKSyncInterface extends NetworkInterface {
+export default class ZKSyncInterface extends EthereumInterface {
   static Actions = [...super.Actions, "increaseNonce", "approve"];
 
   static Provider = ZKSyncAPIProvider;
   NETWORK = "zksyncv1";
-  hasBridge = true;
+  HAS_BRIDGE = true;
   BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
+  SECURITY_TYPE = SecurityComp.Nonce;
 
   async increaseNonce() {
     let increaseNonceResult = {};
@@ -29,27 +31,20 @@ export default class ZKSyncInterface extends NetworkInterface {
     return increaseNonceResult;
   }
 
-  async getL1Balances() {
-    if (!this.apiProvider) return null;
+  async fetchL1Balances() {
+    return await super.fetchBalances();
+  }
 
-    const getBalance = async (ticker) => {
-      const balance = await this.apiProvider?.getBalanceOfCurrency(
-        ticker,
-        erc20ContractABI,
-        maxAllowance
-      );
-      return { [ticker]: balance };
-    };
+  async fetchAllowances() {
+    return await super.fetchAllowances(true);
+  }
 
-    const currencies = this.core.currencies;
+  async fetchL1Allowances() {
+    return await super.fetchAllowances(false);
+  }
 
-    let results = await Promise.all(
-      Object.keys(currencies)
-        .filter((ticker) => currencies[ticker]?.chain?.[this.NETWORK])
-        .map((ticker) => getBalance(ticker))
-    );
-    const balances = results.reduce((prev, curr) => ({ ...prev, ...curr }), {});
-    return balances;
+  async approveL1(ticker, allowance, isLayerTwo) {
+    return await super.approve(ticker, allowance, false);
   }
 
   async updateAddress(_accountState) {
@@ -87,8 +82,8 @@ export default class ZKSyncInterface extends NetworkInterface {
     const accountStatePromise = (async () => {
       _accountState ?? (await this.apiProvider.getAccountState());
     })();
-    const balancesPromise = this.getL1Balances();
-    const allowancesPromise = this.getAllowances();
+    const balancesPromise = this.fetchL1Balances();
+    const allowancesPromise = this.fetchL1Allowances();
     const [accountState, l1Balances, allowances] = await Promise.all([
       accountStatePromise,
       balancesPromise,
@@ -109,37 +104,74 @@ export default class ZKSyncInterface extends NetworkInterface {
   }
 
   async updateUserDetails() {
-    const accountState = await this.getAccountState();
+    const accountState = await this.fetchAccountState();
     await super.updateUserDetails(accountState);
   }
 
-  async getProfileName(address) {
-    const res = await super.getProfileName(address);
-    return (await this.fetchENSName(this.userDetails.address)) ?? res;
-  }
-
-  async fetchENSName(address) {
-    try {
-      return await getENSName(address);
-    } catch (err) {
-      console.log(`ENS error: ${err}`);
-      return null;
-    }
-  }
-
-  async approve(currency, allowance = maxAllowance) {
-    return await this.apiProvider?.approve(
-      currency,
-      allowance || maxAllowance,
-      erc20ContractABI
-    );
-  }
-
-  async getAccountState() {
+  async fetchAccountState() {
     // if(![NetworkInterface.State.PROVIDER_CONNECTED, NetworkInterface.State.SIGNED_IN, NetworkInterface.State.SIGNING_IN
     //   NetworkInterface.State.].includes(this.state.get()))
     if (!this.apiProvider) return {};
     return await this.apiProvider.getAccountState();
+  }
+
+  getTokenRatio(market, baseRatio, quoteRatio) {
+    const [baseCurrency, quoteCurrency] = market.split("-");
+    return {
+      [baseCurrency]: baseRatio,
+      [quoteCurrency]: quoteRatio,
+    };
+  }
+
+  async validateOrder({ market, price, amount, side, fee, type }) {
+    const res = await NetworkInterface.prototype.validateOrder.call(this, {
+      market,
+      price,
+      amount,
+      side,
+      fee,
+      type,
+    });
+
+    const buyPrice = Decimal.mul(res.price, Decimal.add(1, res.fee)).toFixed();
+    const sellPrice = Decimal.mul(res.price, Decimal.sub(1, res.fee)).toFixed();
+
+    const priceWithFee = res.side === "b" ? buyPrice : sellPrice;
+    const ratio = zksync.utils.tokenRatio(
+      this.getTokenRatio(res.market, 1, priceWithFee)
+    );
+
+    return {
+      ...res,
+      ratio,
+    };
+  }
+
+  async prepareOrder({
+    market,
+    amount,
+    price,
+    side,
+    buyTokenAddress,
+    sellTokenAddress,
+    fee,
+    type,
+    validUntil,
+    ratio,
+  }) {
+    const [baseCurrency, quoteCurrency] = market.split("-");
+    const [buyCurrency, sellCurrency] =
+      side === "b"
+        ? [baseCurrency, quoteCurrency]
+        : [quoteCurrency, baseCurrency];
+
+    const tx = await this.apiProvider?.signOrder({
+      sellCurrency,
+      buyCurrency,
+      ratio,
+      validUntil,
+    });
+    return tx;
   }
 
   async depositL2(amount, token) {
@@ -156,14 +188,5 @@ export default class ZKSyncInterface extends NetworkInterface {
 
   async withdrawL2Fee(token) {
     return this.apiProvider.withdrawL2Fee(token);
-  }
-
-  async getCommitedBalance() {
-    const commitedBalance = this.apiProvider.getCommitedBalance();
-    if (commitedBalance) {
-      return commitedBalance;
-    } else {
-      return 0;
-    }
   }
 }
