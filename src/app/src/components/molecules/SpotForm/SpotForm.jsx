@@ -109,23 +109,18 @@ class SpotForm extends React.Component {
   }
 
   async buySellHandler(e) {
-    let amount, baseBalance, quoteBalance, newstate, orderPendingToast, price;
-    // this variable will change when different fee method has developed
-    let feeType = "withoutNBX";
+    let amount, price, newstate, orderPendingToast;
     let orderType = this.props.orderType === "limit" ? "l" : "m";
 
+    // amount
     if (typeof this.state.amount === "string") {
       if (this.props.rangePrice > 0) {
-        amount = Number(this.props.rangePrice.replace(",", "."));
+        amount = this.props.rangePrice.replace(",", ".");
       } else {
-        amount = Number(this.state.amount.replace(",", "."));
+        amount = this.state.amount.replace(",", ".");
       }
     } else {
       amount = this.state.amount;
-    }
-    if (isNaN(amount)) {
-      toast.error("Invalid amount");
-      return;
     }
 
     if (sessionStorage.getItem("test") === null) {
@@ -134,8 +129,7 @@ class SpotForm extends React.Component {
       );
       sessionStorage.setItem("test", true);
     }
-    const [baseCurrency, quoteCurrency] = this.props.currentMarket.split("-");
-    amount = Number(amount.toFixed(api.currencies[baseCurrency].decimals));
+
     if (this.props.activeLimitAndMarketOrders.length > 0) {
       if (this.props.orderType === "market") {
         toast.error("Your limit or market order should fill first");
@@ -143,76 +137,31 @@ class SpotForm extends React.Component {
       }
     }
 
-    if (this.props.user.id) {
-      baseBalance = this.getBaseBalance().toNumber();
-      quoteBalance = this.getQuoteBalance().toNumber();
-    } else {
-      baseBalance = 0;
-      quoteBalance = 0;
-    }
-
+    // price
     if (this.props.orderType === "market") {
       price = this.currentPrice();
     } else if (this.props.orderType === "marketOrder") {
       price = this.marketPrice();
     } else {
       if (this.props.selectedPrice) {
-        price = Number(this.props.selectedPrice)
-          .toFixed(1)
-          .replace(/([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, "$1");
+        price = this.props.selectedPrice;
+        // price = Number(this.props.selectedPrice)
+        //   .toFixed(1)
+        //   .replace(/([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, "$1");
       } else {
         price = this.state.price;
       }
     }
-    if (!price) {
-      if (this.props.orderType === "limit") {
-        toast.error("Invalid price");
-        return;
-      } else {
-        toast.error(
-          `${this.props.currentMarket}: No price available right now!`
-        );
-        return;
-      }
-    }
 
-    if (this.props.side === "s" && isNaN(baseBalance)) {
-      toast.error(`No ${baseCurrency} balance`);
-      return;
-    }
-    if (this.props.side === "b" && isNaN(quoteBalance)) {
-      toast.error(`No ${quoteCurrency} balance`);
-      return;
-    }
-    if (this.props.side === "s" && amount > baseBalance) {
-      toast.error(`Amount exceeds ${baseCurrency} balance`);
-      return;
-    }
-    if (this.props.side === "b" && amount * price > quoteBalance) {
-      toast.error(`Total exceeds ${quoteCurrency} balance`);
-      return;
-    }
-    if (amount < this.props.marketInfo.min_order_size) {
-      toast.error(
-        `Minimum order size is ${Number(
-          this.props.marketInfo.min_order_size
-        )} ${baseCurrency}`
-      );
-      return;
-    }
-    if (isNaN(price)) {
-      toast.error(`Price is not a number`);
-    }
-    if (price > this.props.lastPrice * 1.2) {
-      toast.warning("Price is 20% above the spot");
-    }
-    if (price < this.props.lastPrice * 0.8) {
-      toast.warning("Price is 20% lower than the spot");
-    }
-    if (price === 0) {
-      toast.error(`Price should not be equal to 0`);
-      return;
-    }
+    const data = await api.validateOrder({
+      market: this.props.currentMarket,
+      amount,
+      price,
+      side: this.props.side,
+      fee: this.props.config.takerFee,
+      type: orderType,
+    });
+
     newstate = { ...this.state };
     newstate.orderButtonDisabled = true;
     this.setState(newstate);
@@ -223,15 +172,7 @@ class SpotForm extends React.Component {
 
     // send feeType for limit order (fee method)
     try {
-      await api.submitOrder(
-        this.props.currentMarket,
-        this.props.side,
-        price,
-        amount,
-        feeType,
-        this.props.config.takerFee,
-        orderType
-      );
+      await api.submitOrder(data);
     } catch (e) {
       console.log(e);
       toast.error(e.message);
