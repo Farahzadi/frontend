@@ -294,7 +294,7 @@ export default class NetworkInterface {
   async getAvailableBalance(currency, decimals, giveDecimal = false) {
     const balances = await this.getBalances();
     if (!balances[currency]?.value) return "0";
-    const balance = new Decimal(balances[currency].value);
+    let balance = new Decimal(balances[currency].value);
     Object.entries(userOrdersSelector(store.getState())).forEach(
       (id, order) => {
         if (this.NETWORK !== order.chainId) return;
