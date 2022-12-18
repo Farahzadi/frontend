@@ -112,6 +112,7 @@ const NonceIncreasement = () => {
               <a
                 className="text-white"
                 href="https://docs.zksync.io/dev/swaps/#trading-accounts"
+                target={"_blank"}
               >
                 Employing Trade accounts:
               </a>

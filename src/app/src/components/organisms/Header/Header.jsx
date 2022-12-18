@@ -46,7 +46,7 @@ export const Header = (props) => {
   return (
     <header>
       <div className="mobile_header mb_h">
-        <div >
+        <div>
           <img src={logo} alt="logo" className="logo-container" />
           <span class="Navbar_brandName">DEXPRESSO</span>
         </div>
@@ -63,10 +63,7 @@ export const Header = (props) => {
       {/* mobile sidebar */}
       <div
         className="mb_header_container mb_h"
-        style={
-          show ? { width: "100%", left: "0" } : { width: "0%", left: "-187%" }
-        }
-      >
+        style={show ? { width: "100%", left: "0" } : { width: "0%", left: "-187%" }}>
         <img src={logo} alt="logo" />
         <div className="nav_items">
           <ul>
@@ -88,7 +85,9 @@ export const Header = (props) => {
               </NavLink>
             </li>
             <li>
-              <a href="https://docs.dexpresso.exchange/">Docs</a>
+              <a href="https://docs.dexpresso.exchange/" target={"_blank"}>
+                Docs
+              </a>
             </li>
           </ul>
         </div>
@@ -132,7 +131,9 @@ export const Header = (props) => {
               </NavLink>
             </li>
             <li>
-              <a href="https://docs.dexpresso.exchange/">Docs</a>
+              <a href="https://docs.dexpresso.exchange/" target={"_blank"}>
+                Docs
+              </a>
             </li>
           </ul>
         </div>
