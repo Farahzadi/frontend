@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import Decimal from "decimal.js";
 import { toast } from "react-toastify";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
@@ -13,6 +12,7 @@ import {
 import api from "lib/api";
 import { RangeSlider, Button } from "components";
 import "./SpotForm.css";
+import Currencies from "config/Currencies";
 
 class SpotForm extends React.Component {
   constructor(props) {
@@ -75,14 +75,14 @@ class SpotForm extends React.Component {
   getBaseBalance() {
     const baseCurrency = this.props.currentMarket.split("-")[0];
     return (
-      this.props.user.availableBalances[baseCurrency]?.valueReadable ?? "0"
+      this.props.user.availableBalances?.[baseCurrency]?.valueReadable ?? "0"
     );
   }
 
   getQuoteBalance() {
     const quoteCurrency = this.props.currentMarket.split("-")[1];
     return (
-      this.props.user.availableBalances[quoteCurrency]?.valueReadable ?? "0"
+      this.props.user.availableBalances?.[quoteCurrency]?.valueReadable ?? "0"
     );
   }
 
@@ -130,15 +130,20 @@ class SpotForm extends React.Component {
         price = this.state.price;
       }
     }
-
-    const data = await api.validateOrder({
-      market: this.props.currentMarket,
-      amount,
-      price,
-      side: this.props.side,
-      fee: this.props.config.takerFee,
-      type: orderType,
-    });
+    let data;
+    try {
+      data = await api.validateOrder({
+        market: this.props.currentMarket,
+        amount,
+        price,
+        side: this.props.side,
+        fee: this.props.config.takerFee,
+        type: orderType,
+      });
+    } catch (err) {
+      toast.error(err.message);
+      return;
+    }
 
     newstate = { ...this.state };
     newstate.orderButtonDisabled = true;
@@ -176,7 +181,7 @@ class SpotForm extends React.Component {
 
     if (this.props.side === "s") {
       const baseBalance = this.getBaseBalance();
-      if(!+baseBalance) return 0;
+      if (!+baseBalance) return 0;
       const amount = this.state.amount || 0;
       finalAmount = amount / baseBalance;
       if (
@@ -193,7 +198,7 @@ class SpotForm extends React.Component {
     }
     if (this.props.side === "b") {
       const quoteBalance = this.getQuoteBalance();
-      if(!+quoteBalance) return 0;
+      if (!+quoteBalance) return 0;
       const amount = this.state.amount || 0;
       const total = amount * this.currentPrice();
       finalAmount = total / quoteBalance;
@@ -318,7 +323,7 @@ class SpotForm extends React.Component {
     api.emit("rangePrice", 0);
     const baseBalance = this.getBaseBalance();
     const baseCurrency = this.props.currentMarket.split("-")[0];
-    const decimals = api.currencies[baseCurrency].decimals;
+    const decimals = Currencies[baseCurrency].decimals;
     const quoteBalance = this.getQuoteBalance();
     const quoteCurrency = this.props.currentMarket.split("-")[1];
 
@@ -331,7 +336,7 @@ class SpotForm extends React.Component {
     }
     if (this.props.side === "s") {
       let displayAmount = (baseBalance * val) / 100;
-      displayAmount -= api.currencies[baseCurrency].gasFee;
+      displayAmount -= Currencies[baseCurrency].gasFee;
       displayAmount = parseFloat(displayAmount.toFixed(decimals)).toPrecision(
         7
       );
@@ -347,7 +352,7 @@ class SpotForm extends React.Component {
       }
     } else if (this.props.side === "b") {
       let quoteAmount =
-        ((quoteBalance - api.currencies[quoteCurrency].gasFee) * val) /
+        ((quoteBalance - Currencies[quoteCurrency].gasFee) * val) /
         100 /
         this.currentPrice();
       quoteAmount = parseFloat(quoteAmount.toFixed(decimals)).toPrecision(7);
@@ -466,11 +471,11 @@ class SpotForm extends React.Component {
     const balanceHtml =
       this.props.side === "b" ? (
         <strong>
-          {quoteBalance.toPrecision(8)} {quoteCurrency}
+          {quoteBalance} {quoteCurrency}
         </strong>
       ) : (
         <strong>
-          {baseBalance.toPrecision(8)} {baseCurrency}
+          {baseBalance} {baseCurrency}
         </strong>
       );
 
