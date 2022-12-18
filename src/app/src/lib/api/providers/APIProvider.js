@@ -37,24 +37,47 @@ export default class APIProvider {
 
   /// Methods required to be implemented
 
-  start = notImplemented("start");
-  stop = notImplemented("stop");
-  prepareOrder = notImplemented("submitOrder");
-  depositL2 = notImplemented("depositL2");
-  withdrawL2 = notImplemented("withdrawL2");
-  depositL2Fee = notImplemented("depositL2Fee");
-  withdrawL2Fee = notImplemented("withdrawL2Fee");
-  getBalances = notImplemented("getBalances");
-
-  signMessage = notImplemented("signMessage");
-  verifyMessage = notImplemented("verifyMessage");
+  async start() {
+    return notImplemented("start");
+  }
+  async stop() {
+    return notImplemented("stop");
+  }
+  async prepareOrder() {
+    return notImplemented("submitOrder");
+  }
+  async depositL2() {
+    return notImplemented("depositL2");
+  }
+  async withdrawL2() {
+    return notImplemented("withdrawL2");
+  }
+  async depositL2Fee() {
+    return notImplemented("depositL2Fee");
+  }
+  async withdrawL2Fee() {
+    return notImplemented("withdrawL2Fee");
+  }
+  async getBalances() {
+    return notImplemented("getBalances");
+  }
+  async signMessage() {
+    return notImplemented("signMessage");
+  }
+  async verifyMessage() {
+    return notImplemented("verifyMessage");
+  }
 
   // returns true if the network did switch and false if it didn't (or didn't need to)
-  switchNetwork = notImplemented("switchNetwork");
+  async switchNetwork() {
+    return notImplemented("switchNetwork");
+  }
 
-  onAccountChange = notImplemented("onAccountChange");
+  async onAccountChange() {
+    return notImplemented("onAccountChange");
+  }
 
-  emit = (msg, ...args) => {
+  emit(msg, ...args) {
     this.networkInterface.emit(msg, ...args);
   };
 
