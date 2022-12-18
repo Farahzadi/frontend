@@ -84,7 +84,14 @@ header.bridge_header {
   color: var(--dexpressoPrimery) !important;
   background-color: var(--dexpressoPrimery);
 }
-
+.nav_items_li {
+  display: flex;
+  flex: 70%;
+  align-items: center;
+  list-style: none;
+  position: relative;
+  padding: 10px 0;
+}
 .wallet {
   display: flex;
   flex-direction: row;
@@ -207,9 +214,6 @@ header.bridge_header {
   height: 2.5rem;
   padding: 3px;
 }
-.nav_items ul{
-    flex: 70%;
-}
 .mobile_header img:nth-child(1) {
   margin-left: 20px;
 }
@@ -315,13 +319,7 @@ header.bridge_header {
     width: 100%;
   }
 
-  .nav_items ul {
-    display: flex;
-    align-items: center;
-    list-style: none;
-    position: relative;
-    padding: 10px 0;
-  }
+
   .footer-icons ul {
     display: flex;
     align-items: center;
