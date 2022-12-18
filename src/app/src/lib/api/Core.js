@@ -74,7 +74,6 @@ export default class Core extends Emitter {
   }
 
   async connectWallet() {
-    console.log("connect try", this.network, this.networkInterface);
     if (this.network) await this.networkInterface?.connectWallet();
   }
 
@@ -117,10 +116,13 @@ export default class Core extends Emitter {
     }
   }
 
-  _socketMsg(e) {
+  async _socketMsg(e) {
     if (!e.data && e.data.length <= 0) return;
     const msg = JSON.parse(e.data);
-    this.emit("message", msg.op + "_ws", msg.data);
+    const path = msg.op + "_ws";
+    const payload = msg.data;
+    const result = await this.apiHandlers[path]?.(payload);
+    this.emit("message", path, { data: payload, handlerResult: result });
   }
 
   start() {
@@ -128,7 +130,7 @@ export default class Core extends Emitter {
     this.ws = new WebSocket(this.websocketUrl);
     this.ws.addEventListener("open", () => this._socketOpen());
     this.ws.addEventListener("close", () => this._socketClose());
-    this.ws.addEventListener("message", () => this._socketMsg());
+    this.ws.addEventListener("message", (e) => this._socketMsg(e));
     this.emit("start");
   }
 
@@ -171,9 +173,12 @@ export default class Core extends Emitter {
       hasBody ? finalData : config,
       hasBody && config
     )
-      .then((res) =>
-        this.emit("message", url.replaceAll("/", "_") + "_" + method, res.data)
-      )
+      .then(async (res) => {
+        const path = url.replaceAll("/", "_") + "_" + method;
+        const payload = res.data;
+        const result = await this.apiHandlers[path]?.(payload);
+        this.emit("message", path, { data: payload, handlerResult: result });
+      })
       .catch((error) => {
         // TODO
         if (error.response) {
@@ -329,117 +334,6 @@ export default class Core extends Emitter {
     return { ...curr, info: chain?.[network] };
   }
 
-  getOrderDetailsWithoutFee(order) {
-    const side = order.side;
-    const baseQuantity = new Decimal(order.baseQuantity);
-    const price = new Decimal(order.price);
-    const quoteQuantity = price.mul(baseQuantity);
-    let fee = order.feeAmount ? order.feeAmount : 0;
-    const remaining = isNaN(Number(order.remaining))
-      ? order.baseQuantity
-      : order.remaining;
-    const orderStatus = order.status;
-    const orderType = order.type;
-    let baseQuantityWithoutFee,
-      quoteQuantityWithoutFee,
-      priceWithoutFee,
-      remainingWithoutFee;
-
-    if (side === "s") {
-      if (orderType === "l") {
-        baseQuantityWithoutFee = baseQuantity;
-        remainingWithoutFee = Math.max(0, remaining);
-        priceWithoutFee = quoteQuantity.dividedBy(baseQuantity);
-        quoteQuantityWithoutFee = quoteQuantity;
-      } else {
-        baseQuantityWithoutFee = baseQuantity.minus(fee);
-        if (orderStatus === "o" || orderStatus === "c" || orderStatus === "m") {
-          remainingWithoutFee = baseQuantity.minus(fee);
-        } else {
-          remainingWithoutFee = Math.max(0, remaining - fee);
-        }
-        priceWithoutFee = quoteQuantity.dividedBy(baseQuantityWithoutFee);
-        quoteQuantityWithoutFee = priceWithoutFee.mul(baseQuantityWithoutFee);
-      }
-    } else {
-      if (orderType === "l") {
-        baseQuantityWithoutFee = baseQuantity;
-        quoteQuantityWithoutFee = quoteQuantity;
-        priceWithoutFee = quoteQuantityWithoutFee.dividedBy(baseQuantity);
-        remainingWithoutFee = Math.min(baseQuantity, remaining);
-      } else {
-        quoteQuantityWithoutFee = quoteQuantity.minus(fee);
-        priceWithoutFee = quoteQuantityWithoutFee.dividedBy(baseQuantity);
-        baseQuantityWithoutFee =
-          quoteQuantityWithoutFee.dividedBy(priceWithoutFee);
-        if (orderStatus === "o" || orderStatus === "c" || orderStatus === "m") {
-          remainingWithoutFee = baseQuantity;
-        } else {
-          remainingWithoutFee = Math.min(baseQuantityWithoutFee, remaining);
-        }
-      }
-    }
-    return {
-      price: priceWithoutFee,
-      quoteQuantity: quoteQuantityWithoutFee,
-      baseQuantity: baseQuantityWithoutFee,
-      remaining: remainingWithoutFee,
-    };
-  }
-
-  getFillDetailsWithoutFee(fill) {
-    const time = fill.insertTimestamp;
-    const price = new Decimal(parseFloat(fill.price));
-    let baseQuantity = fill.amount;
-    let quoteQuantity = price.mul(fill.amount);
-    const side = fill.side;
-    let fee = fill.feeAmount ? fill.feeAmount : 0;
-
-    if (side === "s") {
-      baseQuantity -= fee;
-    } else if (side === "b") {
-      quoteQuantity -= fee;
-    }
-    const finalTime = this.hasOneDayPassed(time);
-    return {
-      price: price,
-      quoteQuantity: quoteQuantity,
-      baseQuantity: baseQuantity,
-      time: finalTime,
-    };
-  }
-
-  hasOneDayPassed(time) {
-    const date = new Date(time);
-    const dateString = date.toLocaleDateString();
-    let finalDate;
-    // get today's date
-    var today = new Date().toLocaleDateString();
-
-    // inferring a day has yet to pass since both dates are equal.
-    if (dateString === today) {
-      var hr = date.getHours();
-      var min = date.getMinutes();
-      if (min < 10) {
-        min = "0" + min;
-      }
-      var ampm = "am";
-      if (hr > 12) {
-        hr -= 12;
-        ampm = "pm";
-      }
-      finalDate = hr + ":" + min + ampm;
-    }
-    if (dateString !== today) {
-      var dd = String(date.getDate()).padStart(2, "0"); // day
-      var mm = String(date.getMonth() + 1).padStart(2, "0"); // month - January is equal to 0!
-      var yyyy = date.getFullYear(); // year
-
-      finalDate = dd + "/" + mm + "/" + yyyy;
-    }
-    return finalDate;
-  }
-
   getCurrencyLogo(currency) {
     try {
       return require(`assets/images/currency/${currency}.svg`);
@@ -451,6 +345,15 @@ export default class Core extends Emitter {
   isSignedIn() {
     return sessionStorage.getItem("access_token") !== null;
   }
+
+  apiHandlers = {
+    connected_ws: (payload) => {
+      this.ws.uuid = payload.uuid;
+    },
+    login_post: (payload) => {
+      sessionStorage.setItem("access_token", payload.access_token);
+    },
+  };
 
   async run(action, ...args) {
     if (Core.Actions.includes(action)) return await this[action](...args);

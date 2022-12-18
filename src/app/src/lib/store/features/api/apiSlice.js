@@ -1,6 +1,7 @@
 import { createSlice, createAction } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
-import api from "lib/api";
+import networkManager from "config/NetworkManager";
+import { getOrderDetailsWithoutFee } from "lib/utils";
 
 const makeScope = (state) => `${state.network}-${state.userAddress}`;
 
@@ -111,17 +112,15 @@ export const apiSlice = createSlice({
       nonce: null,
       // network main balances
       balances: null,
+      availableBalances: null,
       chain_details: null,
     },
   },
   reducers: {
     _connected_ws(state, { payload }) {
-      api.ws.uuid = payload.uuid;
       state.uuid = payload.uuid;
     },
     _login_post(state, { payload }) {
-      sessionStorage.setItem("access_token", payload.access_token);
-      // payload.user_id
       apiSlice.caseReducers._user_orders(state, {
         payload: payload.user_orders,
       });
@@ -134,7 +133,7 @@ export const apiSlice = createSlice({
       if (!payload) return;
       payload.map(translators.markets_stats).forEach((update) => {
         const { market, price, priceChange: change } = update;
-        if (api.validMarkets[state.network.name]?.includes(market)) {
+        if (networkManager.has(state.network.name, market)) {
           state.lastPrices[market] = {
             price,
             change,
@@ -164,7 +163,6 @@ export const apiSlice = createSlice({
     //   });
     // },
     _fills_ws(state, { payload }) {
-      // console.log("fills", payload);
       payload.map(translators.fills).forEach((fill) => {
         const fillid = fill.id;
         if (
@@ -246,7 +244,7 @@ export const apiSlice = createSlice({
               partialmatchorder.remaining = remaining;
               partialmatchorder.status = "pm";
               const noFeeOrder =
-                api.getOrderDetailsWithoutFee(partialmatchorder);
+                getOrderDetailsWithoutFee(partialmatchorder);
               toast.success(
                 `Your ${sideText} order for ${
                   noFeeOrder.baseQuantity.toPrecision(4) / 1
@@ -277,7 +275,7 @@ export const apiSlice = createSlice({
               const baseCurrency = filledOrder.market.split("-")[0];
               filledOrder.status = "f";
               filledOrder.remaining = 0;
-              const noFeeOrder = api.getOrderDetailsWithoutFee(filledOrder);
+              const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
               toast.success(
                 `Your ${sideText} order for ${
                   noFeeOrder.baseQuantity.toPrecision(4) / 1
@@ -297,7 +295,7 @@ export const apiSlice = createSlice({
           //     const baseCurrency = filledOrder.market.split("-")[0];
           //     filledOrder.status = "pf";
           //     filledOrder.remaining = remaining;
-          //     const noFeeOrder = api.getOrderDetailsWithoutFee(filledOrder);
+          //     const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
           //     toast.success(
           //       `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1
           //       } ${baseCurrency} @ ${noFeeOrder.price.toPrecision(4) / 1
@@ -320,7 +318,7 @@ export const apiSlice = createSlice({
               const baseCurrency = filledOrder.market.split("-")[0];
               filledOrder.status = "r";
               filledOrder.txHash = update.txHash;
-              const noFeeOrder = api.getOrderDetailsWithoutFee(filledOrder);
+              const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
               toast.error(
                 `Your ${sideText} order for ${
                   noFeeOrder.baseQuantity.toPrecision(4) / 1
@@ -492,6 +490,9 @@ export const apiSlice = createSlice({
     setUserBalances(state, { payload }) {
       state.user.balances = payload;
     },
+    setUserAvailableBalances(state, { payload }) {
+      state.user.availableBalances = payload;
+    },
     setUserChainDetails(state, { payload }) {
       state.user.chain_details = {
         ...(state.user.chain_details ?? {}),
@@ -522,6 +523,7 @@ export const {
   setUserName,
   setUserNonce,
   setUserBalances,
+  setUserAvailableBalances,
   setUserChainDetails,
 } = apiSlice.actions;
 
@@ -551,12 +553,15 @@ export const balancesSelector = (state) =>
   state.api.balances[makeScope(state.api)] || {};
 
 export const networkListSelector = (state) => state.api.networks;
+
 export const userAddressSelector = (state) => state.api.user.address;
 export const userNameSelector = (state) => state.api.user.name;
 export const userImageSelector = (state) => state.api.user.image;
 export const userNonceSelector = (state) => state.api.user.nonce;
 export const userBalancesSelector = (state) => state.api.user.balances;
+export const userAvailableBalancesSelector = (state) => state.api.user.availableBalances;
 export const userChainDetailsSelector = (state) => state.api.user.chain_details;
+export const userSelector = (state) => state.api.user;
 
 export const handleMessage = createAction("api/handleMessage");
 

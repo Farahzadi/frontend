@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import { DefaultTemplate } from "components";
 import { useHistory, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { userSelector } from "lib/store/features/auth/authSlice";
 import "./NonceIncreasement.css";
 import api from "lib/api";
 import { Button } from "react-bootstrap";
-import { networkSelector } from "lib/store/features/api/apiSlice";
+import { networkSelector, userSelector } from "lib/store/features/api/apiSlice";
 import { toast } from "react-toastify";
 import { Modal } from "../../atoms/Modal";
 
@@ -36,7 +35,7 @@ const NonceIncreasement = () => {
   };
 
   const getOldNonce = () => {
-    const oldNonce = user.committed.nonce;
+    const oldNonce = user.nonce;
     setOldNonce(oldNonce);
   };
   const increaseWalletNonce = async () => {
@@ -53,7 +52,7 @@ const NonceIncreasement = () => {
   };
 
   useEffect(() => {
-    if (user.committed) {
+    if (user.nonce) {
       getOldNonce();
     }
   }, []);

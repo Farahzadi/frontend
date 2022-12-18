@@ -73,39 +73,17 @@ class SpotForm extends React.Component {
   }
 
   getBaseBalance() {
-    let totalActiveLimitOrderBaseQuantity = 0;
     const baseCurrency = this.props.currentMarket.split("-")[0];
-    let committedBaseBalance = new Decimal(
-      this.props.user.committed.balances?.[baseCurrency] || 0
+    return (
+      this.props.user.availableBalances[baseCurrency]?.valueReadable ?? "0"
     );
-    let baseBalance = committedBaseBalance.dividedBy(
-      Math.pow(10, api.currencies[baseCurrency].decimals)
-    );
-    this.props.activeLimitAndMarketOrders.map((order) => {
-      if (order.side === "s")
-        totalActiveLimitOrderBaseQuantity += order.baseQuantity;
-    });
-    let finalBaseBalance = baseBalance.minus(totalActiveLimitOrderBaseQuantity);
-    return finalBaseBalance;
   }
 
   getQuoteBalance() {
-    let totalActiveLimitOrderQuoteQuantity = 0;
     const quoteCurrency = this.props.currentMarket.split("-")[1];
-    let committedQuoteBalance = new Decimal(
-      this.props.user.committed.balances?.[quoteCurrency] || 0
+    return (
+      this.props.user.availableBalances[quoteCurrency]?.valueReadable ?? "0"
     );
-    let quoteBalance = committedQuoteBalance.dividedBy(
-      Math.pow(10, api.currencies[quoteCurrency].decimals)
-    );
-    this.props.activeLimitAndMarketOrders.map((order) => {
-      if (order.side === "b")
-        totalActiveLimitOrderQuoteQuantity += order.quoteQuantity;
-    });
-    let finalQuoteBalance = quoteBalance.minus(
-      totalActiveLimitOrderQuoteQuantity
-    );
-    return finalQuoteBalance;
   }
 
   async buySellHandler(e) {
@@ -196,11 +174,9 @@ class SpotForm extends React.Component {
     if (!this.props.user.id) return 0;
     let finalAmount;
 
-    const baseCurrency = this.props.currentMarket.split("-")[0];
-    const quoteCurrency = this.props.currentMarket.split("-")[1];
     if (this.props.side === "s") {
-      const baseBalance =
-        this.getBaseBalance() - api.currencies[baseCurrency].gasFee;
+      const baseBalance = this.getBaseBalance();
+      if(!+baseBalance) return 0;
       const amount = this.state.amount || 0;
       finalAmount = amount / baseBalance;
       if (
@@ -217,10 +193,10 @@ class SpotForm extends React.Component {
     }
     if (this.props.side === "b") {
       const quoteBalance = this.getQuoteBalance();
+      if(!+quoteBalance) return 0;
       const amount = this.state.amount || 0;
       const total = amount * this.currentPrice();
-      finalAmount =
-        total / (quoteBalance - api.currencies[quoteCurrency].gasFee);
+      finalAmount = total / quoteBalance;
       if (
         this.props.orderType === "limit" ||
         this.props.orderType === "marketOrder" ||
@@ -337,7 +313,7 @@ class SpotForm extends React.Component {
   }
 
   rangeSliderHandler(e, val) {
-    if (!this.props.user.id) return;
+    if (!this.props.user.address) return;
 
     api.emit("rangePrice", 0);
     const baseBalance = this.getBaseBalance();
@@ -473,7 +449,7 @@ class SpotForm extends React.Component {
     const quoteCurrency = this.props.currentMarket.split("-")[1];
 
     let baseBalance, quoteBalance;
-    if (this.props.user.id) {
+    if (this.props.user.address) {
       baseBalance = this.getBaseBalance();
       quoteBalance = this.getQuoteBalance();
     } else {
@@ -587,7 +563,7 @@ class SpotForm extends React.Component {
           </div>
           <div className="spot_box_footer">
             <div className="connect-btn">
-              {this.props.user.id ? (
+              {this.props.user.address ? (
                 <>
                   <div className="spf_head_total_amount">
                     <span>{this.state.orderSide}</span>
@@ -664,7 +640,7 @@ class SpotForm extends React.Component {
                 </>
               ) : null}
             </div>
-            {this.props.user.id ? (
+            {this.props.user.address ? (
               <>
                 <div className="spf_btn">
                   <button

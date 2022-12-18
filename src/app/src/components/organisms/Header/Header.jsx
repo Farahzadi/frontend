@@ -6,7 +6,7 @@ import { Button, Dropdown, AccountDropdown, Menu, MenuItem } from "components";
 import {
   networkConfigSelector,
   userChainDetailsSelector,
-  userAddressSelector,
+  userAddressSelector
 } from "lib/store/features/api/apiSlice";
 import api from "lib/api";
 import logo from "assets/images/logo.svg";
@@ -99,7 +99,7 @@ export const Header = () => {
         </NavUl>
         <ActionBtnContainer>
           <NetworkSelection />
-          {user.id && user.address ? (
+          {userChainDetails?.userId && userAddress ? (
             <AccountDropdown />
           ) : (
             <Button

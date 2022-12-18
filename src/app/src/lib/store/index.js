@@ -3,28 +3,9 @@ import { configureStore } from "@reduxjs/toolkit";
 import createSagaMiddleware from "redux-saga";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import authReducer, {
-  signIn,
-  signOut,
-  updateAccountState,
-} from "lib/store/features/auth/authSlice";
-import apiReducer, {
-  handleMessage,
-  setBalances,
-  addBridgeReceipt,
-  addbridgeReceiptStatus,
-  setNetwork,
-  clearUserOrders,
-  rangePrice,
-  setOrderSide,
-  setSelectedPrice,
-  clearUuid,
-  setNetworkList,
-  setProviderState,
-  setUserAddress,
-} from "lib/store/features/api/apiSlice";
+import authReducer from "lib/store/features/auth/authSlice";
+import apiReducer from "lib/store/features/api/apiSlice";
 import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
-import api from "lib/api";
 import sagas from "./sagas";
 
 const persistConfig = {
@@ -65,70 +46,4 @@ sagaMiddleware.run(sagas);
 
 export const persistor = persistStore(store);
 
-api.on("accountState", (accountState) => {
-  store.dispatch(updateAccountState(accountState));
-});
-
-api.on("bridgeReceipt", (bridgeReceipt) => {
-  store.dispatch(addBridgeReceipt(bridgeReceipt));
-});
-
-api.on("bridgeReceiptStatus", (status) => {
-  store.dispatch(addbridgeReceiptStatus(status));
-});
-
-api.on("balanceUpdate", (network, balances) => {
-  store.dispatch(
-    setBalances({
-      key: network,
-      balances,
-    })
-  );
-});
-
-api.on("signIn", (accountState) => {
-  store.dispatch(signIn(accountState));
-});
-
-api.on("userChanged", (userAddress) => {
-  store.dispatch(setUserAddress(userAddress));
-});
-
-api.on("signOut", () => {
-  store.dispatch(clearUserOrders());
-  store.dispatch(signOut());
-});
-
-api.on("networkChange", (payload) => {
-  store.dispatch(setNetwork(payload));
-});
-
-api.on("providerStateChange", (state) => {
-  console.log("PROVIDER STATE CHANGE", state);
-  store.dispatch(setProviderState(state));
-});
-
-api.on("message", (op, data) => {
-  store.dispatch(handleMessage({ op, data }));
-});
-
-api.on("rangePrice", (price) => {
-  store.dispatch(rangePrice(price));
-});
-
-api.on("selectedPrice", (price) => {
-  store.dispatch(setSelectedPrice(price));
-});
-
-api.on("orderSide", (side) => {
-  store.dispatch(setOrderSide(side));
-});
-
-api.on("close", () => {
-  store.dispatch(clearUuid());
-});
-
-api.on("setNetworkList", (networks) => {
-  store.dispatch(setNetworkList(networks));
-});
 export default store;

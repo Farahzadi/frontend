@@ -9,10 +9,10 @@ import {
   currentMarketSelector,
   unbroadcastedSelector,
   lastPricesSelector,
-  userAddressSelector,
   networkSelector,
 } from "lib/store/features/api/apiSlice";
 import { Modal } from "../../atoms/Modal";
+import { getFillDetailsWithoutFee, getOrderDetailsWithoutFee, hasOneDayPassed } from "lib/utils";
 
 class Footer extends React.Component {
   constructor(props) {
@@ -119,7 +119,7 @@ class Footer extends React.Component {
               expiryText = "--";
             }
 
-            const orderWithoutFee = api.getOrderDetailsWithoutFee(order);
+            const orderWithoutFee = getOrderDetailsWithoutFee(order);
             if (["zksyncv1", "zksyncv1_goerli"].includes(this.props.network)) {
               price = orderWithoutFee.price;
               baseQuantity = orderWithoutFee.baseQuantity;
@@ -313,7 +313,7 @@ class Footer extends React.Component {
 
             const feeCurrency = side === "b" ? quoteCurrency : baseCurrency;
 
-            date = api.hasOneDayPassed(time);
+            date = hasOneDayPassed(time);
 
             let feeText;
 
@@ -321,7 +321,7 @@ class Footer extends React.Component {
               feeText = "0 " + baseCurrency;
             else feeText = fee.toPrecision(3) + " " + feeCurrency;
 
-            const fillWithoutFee = api.getFillDetailsWithoutFee(fill);
+            const fillWithoutFee = getFillDetailsWithoutFee(fill);
             if (["zksyncv1", "zksyncv1_goerli"].includes(this.props.network)) {
               price = fillWithoutFee.price;
               amount = fillWithoutFee.baseQuantity;
@@ -435,9 +435,9 @@ class Footer extends React.Component {
             const sidetext = side === "s" ? "sell" : "buy";
             const sideClassName = side === "b" ? "up_value" : "down_value";
 
-            date = api.hasOneDayPassed(time);
+            date = hasOneDayPassed(time);
 
-            const orderWithoutFee = api.getOrderDetailsWithoutFee(order);
+            const orderWithoutFee = getOrderDetailsWithoutFee(order);
             if (["zksyncv1", "zksyncv1_goerli"].includes(this.props.network)) {
               price = orderWithoutFee.price;
               baseQuantity = orderWithoutFee.baseQuantity;
@@ -587,17 +587,13 @@ class Footer extends React.Component {
         classNameHistory = "selected";
         break;
       case "balances":
-        if (this.props.user.committed) {
+        if (this.props.user.balances) {
           const balancesContent = Object.keys(
-            this.props.user.committed.balances
+            this.props.user.balances
           )
             .sort()
             .map((token) => {
-              if (!api.currencies[token]) return "";
-              let balance = this.props.user.committed.balances[token];
-              balance =
-                parseInt(balance).toPrecision(6) /
-                Math.pow(10, api.currencies[token].decimals);
+              let balance = this.props.user.balances[token].valueReadable;
               return (
                 <tr>
                   <td data-label="Token">{token}</td>
@@ -702,7 +698,6 @@ const mapStateToProps = (state) => ({
   currentMarket: currentMarketSelector(state),
   unbroadcasted: unbroadcastedSelector(state),
   lastPrices: lastPricesSelector(state),
-  userAddress: userAddressSelector(state),
   network: networkSelector(state),
 });
 

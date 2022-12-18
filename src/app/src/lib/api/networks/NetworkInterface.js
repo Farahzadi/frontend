@@ -295,16 +295,19 @@ export default class NetworkInterface {
     const balances = await this.getBalances();
     if (!balances[currency]?.value) return "0";
     let balance = new Decimal(balances[currency].value);
-    Object.entries(userOrdersSelector(store.getState())).forEach(
-      (id, order) => {
-        if (this.NETWORK !== order.chainId) return;
+    const validStatuses = ["o", "b", "pm"];
+    Object.entries(userOrdersSelector(store.getState()))
+      .filter(
+        (id, order) =>
+          this.NETWORK === order.chainId && validStatuses.includes(order.status)
+      )
+      .forEach((id, order) => {
         const [base, quote] = order.market.split("-");
         if (order.side === "b" && quote === currency)
           balance = balance.sub(toBaseUnit(order.quoteQuantity, decimals));
         if (order.side === "s" && base === currency)
           balance = balance.sub(toBaseUnit(order.baseQuantity, decimals));
-      }
-    );
+      });
     return giveDecimal ? balance : balance.toFixed(0);
   }
 

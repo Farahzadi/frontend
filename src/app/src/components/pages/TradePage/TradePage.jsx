@@ -27,16 +27,16 @@ import {
   resetData,
   providerStateSelector,
   userChainDetailsSelector,
+  userSelector,
 } from "lib/store/features/api/apiSlice";
-import { userSelector } from "lib/store/features/auth/authSlice";
 import "./style.css";
 import api from "lib/api";
+import { getFillDetailsWithoutFee } from "lib/utils";
 
 const TradePage = () => {
   const [marketDataTab, updateMarketDataTab] = useState("pairs");
   const [rangePrice, setRangePrice] = useState(0);
   const user = useSelector(userSelector);
-  const userChainDetails = useSelector(userChainDetailsSelector);
   const network = useSelector(networkSelector);
   const providerState = useSelector(providerStateSelector);
   const currentMarket = useSelector(currentMarketSelector);
@@ -111,7 +111,7 @@ const TradePage = () => {
     .forEach((fill) => {
       if (fill.status !== "e" && fill.status !== "r" && fill.status !== "c") {
         if (["zksyncv1", "zksyncv1_goerli"].includes(network)) {
-          const fillWithoutFee = api.getFillDetailsWithoutFee(fill);
+          const fillWithoutFee = getFillDetailsWithoutFee(fill);
           fillData.push({
             price: fillWithoutFee.price,
             remaining: fillWithoutFee.baseQuantity,
@@ -215,7 +215,7 @@ const TradePage = () => {
                               .connectWallet()
                               .finally(() => setIsLoading(false));
                           }}
-                          user={userChainDetails}
+                          user={user}
                           currentMarket={currentMarket}
                           activeLimitAndMarketOrders={
                             activeLimitAndMarketOrders

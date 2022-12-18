@@ -1,6 +1,4 @@
 import Decimal from "decimal.js";
-import { BigNumber } from "ethers";
-import isString from "lodash/isString";
 
 export function formatUSD(floatNum) {
   const num = parseFloat(floatNum || 0)
@@ -76,4 +74,115 @@ export function formatBalances(balances, currencies) {
 
 export function getCurrentValidUntil() {
   return ((Date.now() / 1000) | 0) + 24 * 3600;
+}
+
+export function hasOneDayPassed(time) {
+  const date = new Date(time);
+  const dateString = date.toLocaleDateString();
+  let finalDate;
+  // get today's date
+  var today = new Date().toLocaleDateString();
+
+  // inferring a day has yet to pass since both dates are equal.
+  if (dateString === today) {
+    var hr = date.getHours();
+    var min = date.getMinutes();
+    if (min < 10) {
+      min = "0" + min;
+    }
+    var ampm = "am";
+    if (hr > 12) {
+      hr -= 12;
+      ampm = "pm";
+    }
+    finalDate = hr + ":" + min + ampm;
+  }
+  if (dateString !== today) {
+    var dd = String(date.getDate()).padStart(2, "0"); // day
+    var mm = String(date.getMonth() + 1).padStart(2, "0"); // month - January is equal to 0!
+    var yyyy = date.getFullYear(); // year
+
+    finalDate = dd + "/" + mm + "/" + yyyy;
+  }
+  return finalDate;
+}
+
+export function getOrderDetailsWithoutFee(order) {
+  const side = order.side;
+  const baseQuantity = new Decimal(order.baseQuantity);
+  const price = new Decimal(order.price);
+  const quoteQuantity = price.mul(baseQuantity);
+  let fee = order.feeAmount ? order.feeAmount : 0;
+  const remaining = isNaN(Number(order.remaining))
+    ? order.baseQuantity
+    : order.remaining;
+  const orderStatus = order.status;
+  const orderType = order.type;
+  let baseQuantityWithoutFee,
+    quoteQuantityWithoutFee,
+    priceWithoutFee,
+    remainingWithoutFee;
+
+  if (side === "s") {
+    if (orderType === "l") {
+      baseQuantityWithoutFee = baseQuantity;
+      remainingWithoutFee = Math.max(0, remaining);
+      priceWithoutFee = quoteQuantity.dividedBy(baseQuantity);
+      quoteQuantityWithoutFee = quoteQuantity;
+    } else {
+      baseQuantityWithoutFee = baseQuantity.minus(fee);
+      if (orderStatus === "o" || orderStatus === "c" || orderStatus === "m") {
+        remainingWithoutFee = baseQuantity.minus(fee);
+      } else {
+        remainingWithoutFee = Math.max(0, remaining - fee);
+      }
+      priceWithoutFee = quoteQuantity.dividedBy(baseQuantityWithoutFee);
+      quoteQuantityWithoutFee = priceWithoutFee.mul(baseQuantityWithoutFee);
+    }
+  } else {
+    if (orderType === "l") {
+      baseQuantityWithoutFee = baseQuantity;
+      quoteQuantityWithoutFee = quoteQuantity;
+      priceWithoutFee = quoteQuantityWithoutFee.dividedBy(baseQuantity);
+      remainingWithoutFee = Math.min(baseQuantity, remaining);
+    } else {
+      quoteQuantityWithoutFee = quoteQuantity.minus(fee);
+      priceWithoutFee = quoteQuantityWithoutFee.dividedBy(baseQuantity);
+      baseQuantityWithoutFee =
+        quoteQuantityWithoutFee.dividedBy(priceWithoutFee);
+      if (orderStatus === "o" || orderStatus === "c" || orderStatus === "m") {
+        remainingWithoutFee = baseQuantity;
+      } else {
+        remainingWithoutFee = Math.min(baseQuantityWithoutFee, remaining);
+      }
+    }
+  }
+  return {
+    price: priceWithoutFee,
+    quoteQuantity: quoteQuantityWithoutFee,
+    baseQuantity: baseQuantityWithoutFee,
+    remaining: remainingWithoutFee,
+  };
+}
+
+export function getFillDetailsWithoutFee(fill) {
+  const time = fill.insertTimestamp;
+  const price = new Decimal(parseFloat(fill.price));
+  let baseQuantity = fill.amount;
+  let quoteQuantity = price.mul(fill.amount);
+  const side = fill.side;
+  let fee = fill.feeAmount ? fill.feeAmount : 0;
+
+  if (side === "s") {
+    baseQuantity -= fee;
+  } else if (side === "b") {
+    quoteQuantity -= fee;
+  }
+  const finalTime = hasOneDayPassed(time);
+  return {
+    price: price,
+    quoteQuantity: quoteQuantity,
+    baseQuantity: baseQuantity,
+    time: finalTime,
+  };
 }

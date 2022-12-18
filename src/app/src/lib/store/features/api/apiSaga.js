@@ -18,7 +18,6 @@ function* delegateAuthChangeSaga({ type, payload }) {
   }
 
   if (type === "auth/signIn" || type === "auth/signOut") {
-    console.log("test auth", payload);
     yield put(
       setUserAddress(
         payload?.address && ethers.utils.getAddress(payload?.address)
@@ -42,12 +41,12 @@ export function* userPollingSaga() {
     });
 
     const allSagas = [
-      apply(api, api.getWalletBalances),
-      apply(api, api.getBalances),
+      // apply(api, api.getWalletBalances),
+      // apply(api, api.getBalances),
     ];
 
     if (address) {
-      allSagas.push(apply(api, api.getAccountState));
+      // allSagas.push(apply(api, api.getAccountState));
     }
 
     try {
