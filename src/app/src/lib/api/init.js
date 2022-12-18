@@ -1,6 +1,5 @@
 import {
   handleMessage,
-  setBalances,
   addBridgeReceipt,
   addbridgeReceiptStatus,
   setNetwork,
@@ -12,18 +11,14 @@ import {
   setNetworkList,
   setProviderState,
   setUserAddress,
+  setUserDetails,
+  setUserBalances,
+  setUserAvailableBalances,
+  clearUserDetails,
+  setUserChainDetails,
 } from "lib/store/features/api/apiSlice";
-import {
-  signIn,
-  signOut,
-  updateAccountState,
-} from "lib/store/features/auth/authSlice";
 
 export const initActions = (api, store) => {
-  api.on("accountState", (accountState) => {
-    store.dispatch(updateAccountState(accountState));
-  });
-
   api.on("bridgeReceipt", (bridgeReceipt) => {
     store.dispatch(addBridgeReceipt(bridgeReceipt));
   });
@@ -32,26 +27,9 @@ export const initActions = (api, store) => {
     store.dispatch(addbridgeReceiptStatus(status));
   });
 
-  api.on("balanceUpdate", (network, balances) => {
-    store.dispatch(
-      setBalances({
-        key: network,
-        balances,
-      })
-    );
-  });
-
-  api.on("signIn", (accountState) => {
-    store.dispatch(signIn(accountState));
-  });
-
-  api.on("userChanged", (userAddress) => {
-    store.dispatch(setUserAddress(userAddress));
-  });
-
   api.on("signOut", () => {
     store.dispatch(clearUserOrders());
-    store.dispatch(signOut());
+    store.dispatch(clearUserDetails());
   });
 
   api.on("networkChange", (payload) => {
@@ -85,5 +63,25 @@ export const initActions = (api, store) => {
 
   api.on("setNetworkList", (networks) => {
     store.dispatch(setNetworkList(networks));
+  });
+
+  api.on("updateUser", (user) => {
+    store.dispatch(setUserDetails(user));
+  });
+
+  api.on("updateUserAddress", (userAddress) => {
+    store.dispatch(setUserAddress(userAddress));
+  });
+
+  api.on("updateUserBalances", (balances) => {
+    store.dispatch(setUserBalances(balances));
+  });
+
+  api.on("updateUserAvailableBalances", (availableBalances) => {
+    store.dispatch(setUserAvailableBalances(availableBalances));
+  });
+
+  api.on("updateUserChainDetails", (chainDetails) => {
+    store.dispatch(setUserChainDetails(chainDetails));
   });
 };
