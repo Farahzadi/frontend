@@ -69,7 +69,7 @@ export const Header = (props) => {
       >
         <img src={logo} alt="logo" />
         <div className="nav_items">
-          <ul>
+          <ul className="p-0">
             <li>
               <NavLink exact to="/" activeClassName="active_link">
                 Trade
@@ -113,7 +113,7 @@ export const Header = (props) => {
             <img src={logo} alt="logo" />
             <span class="Navbar_brandName">DEXPRESSO</span>
           </NavLink>
-          <ul className="mx-0 px-0">
+          <ul className="mx-0 px-0 nav_items_li">
             <li>
               <NavLink exact to="/" activeClassName="active_link">
                 Trade
