@@ -101,7 +101,8 @@ export default class Core extends Emitter {
     this.emit("open");
   }
 
-  _socketClose({ noRetry }) {
+  _socketClose(options) {
+    const { noRetry } = options ?? {};
     this.emit("close");
     if (!noRetry) {
       // toast.error("Connection to server closed. Please try again in a minute");
@@ -125,17 +126,17 @@ export default class Core extends Emitter {
   start() {
     if (this.ws) this.stop();
     this.ws = new WebSocket(this.websocketUrl);
-    this.ws.addEventListener("open", this._socketOpen);
-    this.ws.addEventListener("close", this._socketClose);
-    this.ws.addEventListener("message", this._socketMsg);
+    this.ws.addEventListener("open", () => this._socketOpen());
+    this.ws.addEventListener("close", () => this._socketClose());
+    this.ws.addEventListener("message", () => this._socketMsg());
     this.emit("start");
   }
 
   stop() {
     if (!this.ws) return;
-    this.ws.removeEventListener("open", this._socketOpen);
-    this.ws.removeEventListener("close", this._socketClose);
-    this.ws.removeEventListener("message", this._socketMsg);
+    this.ws.removeEventListener("open", () => this._socketOpen());
+    this.ws.removeEventListener("close", () => this._socketClose());
+    this.ws.removeEventListener("message", () => this._socketMsg());
     this._socketClose({ noRetry: true });
     this.ws.close();
     this.ws = null;
