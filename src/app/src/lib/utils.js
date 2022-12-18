@@ -9,7 +9,7 @@ export function formatUSD(floatNum) {
 }
 
 export function fromBaseUnit(amount, decimals, options) {
-  const { precision, zeros } = options ?? {};
+  let { precision, zeros } = options ?? {};
   zeros = zeros ?? false;
   precision = precision ?? 5;
   const res = Decimal.div(amount, Decimal.pow(10, decimals)).toFixed(
