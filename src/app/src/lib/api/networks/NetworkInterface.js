@@ -1,12 +1,21 @@
 import { createIcon } from "@download/blockies";
+import { getNetworkCurrencies } from "config/Currencies";
 import Decimal from "decimal.js";
 import store from "lib/store";
 import {
+  configSelector,
   lastPricesSelector,
   marketInfoSelector,
+  marketSummarySelector,
   userOrdersSelector,
+  userSelector,
 } from "lib/store/features/api/apiSlice";
-import { getCurrentValidUntil, State, toBaseUnit } from "lib/utils";
+import {
+  formatBalances,
+  getCurrentValidUntil,
+  State,
+  toBaseUnit,
+} from "lib/utils";
 import { isString } from "lodash";
 import { toast } from "react-toastify";
 import APIProvider from "../providers/APIProvider";
@@ -25,7 +34,18 @@ export default class NetworkInterface {
     _state = "DISCONNECTED";
   };
 
-  static Actions = ["connectWallet", "disconnectWallet"];
+  static Actions = [
+    "connectWallet",
+    "disconnectWallet",
+    "updateAddress",
+    "updateNonce",
+    "updateBalances",
+    "updateAvailableBalances",
+    "updateChainDetails",
+    "updateUserDetails",
+    "updateUserState",
+    "updateUserBalancesState",
+  ];
 
   static Provider = APIProvider;
 
@@ -48,6 +68,7 @@ export default class NetworkInterface {
     address: null,
     nonce: null,
     balances: null,
+    availableBalances: null,
     chainDetails: null,
   };
 
@@ -83,9 +104,6 @@ export default class NetworkInterface {
   async disconnectWallet() {
     await this.signOut();
     await this.stopAPIProvider();
-    this.emit("balanceUpdate", "wallet", {});
-    this.emit("balanceUpdate", this.NETWORK, {});
-    this.emit("accountState", {});
     this.emit("signOut");
   }
 
@@ -108,7 +126,9 @@ export default class NetworkInterface {
   async startAPIProvider() {
     if (this.apiProvider) return;
     const APIProviderClass = this.getAPIProviderClass();
-    this.apiProvider = new APIProviderClass(this, this.onProviderStateChange);
+    this.apiProvider = new APIProviderClass(this, (state) =>
+      this.onProviderStateChange(state)
+    );
 
     let result;
     try {
@@ -143,7 +163,7 @@ export default class NetworkInterface {
       throw new Error();
     }
 
-    this.apiProvider.onAccountChange(this.disconnectWallet);
+    this.apiProvider.onAccountChange(() => this.disconnectWallet());
   }
 
   async stopAPIProvider() {
@@ -152,10 +172,9 @@ export default class NetworkInterface {
     this.apiProvider = null;
   }
 
-  async signIn() {
+  async signIn(finalChecks = true) {
     const { uuid } = this.core.ws;
     const network = this.NETWORK;
-    let accountState;
     if (this.state.get() !== NetworkInterface.State.PROVIDER_CONNECTED)
       throw new Error("SignIn Error: wallet not connected");
     if (!uuid) throw new Error("SignIn Error: UUID not set");
@@ -183,7 +202,7 @@ export default class NetworkInterface {
       sessionStorage.setItem(networkKey, signature);
     }
 
-    this.emit("userChanged", address);
+    this.emit("updateUserAddress", address);
 
     await this.core.sendRequest("login", "POST", {
       network: network,
@@ -192,22 +211,11 @@ export default class NetworkInterface {
       user_data: true,
       uuid,
     });
-
-    try {
-      accountState = await this.getAccountState();
-    } catch (err) {
+    if (finalChecks) {
+      await this.updateUserState(true);
       this.state.set(NetworkInterface.State.SIGNED_IN);
-      throw err;
+      if (this.shouldSignOut) this.signOut();
     }
-
-    this.emit("signIn", accountState);
-    this._accountState = accountState;
-
-    this.state.set(NetworkInterface.State.SIGNED_IN);
-
-    if (this.shouldSignOut) this.signOut();
-
-    return accountState;
   }
 
   async signOut() {
@@ -244,10 +252,33 @@ export default class NetworkInterface {
     return this.userDetails.nonce;
   }
 
-  async updateBalances() {}
+  async updatePureBalances() {}
+
+  async updateBalances(...args) {
+    await this.updatePureBalances(...args);
+    await this.updateAvailableBalances(...args);
+  }
 
   async getBalances() {
-    return this.userDetails.balances;
+    return this.userDetails?.balances;
+  }
+
+  async updateAvailableBalances() {
+    if (!this.getBalances()) return;
+    const currencies = getNetworkCurrencies(this.NETWORK);
+    const entriesPromises = Object.entries(currencies).map(
+      async ([ticker, currency]) => [
+        ticker,
+        await this.getAvailableBalance(ticker, currency.decimals),
+      ]
+    );
+    const entries = await Promise.all(entriesPromises);
+    const availableBalances = Object.fromEntries(entries);
+    this.userDetails.availableBalances = formatBalances(
+      availableBalances,
+      currencies
+    );
+    return availableBalances;
   }
 
   async updateChainDetails() {
@@ -272,7 +303,7 @@ export default class NetworkInterface {
 
   async getUserDetails() {
     const { userDetails } = this;
-    const address = this.getAddress();
+    const address = await this.getAddress();
     const name = address && (await this.getProfileName(address));
     const image = address && (await this.getProfileImage(address));
     return {
@@ -293,8 +324,9 @@ export default class NetworkInterface {
 
   async getAvailableBalance(currency, decimals, giveDecimal = false) {
     const balances = await this.getBalances();
-    if (!balances[currency]?.value) return "0";
+    if (!balances[currency]?.value) return giveDecimal ? new Decimal(0) : "0";
     let balance = new Decimal(balances[currency].value);
+
     const validStatuses = ["o", "b", "pm"];
     Object.entries(userOrdersSelector(store.getState()))
       .filter(
@@ -311,12 +343,34 @@ export default class NetworkInterface {
     return giveDecimal ? balance : balance.toFixed(0);
   }
 
+  async updateUserState(shouldFetch = false) {
+    if (shouldFetch) await this.updateUserDetails();
+    const userDetails = await this.getUserDetails();
+    this.emit("updateUser", userDetails);
+  }
+
+  async updateUserBalancesState(shouldFetch = false) {
+    if (shouldFetch && !this.apiProvider) return;
+    if (shouldFetch) await this.updateBalances();
+    const balances = await this.getBalances();
+    const availableBalances = await this.getAvailableBalance();
+    this.emit("updateUserBalances", balances);
+    this.emit("updateUserAvailableBalances", availableBalances);
+  }
+
+  async updateUserChainDetailsState(shouldFetch = false) {
+    if (shouldFetch && !this.apiProvider) return;
+    if (shouldFetch) await this.updateChainDetails();
+    const chainDetails = await this.getChainDetails();
+    this.emit("updateUserChainDetails", chainDetails);
+  }
+
   async validateOrder({ market, price, amount, side, fee, type }) {
-    class VError extends Error() {}
+    class VError extends Error {}
     try {
       if (!market) throw new VError("Invalid market");
 
-      const currencies = this.core.getNetworkCurrencies(this.NETWORK);
+      const currencies = getNetworkCurrencies(this.NETWORK);
       const [baseCurrency, quoteCurrency] = market.split("-");
       const [baseDecimals, quoteDecimals] = [
         currencies[baseCurrency].decimals,
@@ -334,7 +388,7 @@ export default class NetworkInterface {
       }
 
       try {
-        price = new Decimal(price).toFixed();
+        price = new Decimal(price);
       } catch (err) {
         throw new VError("Invalid price");
       }
@@ -383,20 +437,20 @@ export default class NetworkInterface {
         throw new VError(`Total exceeds ${quoteCurrency} balance`);
 
       const minOrderSize = new Decimal(
-        marketInfoSelector(state).min_order_size
+        toBaseUnit(configSelector(state).minOrderSize, baseDecimals)
       );
       if (amount.lt(minOrderSize))
         throw new VError(
           `Minimum order size is ${minOrderSize.toFixed()} ${baseCurrency}`
         );
-
-      const lastPrice = new Decimal(lastPricesSelector(state));
+      
+      const lastPrice = new Decimal(lastPricesSelector(state)[market]?.price ?? price);
 
       const warnings = [];
 
-      if (price > lastPrice.mul(1.2))
+      if (price.gt(lastPrice.mul(1.2)))
         warnings.push("Price is 20% above the spot");
-      if (price < lastPrice.mul(0.8))
+      if (price.lt(lastPrice.mul(0.8)))
         warnings.push("Price is 20% lower than the spot");
 
       const validUntil = getCurrentValidUntil();
@@ -412,11 +466,10 @@ export default class NetworkInterface {
         type,
         validUntil,
       };
-
       return data;
     } catch (err) {
       if (err instanceof VError) throw err;
-      console.error("Order Validation Error:", err);
+      console.error("Order Validation Error");
       throw new Error("Unknown Error: Check console for more info");
     }
   }
@@ -432,7 +485,7 @@ export default class NetworkInterface {
     type,
     validUntil,
   }) {
-    const tx = this.apiProvider.signOrder({
+    const tx = await this.apiProvider.signOrder({
       market,
       side,
       price,

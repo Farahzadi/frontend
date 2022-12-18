@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Autocomplete, TextField, autocompleteClasses } from "@mui/material";
-import api from "lib/api";
 import { useSelector } from "react-redux";
 import {
   networkSelector,
@@ -9,6 +8,7 @@ import {
 import { FiChevronDown } from "react-icons/fi";
 import { styled } from "@mui/material/styles";
 import { ClickAwayListener, Popper } from "@mui/material";
+import Currencies from "config/Currencies";
 
 const CoinBtn = styled("button")(() => ({
   width: "175px",
@@ -115,16 +115,16 @@ const CoinSelect = ({ currency, handleCurrencyChange }) => {
   const network = useSelector(networkSelector);
   const userChainDetails = useSelector(userChainDetailsSelector);
   useEffect(() => {
-    const tickers = Object.keys(api.currencies)
+    const tickers = Object.keys(Currencies)
       .filter((c) => {
-        return api.currencies[c].chain[network];
+        return Currencies[c].chain[network];
       })
       .sort();
     setTickers(tickers);
   }, [userChainDetails.userId, network]);
   useEffect(() => {
     if (currency) {
-      setCoin(api.currencies[currency]);
+      setCoin(Currencies[currency]);
     }
   }, [currency]);
   const searchCoins = (event, newValue) => {
@@ -147,7 +147,7 @@ const CoinSelect = ({ currency, handleCurrencyChange }) => {
       >
         {currency && (
           <img
-            src={api.currencies[currency]?.image?.default}
+            src={Currencies[currency]?.image?.default}
             alt={coin?.name}
             width={23}
             height={23}
@@ -181,8 +181,8 @@ const CoinSelect = ({ currency, handleCurrencyChange }) => {
               renderOption={(props, val) => (
                 <div {...props}>
                   <img
-                    src={api.currencies[val].image.default}
-                    alt={api.currencies[val]?.name}
+                    src={Currencies[val].image.default}
+                    alt={Currencies[val]?.name}
                     width={23}
                     height={23}
                   />

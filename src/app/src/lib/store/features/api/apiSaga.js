@@ -1,7 +1,6 @@
-import { ethers } from "ethers";
 import api from "lib/api";
 import { takeEvery, put, all, select, delay, apply } from "redux-saga/effects";
-import { setUserAddress, resetData } from "./apiSlice";
+import { resetData } from "./apiSlice";
 
 function* handleSingleMessageSaga({ payload }) {
   let { op, data } = payload;
@@ -17,13 +16,7 @@ function* delegateAuthChangeSaga({ type, payload }) {
     yield put(resetData());
   }
 
-  if (type === "auth/signIn" || type === "auth/signOut") {
-    yield put(
-      setUserAddress(
-        payload?.address && ethers.utils.getAddress(payload?.address)
-      )
-    );
-  }
+  if (type === "auth/signIn" || type === "auth/signOut");
 }
 
 export function* messageHandlerSaga() {
@@ -36,25 +29,11 @@ export function* messageHandlerSaga() {
 
 export function* userPollingSaga() {
   while (1) {
-    const address = yield select((state) => {
-      return state.auth.user && state.auth.user.address;
-    });
-
-    const allSagas = [
-      // apply(api, api.getWalletBalances),
-      // apply(api, api.getBalances),
-    ];
-
-    if (address) {
-      // allSagas.push(apply(api, api.getAccountState));
-    }
-
     try {
-      yield all(allSagas);
+      yield apply(api, api.run, ["updateUserBalancesState", true]);
     } catch (err) {
-      console.log(err);
+      console.log("api run", err);
     }
-
     yield delay(4000);
   }
 }

@@ -148,4 +148,26 @@ const Currencies = {
     },
   },
 };
+
+export function getNetworkCurrencies(network) {
+  const entries = Object.entries(Currencies)
+    .filter(([_, currency]) => currency.chain[network])
+    .map(([ticker, currency]) => {
+      const { chain, ...curr } = currency;
+      return [
+        ticker,
+        {
+          ...curr,
+          info: chain[network],
+        },
+      ];
+    });
+  return Object.fromEntries(entries);
+}
+
+export function getNetworkCurrency(network, ticker) {
+  const { chain, ...curr } = Currencies[ticker];
+  return { ...curr, info: chain?.[network] };
+}
+
 export default Currencies;

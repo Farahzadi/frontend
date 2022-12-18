@@ -6,15 +6,32 @@ import { SecurityComp } from "components/pages/Security/types";
 import Decimal from "decimal.js";
 import NetworkInterface from "./NetworkInterface";
 import * as zksync from "zksync";
+import Currencies from "config/Currencies";
 
 export default class ZKSyncInterface extends EthereumInterface {
-  static Actions = [...super.Actions, "increaseNonce", "approve"];
+  static Actions = [
+    ...super.Actions,
+    "increaseNonce",
+    "changePubKeyFee",
+    "depositL2",
+    "withdrawL2",
+    "withdrawL2Fee",
+    "depositL2Fee",
+    "approveL1",
+  ];
 
   static Provider = ZKSyncAPIProvider;
   NETWORK = "zksyncv1";
   HAS_BRIDGE = true;
   BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
   SECURITY_TYPE = SecurityComp.Nonce;
+
+  async signIn() {
+    await super.signIn(false);
+    await this.updateUserState(true);
+    this.state.set(NetworkInterface.State.SIGNED_IN);
+    if (this.shouldSignOut) this.signOut();
+  }
 
   async increaseNonce() {
     let increaseNonceResult = {};
@@ -67,21 +84,20 @@ export default class ZKSyncInterface extends EthereumInterface {
     this.userDetails.nonce = nonce;
   }
 
-  async updateBalances(_accountState) {
+  async updatePureBalances(_accountState) {
     if (!_accountState && !this.apiProvider) return;
     const accountState =
       _accountState ?? (await this.apiProvider.getAccountState());
     this.userDetails.balances = formatBalances(
-      accountState.verified.balances,
-      this.core.currencies
+      accountState.committed.balances,
+      Currencies
     );
   }
 
   async updateChainDetails(_accountState) {
     if (!this.apiProvider) return;
-    const accountStatePromise = (async () => {
-      _accountState ?? (await this.apiProvider.getAccountState());
-    })();
+    const accountStatePromise = (async () =>
+      _accountState ?? (await this.apiProvider.getAccountState()))();
     const balancesPromise = this.fetchL1Balances();
     const allowancesPromise = this.fetchL1Allowances();
     const [accountState, l1Balances, allowances] = await Promise.all([
@@ -90,16 +106,13 @@ export default class ZKSyncInterface extends EthereumInterface {
       allowancesPromise,
     ]);
     this.userDetails.chainDetails = {
-      committed: {
+      verified: {
         nonce: +accountState.committed.nonce,
-        balances: formatBalances(
-          accountState.committed.balances,
-          this.core.currencies
-        ),
+        balances: formatBalances(accountState.committed.balances, Currencies),
       },
       userId: accountState.id,
-      L1Balances: l1Balances,
-      allowances: allowances,
+      L1Balances: formatBalances(l1Balances, Currencies),
+      allowances: formatBalances(allowances, Currencies),
     };
   }
 
@@ -140,7 +153,6 @@ export default class ZKSyncInterface extends EthereumInterface {
     const ratio = zksync.utils.tokenRatio(
       this.getTokenRatio(res.market, 1, priceWithFee)
     );
-
     return {
       ...res,
       ratio,
@@ -175,18 +187,22 @@ export default class ZKSyncInterface extends EthereumInterface {
   }
 
   async depositL2(amount, token) {
-    return this.apiProvider.depositL2(amount, token);
+    return this.apiProvider?.depositL2(amount, token);
   }
 
   async withdrawL2(amount, token) {
-    return this.apiProvider.withdrawL2(amount, token);
+    return this.apiProvider?.withdrawL2(amount, token);
   }
 
   async depositL2Fee(token) {
-    return this.apiProvider.depositL2Fee(token);
+    return this.apiProvider?.depositL2Fee(token);
   }
 
   async withdrawL2Fee(token) {
-    return this.apiProvider.withdrawL2Fee(token);
+    return this.apiProvider?.withdrawL2Fee(token);
+  }
+
+  async changePubKeyFee() {
+    return await this.apiProvider?.changePubKeyFee();
   }
 }

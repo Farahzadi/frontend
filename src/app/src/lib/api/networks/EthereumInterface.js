@@ -1,4 +1,6 @@
 import axios from "axios";
+import { SecurityComp } from "components/pages/Security/types";
+import { getNetworkCurrencies, getNetworkCurrency } from "config/Currencies";
 import Decimal from "decimal.js";
 import { BigNumber, ethers } from "ethers";
 import { getENSName } from "lib/ens";
@@ -9,14 +11,16 @@ import EthAPIProvider from "../providers/EthAPIProvider";
 import NetworkInterface from "./NetworkInterface";
 
 export default class EthereumInterface extends NetworkInterface {
+  static Actions = [...super.Actions, "approve"];
   static Provider = EthAPIProvider;
   NETWORK = "ethereum";
   CURRENCY = "ETH";
   CHAIN_ID = 1;
-  DEX_CONTRACT = "0x0000000000000000000000000000000000000000";
+  DEX_CONTRACT = "0x56FDEd225DD62B59CA3aa27E9Ddb01500e8505b8";
+  SECURITY_TYPE = SecurityComp.Allowance;
 
   async fetchBalance(ticker, userAddress, isLayerTwo = false) {
-    const currency = this.core.getNetworkCurrency(this.NETWORK, ticker);
+    const currency = getNetworkCurrency(this.NETWORK, ticker);
     if (!currency) return "0";
     let balance;
     if (ticker === this.CURRENCY)
@@ -34,7 +38,7 @@ export default class EthereumInterface extends NetworkInterface {
   async fetchBalances(isLayerTwo = false) {
     if (!this.apiProvider) return null;
     const userAddress = await this.apiProvider.getAddress();
-    const currencies = this.core.getNetworkCurrencies(this.NETWORK);
+    const currencies = getNetworkCurrencies(this.NETWORK);
     const entriesPromises = Object.keys(currencies).map(async (ticker) => [
       ticker,
       await this.fetchBalance(ticker, userAddress, isLayerTwo),
@@ -44,15 +48,15 @@ export default class EthereumInterface extends NetworkInterface {
     return balances;
   }
 
-  async updateBalances() {
+  async updatePureBalances() {
     if (!this.apiProvider) return;
-    const currencies = this.core.getNetworkCurrencies(this.NETWORK);
+    const currencies = getNetworkCurrencies(this.NETWORK);
     const balances = await this.fetchBalances();
     this.userDetails.balances = formatBalances(balances, currencies);
   }
 
   async fetchAllowance(ticker, userAddress, isLayerTwo = false) {
-    const currency = this.core.getNetworkCurrency(this.NETWORK, ticker);
+    const currency = getNetworkCurrency(this.NETWORK, ticker);
     if (!currency || ticker === this.CURRENCY) return "0";
     const allowance = await this.apiProvider.getAllowance(
       !this.HAS_BRIDGE || !isLayerTwo
@@ -67,7 +71,7 @@ export default class EthereumInterface extends NetworkInterface {
   async fetchAllowances(isLayerTwo = false) {
     if (!this.apiProvider) return null;
     const userAddress = await this.apiProvider.getAddress();
-    const currencies = this.core.getNetworkCurrencies(this.NETWORK);
+    const currencies = getNetworkCurrencies(this.NETWORK);
     const entriesPromises = Object.keys(currencies).map(async (ticker) => [
       ticker,
       await this.fetchAllowance(ticker, userAddress, isLayerTwo),
@@ -78,7 +82,7 @@ export default class EthereumInterface extends NetworkInterface {
   }
 
   async approve(ticker, allowance = maxAllowance, isLayerTwo = false) {
-    const currency = this.core.getNetworkCurrency(this.NETWORK, ticker);
+    const currency = getNetworkCurrency(this.NETWORK, ticker);
     if (!currency || ticker === this.CURRENCY) return;
     allowance = BigNumber.from(allowance ?? maxAllowance);
     return await this.apiProvider?.approve(
@@ -92,7 +96,7 @@ export default class EthereumInterface extends NetworkInterface {
 
   async updateChainDetails() {
     if (!this.apiProvider) return;
-    const currencies = this.core.getNetworkCurrencies(this.NETWORK);
+    const currencies = getNetworkCurrencies(this.NETWORK);
     const allowances = await this.fetchAllowances();
     if (!this.userDetails.chainDetails) this.userDetails.chainDetails = {};
     this.userDetails.chainDetails.allowances = formatBalances(
@@ -101,28 +105,28 @@ export default class EthereumInterface extends NetworkInterface {
     );
   }
 
-  async getProfileImage(address) {
-    try {
-      const { data } = await axios.get(
-        `https://ipfs.3box.io/profile?address=${address}`
-      );
-      const image = get(data, "image.0.contentUrl./");
-      if (!data || !image) throw new Error();
-      const result = `https://gateway.ipfs.io/ipfs/${image}`;
-      return result;
-    } catch (err) {
-      return super.getProfileImage(address);
-    }
-    // const profile = {
-    //   coverPhoto: get(data, "coverPhoto.0.contentUrl./"),
-    //   image: get(data, "image.0.contentUrl./"),
-    //   description: data.description,
-    //   emoji: data.emoji,
-    //   website: data.website,
-    //   location: data.location,
-    //   twitter_proof: data.twitter_proof,
-    // };
-  }
+  // async getProfileImage(address) {
+  //   try {
+  //     const { data } = await axios.get(
+  //       `https://ipfs.3box.io/profile?address=${address}`
+  //     );
+  //     const image = get(data, "image.0.contentUrl./");
+  //     if (!data || !image) throw new Error();
+  //     const result = `https://gateway.ipfs.io/ipfs/${image}`;
+  //     return result;
+  //   } catch (err) {
+  //     return await super.getProfileImage(address);
+  //   }
+  //   // const profile = {
+  //   //   coverPhoto: get(data, "coverPhoto.0.contentUrl./"),
+  //   //   image: get(data, "image.0.contentUrl./"),
+  //   //   description: data.description,
+  //   //   emoji: data.emoji,
+  //   //   website: data.website,
+  //   //   location: data.location,
+  //   //   twitter_proof: data.twitter_proof,
+  //   // };
+  // }
 
   async fetchENSName(address) {
     try {

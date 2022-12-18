@@ -1,4 +1,3 @@
-import Decimal from "decimal.js";
 import Emitter from "tiny-emitter";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -48,8 +47,6 @@ export default class Core extends Emitter {
     this.infuraId = infuraId;
     this.websocketUrl = websocketUrl;
     this.apiUrl = apiUrl;
-    this.currencies = currencies;
-    this.validMarkets = validMarkets;
     this.axiosInstance = axios.create({
       baseURL: apiUrl,
       timeout: 3000,
@@ -311,27 +308,6 @@ export default class Core extends Emitter {
     this.axiosInstance.get("/networks").then((res) => {
       this.emit("setNetworkList", res.data.networks);
     });
-  }
-
-  getNetworkCurrencies(network) {
-    const entries = Object.entries(this.currencies)
-      .filter(([_, currency]) => currency.chain[network])
-      .map(([ticker, currency]) => {
-        const { chain, ...curr } = currency;
-        return [
-          ticker,
-          {
-            ...curr,
-            info: chain[network],
-          },
-        ];
-      });
-    return Object.fromEntries(entries);
-  }
-
-  getNetworkCurrency(network, ticker) {
-    const { chain, ...curr } = this.currencies[ticker];
-    return { ...curr, info: chain?.[network] };
   }
 
   getCurrencyLogo(currency) {

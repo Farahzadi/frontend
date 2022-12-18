@@ -7,19 +7,19 @@ const DEFAULT_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK;
 function* handleHydration({ payload, key }) {
   if (key === "api") {
     if (payload && payload.network) {
-      const user = yield select((state) => state.auth?.user);
+      const user = yield select((state) => state.api?.user);
       yield api.setNetwork(payload.network.name);
 
       if (user?.address) {
         try {
-          yield apply(api, api.connectWallet, []);
+          yield apply(api, api.run, ["connectWallet"]);
         } catch (err) {
           console.log("There was an error reauthenticating", err);
         }
       }
     } else {
       console.log(`Switching to default network "${DEFAULT_NETWORK}"`);
-      api.setNetwork(DEFAULT_NETWORK ?? "ethereum");
+      yield api.setNetwork(DEFAULT_NETWORK ?? "ethereum");
     }
   }
 }

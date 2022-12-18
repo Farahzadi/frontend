@@ -5,7 +5,7 @@ import styled, { css } from "@xstyled/styled-components";
 import { FiChevronDown } from "react-icons/fi";
 import { useCoinEstimator } from "components";
 import { formatUSD } from "lib/utils";
-import api from "lib/api";
+import Currencies from "config/Currencies";
 
 const StyledBridgeCurrencySelector = styled.div`
   padding: 0 0 0 3px;
@@ -174,21 +174,21 @@ const BridgeCurrencySelector = ({
   const coinEstimator = useCoinEstimator();
 
   useEffect(() => {
-    const tickers = (currencies || Object.keys(api.currencies))
+    const tickers = (currencies || Object.keys(Currencies))
       .filter((c) => {
-        return api.currencies[c].chain[network];
+        return Currencies[c].chain[network];
       })
       .sort();
 
     setTickers(tickers);
-    onChange(api.currencies["ETH"] ? "ETH" : tickers[0]);
-  }, [userChainDetails.userId, network, currencies]);
+    onChange(Currencies["ETH"] ? "ETH" : tickers[0]);
+  }, [network, currencies]);
 
   const inputTest = (val) => {
     if (val.target.value === "") {
-      const tickers = (currencies || Object.keys(api.currencies))
+      const tickers = (currencies || Object.keys(Currencies))
         .filter((c) => {
-          return api.currencies[c].chain[network];
+          return Currencies[c].chain[network];
         })
         .sort();
       return setTickers(tickers);
@@ -238,7 +238,7 @@ const BridgeCurrencySelector = ({
     return null;
   }
 
-  const currency = api.currencies[value];
+  const currency = Currencies[value];
 
   const selectOption = (ticker) => (e) => {
     if (e) e.preventDefault();
@@ -287,18 +287,18 @@ const BridgeCurrencySelector = ({
             >
               <div className="currencyIcon">
                 <img
-                  src={api.currencies[ticker].image.default}
+                  src={Currencies[ticker].image.default}
                   alt={currency.name}
                 />
               </div>
               <div className="currencyName">{ticker}</div>
-              {balances[ticker] && (
+              {balances?.[ticker] && (
                 <div className="currencyBalance">
-                  <strong>{balances[ticker].valueReadable.toString()}</strong>
+                  <strong>{balances[ticker]?.valueReadable ?? 0}</strong>
                   <small>
                     $
                     {formatUSD(
-                      coinEstimator(ticker) * balances[ticker].valueReadable
+                      coinEstimator(ticker) * (balances[ticker]?.valueReadable ?? 0)
                     )}
                   </small>
                 </div>

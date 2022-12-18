@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import {
   arweaveAllocationSelector,
-  balancesSelector,
+  userChainDetailsSelector,
 } from "../../../lib/store/features/api/apiSlice";
 import React, { useEffect, useState } from "react";
 import { Modal } from "../../atoms/Modal";
@@ -13,12 +13,12 @@ import Submit from "../../atoms/Form/Submit";
 import Form from "../../atoms/Form/Form";
 import { x } from "@xstyled/styled-components";
 import { toast } from "react-toastify";
-import { jsonify } from "../../../lib/helpers/strings";
 
 const AllocationModal = ({ onClose, show, onSuccess, bytesToPurchase }) => {
   const userAddress = useSelector(userAddressSelector);
   const arweaveAllocation = Number(useSelector(arweaveAllocationSelector));
-  const balanceData = useSelector(balancesSelector);
+  const userChainDetails = useSelector(userChainDetailsSelector);
+  const L1Balances = userChainDetails.L1Balances;
 
   const arweaveAllocationKB = arweaveAllocation / 1000;
   const userHasExistingAllocation = arweaveAllocation !== 0;
@@ -38,14 +38,8 @@ const AllocationModal = ({ onClose, show, onSuccess, bytesToPurchase }) => {
       if (totalPrice) {
         let usdcBalance = 0;
         const feeCurrency = "USDC";
-        const mainnetNetwork = api.networks.mainnet[0];
-        if (
-          mainnetNetwork in balanceData &&
-          feeCurrency in balanceData[mainnetNetwork]
-        ) {
-          usdcBalance = Number(
-            balanceData[mainnetNetwork][feeCurrency].valueReadable
-          );
+        if ((L1Balances[feeCurrency]?.valueReadable ?? 0) > 0) {
+          usdcBalance = Number(L1Balances[feeCurrency]?.valueReadable);
         }
 
         if (totalPrice > usdcBalance) {
@@ -57,7 +51,7 @@ const AllocationModal = ({ onClose, show, onSuccess, bytesToPurchase }) => {
     }
 
     //@TODO: remove jsonify here, add better dep
-  }, [bytesToPurchase, userAddress, arweaveAllocation, jsonify(balanceData)]);
+  }, [bytesToPurchase, userAddress, arweaveAllocation, L1Balances]);
 
   return (
     <Modal title={"Purchase Arweave Allocation"} show={show} onClose={onClose}>

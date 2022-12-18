@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { toBaseUnit } from "lib/utils";
 import APIProvider from "./APIProvider";
 import EthAPIProvider from "./EthAPIProvider";
+import Currencies from "config/Currencies";
 
 export default class ZKSyncAPIProvider extends EthAPIProvider {
   static seedStorageKey = "@ZZ/ZKSYNC_SEEDS";
@@ -99,10 +100,10 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
     return feeUSD;
   }
 
-  async signOrder({ tokenSell, tokenBuy, ratio, validUntil }) {
+  async signOrder({ sellCurrency, buyCurrency, ratio, validUntil }) {
     const result = await this.syncWallet?.signLimitOrder({
-      tokenSell,
-      tokenBuy,
+      tokenSell: sellCurrency,
+      tokenBuy: buyCurrency,
       ratio,
       validUntil
     });
@@ -227,7 +228,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
     const amount = ethers.BigNumber.from(
       toBaseUnit(
         amountDecimals,
-        this.networkInterface.core.currencies[token].decimals
+        Currencies[token].decimals
       )
     );
     const checksumAddress = await this.getAddress();
@@ -270,7 +271,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
     const amount = ethers.BigNumber.from(
       toBaseUnit(
         amountDecimals,
-        this.networkInterface.core.currencies[token].decimals
+        Currencies[token].decimals
       )
     );
     const checksumAddress = await this.getAddress();
@@ -346,7 +347,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
 
       const totalFee = new Decimal(parseInt(fee.totalFee));
       this._tokenWithdrawFees[token] = totalFee.div(
-        10 ** this.networkInterface.core.currencies[token].decimals
+        10 ** Currencies[token].decimals
       );
     }
 
@@ -426,7 +427,9 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
   getParsedSellQuantity(tokenSell, sellQuantity) {
     const parsedSellQuantity = this.syncProvider.tokenSet.parseToken(
       tokenSell,
-      sellQuantity.toFixed(this.networkInterface.core.currencies[tokenSell].decimals)
+      sellQuantity.toFixed(
+        Currencies[tokenSell].decimals
+      )
     );
 
     return parsedSellQuantity;

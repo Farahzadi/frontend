@@ -71,8 +71,8 @@ const BridgeSwapInput = ({
     [onChange]
   );
 
-  let maxBalance = parseFloat(
-    (balances[value.currency] && balances[value.currency].valueReadable) || 0
+  let maxBalance = Number(
+    (balances?.[value.currency]?.valueReadable) || 0
   );
   maxBalance -= 0.000105;
 
