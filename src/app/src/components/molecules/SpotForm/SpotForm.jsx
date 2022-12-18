@@ -12,8 +12,6 @@ import {
 } from "lib/store/features/api/apiSlice";
 import api from "lib/api";
 import { RangeSlider, Button } from "components";
-// import ShowMessageModal from "components/atoms/ShowMessageModal/ShowMessageModal";
-
 import "./SpotForm.css";
 
 class SpotForm extends React.Component {
@@ -47,8 +45,8 @@ class SpotForm extends React.Component {
       return false;
     }
     const newState = { ...this.state };
-    api.emit("selectedPrice", e.target.value);
     if (this.props.selectedPrice > 0 && this.props.orderType === "limit") {
+      api.emit("selectedPrice", e.target.value);
       newState.price = this.props.selectedPrice;
     } else {
       newState.price = e.target.value;
@@ -64,8 +62,8 @@ class SpotForm extends React.Component {
       return false;
     }
     const newState = { ...this.state };
-    api.emit("rangePrice", e.target.value);
     if (this.props.rangePrice > 0 && this.props.orderType === "limit") {
+      api.emit("rangePrice", e.target.value);
       newState.baseAmount = this.props.rangePrice;
     } else {
       newState.baseAmount = e.target.value;
@@ -530,8 +528,6 @@ class SpotForm extends React.Component {
       this.props.orderType === "market"
         ? this.currentPrice()
         : this.marketPrice();
-    // if (price === 0) price = this.props.rangePrice;
-
     const baseCurrency = this.props.currentMarket.split("-")[0];
     const quoteCurrency = this.props.currentMarket.split("-")[1];
 
@@ -600,10 +596,6 @@ class SpotForm extends React.Component {
 
     return (
       <>
-        {/* <ShowMessageModal
-          show={this.state.modalShow}
-          onHide={() => this.hideModal()}
-        /> */}
         <form className="spot_form">
           <div className="spf_head">
             <span>Availabe balance</span>
@@ -637,7 +629,7 @@ class SpotForm extends React.Component {
               value={
                 this.props.orderType === "limit"
                   ? this.props.rangePrice > 0
-                    ? this.props.rangePrice
+                    ? parseFloat(this.props.rangePrice) 
                     : this.state.amount
                   : this.state.amount
               }
@@ -706,8 +698,7 @@ class SpotForm extends React.Component {
                       <div key={`top`} className="spf_fee">
                         Fees{" "}
                         <i
-                          className="fa fa-question-circle"
-                          aria-hidden="true"
+                          className="icon-question-sign"
                         ></i>
                       </div>
                     </OverlayTrigger>
@@ -724,8 +715,7 @@ class SpotForm extends React.Component {
                       <div key={`top`} className="spf_fee">
                         Fees{" "}
                         <i
-                          className="fa fa-question-circle"
-                          aria-hidden="true"
+                          className="icon-question-sign"
                         ></i>
                       </div>
                     </OverlayTrigger>
