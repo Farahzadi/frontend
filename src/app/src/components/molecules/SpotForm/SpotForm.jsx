@@ -10,6 +10,7 @@ import {
   userOrdersSelector,
   networkListSelector,
   networkSelector,
+  networkConfigSelector,
 } from "lib/store/features/api/apiSlice";
 import api from "lib/api";
 import { RangeSlider, Button } from "components";
@@ -133,7 +134,7 @@ class SpotForm extends React.Component {
       }
     }
 
-    if (api.networkInterface.HAS_CONTRACT) {
+    if (this.props.networkConfig.hasContract) {
       const selectedNet = this.props.networkList.find(
         (net) => net.network === this.props.network
       );
@@ -149,7 +150,7 @@ class SpotForm extends React.Component {
         amount,
         price,
         side: this.props.side,
-        fee: this.props.config.takerFee,
+        fee,
         type: orderType,
       });
     } catch (err) {
@@ -694,6 +695,7 @@ const mapStateToProps = (state) => ({
   userOrders: userOrdersSelector(state),
   networkList: networkListSelector(state),
   network: networkSelector(state),
+  networkConfig: networkConfigSelector(state),
 });
 
 export default connect(mapStateToProps)(SpotForm);
