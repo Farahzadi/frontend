@@ -10,8 +10,6 @@ import Currencies from "config/Currencies";
 
 export default class ZKSyncAPIProvider extends EthAPIProvider {
   static seedStorageKey = "@ZZ/ZKSYNC_SEEDS";
-  NETWORK = "zksyncv1";
-  NETWORK_NAME = "mainnet";
   ZKSYNC_BASE_URL = "https://api.zksync.io/api/v0.2";
 
   syncWallet = null;
@@ -125,7 +123,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
   }
 
   async activateAccount(accountState) {
-    if (this.NETWORK === "zksyncv1") {
+    if (this.networkInterface.NETWORK === "zksyncv1") {
       try {
         const { data } = await axios.post(
           'https://api.zksync.io/api/v0.2/fee',
@@ -151,8 +149,10 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
           `You need to sign a one-time transaction to activate your zksync account. The fee for this tx will be ~$2.5`
         );
       }
-    } else if (this.NETWORK === 'zksyncv1_goerli') {
-      toast.info('You need to sign a one-time transaction to activate your zksync account.');
+    } else if (this.networkInterface.NETWORK === "zksyncv1_goerli") {
+      toast.info(
+        "You need to sign a one-time transaction to activate your zksync account."
+      );
     }
     let feeToken = 'ETH';
     const _accountState = accountState || (await this.syncWallet?.getAccountState());

@@ -6,7 +6,6 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 import erc20ContractABI from "lib/contracts/ERC20.json";
 
 export default class EthAPIProvider extends APIProvider {
-  static ETH_CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 
   async start(emitChanges = true) {
     if (emitChanges) this.state.set(APIProvider.State.CONNECTING);

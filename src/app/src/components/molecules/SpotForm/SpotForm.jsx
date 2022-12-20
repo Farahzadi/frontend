@@ -8,6 +8,8 @@ import {
   rangePriceSelector,
   selectedPriceSelector,
   userOrdersSelector,
+  networkListSelector,
+  networkSelector,
 } from "lib/store/features/api/apiSlice";
 import api from "lib/api";
 import { RangeSlider, Button } from "components";
@@ -87,7 +89,7 @@ class SpotForm extends React.Component {
   }
 
   async buySellHandler(e) {
-    let amount, price, newstate, orderPendingToast;
+    let amount, price, newstate, orderPendingToast, fee;
     let orderType = this.props.orderType === "limit" ? "l" : "m";
 
     // amount
@@ -130,6 +132,16 @@ class SpotForm extends React.Component {
         price = this.state.price;
       }
     }
+
+    if (api.networkInterface.HAS_CONTRACT) {
+      const selectedNet = this.props.networkList.find(
+        (net) => net.network === this.props.network
+      );
+      fee = selectedNet.maxFeeRatio;
+    } else {
+      fee = this.props.config.takerFee;
+    }
+
     let data;
     try {
       data = await api.validateOrder({
@@ -680,6 +692,8 @@ const mapStateToProps = (state) => ({
   rangePrice: rangePriceSelector(state),
   selectedPrice: selectedPriceSelector(state),
   userOrders: userOrdersSelector(state),
+  networkList: networkListSelector(state),
+  network: networkSelector(state),
 });
 
 export default connect(mapStateToProps)(SpotForm);

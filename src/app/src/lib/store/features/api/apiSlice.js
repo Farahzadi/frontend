@@ -82,6 +82,7 @@ export const apiSlice = createSlice({
       name: null,
       hasBridge: null,
       securityType: null,
+      hasContract: null,
     },
     providerState: "DISCONNECTED",
     currentMarket: "ETH-DAI",

@@ -56,6 +56,7 @@ export default class NetworkInterface {
 
   NETWORK = "unknown";
   CURRENCY = "CURRENCY_SYMBOL";
+  HAS_CONTRACT = true;
   HAS_BRIDGE = false;
   SECURITY_TYPE = null;
   BRIDGE_CONTRACT = null;
@@ -87,6 +88,7 @@ export default class NetworkInterface {
   getConfig() {
     return {
       hasBridge: this.HAS_BRIDGE,
+      hasContract: this.HAS_CONTRACT,
       securityType: this.SECURITY_TYPE,
     };
   }

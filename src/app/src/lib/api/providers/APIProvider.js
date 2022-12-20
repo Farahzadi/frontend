@@ -1,4 +1,3 @@
-import SecurityComp from "components/pages/Security";
 import { State } from "lib/utils";
 
 const notImplemented = function (method) {
@@ -22,16 +21,8 @@ export default class APIProvider {
 
   /// Common fields
 
-  // network name used in backend api calls
-  NETWORK = "ethereum";
   // network name used in web3modal
   NETWORK_NAME = "mainnet";
-  // address of smart contract used for bridge functionality
-  BRIDGE_CONTRACT = "0x0000000000000000000000000000000000000000";
-  // either we supports a bridge for this network
-  hasBridge = false;
-  // define security type of net to display related security page
-  securityType = SecurityComp.Allowance;
 
   state = new APIProvider.State();
 
