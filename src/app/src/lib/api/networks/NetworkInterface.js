@@ -45,6 +45,7 @@ export default class NetworkInterface {
     "updateUserDetails",
     "updateUserState",
     "updateUserBalancesState",
+    "updateUserChainDetailsState",
   ];
 
   static Provider = APIProvider;
@@ -260,7 +261,7 @@ export default class NetworkInterface {
   }
 
   async getBalances() {
-    return this.userDetails?.balances;
+    return this.userDetails.balances;
   }
 
   async updateAvailableBalances() {
@@ -281,12 +282,11 @@ export default class NetworkInterface {
     return availableBalances;
   }
 
-  async updateChainDetails() {
-    // if (!this.apiProvider) return;
-    // const allowances = await this.apiProvider.getAllowances(...args);
-    // if (!this.userDetails.chainDetails) this.userDetails.chainDetails = {};
-    // this.userDetails.chainDetails.allowances = allowances;
+  async getAvailableBalances() {
+    return this.userDetails.availableBalances;
   }
+
+  async updateChainDetails() {}
 
   async getChainDetails() {
     return this.userDetails.chainDetails;
@@ -322,22 +322,22 @@ export default class NetworkInterface {
     return `${address.substr(0, 6)}…${address.substr(-6)}`;
   }
 
-  async getAvailableBalance(currency, decimals, giveDecimal = false) {
+  async getAvailableBalance(ticker, decimals, giveDecimal = false) {
     const balances = await this.getBalances();
-    if (!balances[currency]?.value) return giveDecimal ? new Decimal(0) : "0";
-    let balance = new Decimal(balances[currency].value);
+    if (!balances[ticker]?.value) return giveDecimal ? new Decimal(0) : "0";
+    let balance = new Decimal(balances[ticker].value);
 
     const validStatuses = ["o", "b", "pm"];
     Object.entries(userOrdersSelector(store.getState()))
       .filter(
-        (id, order) =>
+        ([id, order]) =>
           this.NETWORK === order.chainId && validStatuses.includes(order.status)
       )
-      .forEach((id, order) => {
+      .forEach(([id, order]) => {
         const [base, quote] = order.market.split("-");
-        if (order.side === "b" && quote === currency)
+        if (order.side === "b" && quote === ticker)
           balance = balance.sub(toBaseUnit(order.quoteQuantity, decimals));
-        if (order.side === "s" && base === currency)
+        if (order.side === "s" && base === ticker)
           balance = balance.sub(toBaseUnit(order.baseQuantity, decimals));
       });
     return giveDecimal ? balance : balance.toFixed(0);
@@ -353,7 +353,7 @@ export default class NetworkInterface {
     if (shouldFetch && !this.apiProvider) return;
     if (shouldFetch) await this.updateBalances();
     const balances = await this.getBalances();
-    const availableBalances = await this.getAvailableBalance();
+    const availableBalances = await this.getAvailableBalances();
     this.emit("updateUserBalances", balances);
     this.emit("updateUserAvailableBalances", availableBalances);
   }
@@ -443,8 +443,10 @@ export default class NetworkInterface {
         throw new VError(
           `Minimum order size is ${minOrderSize.toFixed()} ${baseCurrency}`
         );
-      
-      const lastPrice = new Decimal(lastPricesSelector(state)[market]?.price ?? price);
+
+      const lastPrice = new Decimal(
+        lastPricesSelector(state)[market]?.price ?? price
+      );
 
       const warnings = [];
 

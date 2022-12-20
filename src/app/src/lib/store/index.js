@@ -3,7 +3,6 @@ import { configureStore } from "@reduxjs/toolkit";
 import createSagaMiddleware from "redux-saga";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import authReducer from "lib/store/features/auth/authSlice";
 import apiReducer from "lib/store/features/api/apiSlice";
 import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 import sagas from "./sagas";
@@ -17,20 +16,13 @@ const persistConfig = {
 
 const apiPersistConfig = {
   key: "api",
-  whitelist: ["userAddress", "currentMarket", "bridgeReceipts", "network"],
-  storage,
-};
-
-const authPersistConfig = {
-  key: "auth",
-  whitelist: ["user"],
+  whitelist: ["user", "currentMarket", "bridgeReceipts", "network"],
   storage,
 };
 
 const sagaMiddleware = createSagaMiddleware();
 
 const rootReducer = combineReducers({
-  auth: persistReducer(authPersistConfig, authReducer),
   api: persistReducer(apiPersistConfig, apiReducer),
 });
 
