@@ -97,10 +97,10 @@ export default class EthereumInterface extends NetworkInterface {
     const currencies = getNetworkCurrencies(this.NETWORK);
     const allowances = await this.fetchAllowances();
     if (!this.userDetails.chainDetails) this.userDetails.chainDetails = {};
-    this.userDetails.chainDetails.allowances = formatBalances(
-      allowances,
-      currencies
-    );
+    this.userDetails.chainDetails = {
+      ...this.userDetails.chainDetails,
+      allowances: formatBalances(allowances, currencies),
+    };
   }
 
   // async getProfileImage(address) {
@@ -136,6 +136,7 @@ export default class EthereumInterface extends NetworkInterface {
   }
 
   async getProfileName(address) {
+    console.log(address);
     return (
       (await this.fetchENSName(address)) ??
       (await super.getProfileName(address))

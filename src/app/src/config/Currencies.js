@@ -34,10 +34,10 @@ const Currencies = {
         L2Contract: 3,
       },
       ethereum: {
-        contract: "0x0000000000000000000000000000000000000000",
+        contract: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
       },
       ethereum_goerli: {
-        contract: "0x0000000000000000000000000000000000000000",
+        contract: "0xd35CCeEAD182dcee0F148EbaC9447DA2c4D449c4",
       },
     },
   },
@@ -51,10 +51,7 @@ const Currencies = {
         L2Contract: 4,
       },
       ethereum: {
-        contract: "0x0000000000000000000000000000000000000000",
-      },
-      ethereum_goerli: {
-        contract: "0x0000000000000000000000000000000000000000",
+        contract: "0xdac17f958d2ee523a2206206994597c13d831ec7",
       },
     },
   },
@@ -72,10 +69,10 @@ const Currencies = {
         L2Contract: 4,
       },
       ethereum: {
-        contract: "0x0000000000000000000000000000000000000000",
+        contract: "0x6b175474e89094c44da98b954eedeac495271d0f",
       },
       ethereum_goerli: {
-        contract: "0x0000000000000000000000000000000000000000",
+        contract: "0x5C221E77624690fff6dd741493D735a17716c26B",
       },
     },
   },
@@ -88,11 +85,15 @@ const Currencies = {
         contract: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
         L2Contract: 15,
       },
+      zksyncv1_goerli: {
+        contract: "0xca063a2ab07491ee991dcecb456d1265f842b568",
+        L2Contract: 2,
+      },
       ethereum: {
-        contract: "0x0000000000000000000000000000000000000000",
+        contract: "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
       },
       ethereum_goerli: {
-        contract: "0x0000000000000000000000000000000000000000",
+        contract: "0xca063a2ab07491ee991dcecb456d1265f842b568",
       },
     },
   },
@@ -106,10 +107,7 @@ const Currencies = {
         L2Contract: 120,
       },
       ethereum: {
-        contract: "0x0000000000000000000000000000000000000000",
-      },
-      ethereum_goerli: {
-        contract: "0x0000000000000000000000000000000000000000",
+        contract: "0x3432b6a60d23ca0dfca7761b7ab56459d9c964d0",
       },
     },
   },
@@ -123,10 +121,7 @@ const Currencies = {
         L2Contract: 92,
       },
       ethereum: {
-        contract: "0x0000000000000000000000000000000000000000",
-      },
-      ethereum_goerli: {
-        contract: "0x0000000000000000000000000000000000000000",
+        contract: "0x853d955acef822db058eb8505911ed77f175b99e",
       },
     },
   },
@@ -140,10 +135,10 @@ const Currencies = {
         L2Contract: 61,
       },
       ethereum: {
-        contract: "0x0000000000000000000000000000000000000000",
+        contract: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
       },
       ethereum_goerli: {
-        contract: "0x0000000000000000000000000000000000000000",
+        contract: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
       },
     },
   },

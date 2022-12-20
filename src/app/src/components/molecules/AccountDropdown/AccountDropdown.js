@@ -11,6 +11,7 @@ import {
   userImageSelector,
   userChainDetailsSelector,
   userBalancesSelector,
+  networkConfigSelector,
 } from "lib/store/features/api/apiSlice";
 import { formatUSD } from "lib/utils";
 import api from "lib/api";
@@ -192,6 +193,8 @@ const LoaderContainer = styled("div")(({ theme }) => ({
 export const AccountDropdown = () => {
   const userName = useSelector(userNameSelector);
   const userImage = useSelector(userImageSelector);
+  const networkConfig = useSelector(networkConfigSelector);
+  const { hasBridge } = networkConfig;
   const userChainDetails = useSelector(userChainDetailsSelector);
   const userL1Balances = userChainDetails?.L1Balances;
   const userBalances = useSelector(userBalancesSelector);
@@ -206,10 +209,7 @@ export const AccountDropdown = () => {
     { id: 2, name: "L2" },
   ];
 
-  let L1Balances = userL1Balances;
-  let L2Balances = userBalances;
-
-  const wallet = selectedLayer === 1 ? L1Balances : L2Balances;
+  const wallet = !hasBridge || selectedLayer === 2 ? userBalances : userL1Balances;
 
   useEffect(() => {
     const tickers = Object.keys(getNetworkCurrencies(network)).sort();
@@ -267,18 +267,20 @@ export const AccountDropdown = () => {
         show={show}
       >
         <DropdownHeader>
-          <h3>Your Wallet</h3>
-          <WalletToggle>
-            {layers.map(({ id, name }) => (
-              <WalletToggleItem
-                key={id}
-                onClick={() => setSelectedLayer(id)}
-                selected={selectedLayer === id}
-              >
-                {name}
-              </WalletToggleItem>
-            ))}
-          </WalletToggle>
+          <h3>Your Wallet</h3>{" "}
+          {hasBridge && (
+            <WalletToggle>
+              {layers.map(({ id, name }) => (
+                <WalletToggleItem
+                  key={id}
+                  onClick={() => setSelectedLayer(id)}
+                  selected={selectedLayer === id}
+                >
+                  {name}
+                </WalletToggleItem>
+              ))}
+            </WalletToggle>
+          )}
         </DropdownHeader>
         <DropdownContent>
           {!wallet && (
@@ -301,10 +303,7 @@ export const AccountDropdown = () => {
                     />
                     <div>
                       <strong>
-                        {selectedLayer === 2
-                          ? wallet[ticker].valueReadable
-                          : wallet[ticker].valueReadable}{" "}
-                        {ticker}
+                        {wallet[ticker].valueReadable} {ticker}
                       </strong>
                       <small>
                         $

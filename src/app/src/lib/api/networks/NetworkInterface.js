@@ -82,7 +82,7 @@ export default class NetworkInterface {
   }
 
   async stop() {
-    await this.stopAPIProvider();
+    await this.disconnectWallet();
   }
 
   getConfig() {
@@ -247,8 +247,8 @@ export default class NetworkInterface {
 
   async updateNonce() {
     if (!this.apiProvider) return;
-    const address = await this.apiProvider.getNonce();
-    this.userDetails.address = address;
+    const nonce = await this.apiProvider.getNonce();
+    this.userDetails.nonce = nonce;
   }
 
   async getNonce() {
@@ -306,6 +306,7 @@ export default class NetworkInterface {
   async getUserDetails() {
     const { userDetails } = this;
     const address = await this.getAddress();
+    console.log("addr1", address);
     const name = address && (await this.getProfileName(address));
     const image = address && (await this.getProfileImage(address));
     return {

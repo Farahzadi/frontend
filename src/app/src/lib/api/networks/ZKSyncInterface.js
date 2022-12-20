@@ -85,7 +85,7 @@ export default class ZKSyncInterface extends EthereumInterface {
 
   async updateNonce(_accountState) {
     if (_accountState) {
-      this.userDetails.nonce = +_accountState.verified.nonce;
+      this.userDetails.nonce = +_accountState.committed.nonce;
       return;
     }
     if (!this.apiProvider) return;

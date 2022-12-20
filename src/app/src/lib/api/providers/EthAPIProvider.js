@@ -170,6 +170,10 @@ export default class EthAPIProvider extends APIProvider {
     return balance;
   }
 
+  async getNonce() {
+    return await this.wallet.getTransactionCount();
+  }
+
   async signOrder({ orderHash }) {
     const result = await this.wallet.signMessage(
       ethers.utils.arrayify(orderHash)
