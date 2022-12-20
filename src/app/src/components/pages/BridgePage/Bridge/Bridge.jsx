@@ -208,9 +208,10 @@ const Bridge = () => {
 
   const balances = transfer.type === "deposit" ? L1Balances : L2Balances;
   const altBalances = transfer.type === "deposit" ? L2Balances : L1Balances;
-  const hasAllowance = new Decimal(
-    userAllowances?.[swapDetails.currency]?.value || 0
-  ).greaterThan(maxAllowance.div(3).toString());
+  const hasAllowance = true; // TODO: make chain specific!
+  // new Decimal(userAllowances?.[swapDetails.currency]?.value || 0).greaterThan(
+  //   maxAllowance.div(3).toString()
+  // );
   const hasError = formErr && formErr.length > 0;
 
   const approveSpend = (e) => {

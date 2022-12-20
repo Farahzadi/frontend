@@ -1,11 +1,9 @@
-import axios from "axios";
 import { SecurityComp } from "components/pages/Security/types";
 import { getNetworkCurrencies, getNetworkCurrency } from "config/Currencies";
 import Decimal from "decimal.js";
 import { BigNumber, ethers } from "ethers";
 import { getENSName } from "lib/ens";
 import { formatBalances, getCurrentValidUntil } from "lib/utils";
-import { get } from "lodash";
 import { maxAllowance } from "../constants";
 import EthAPIProvider from "../providers/EthAPIProvider";
 import NetworkInterface from "./NetworkInterface";

@@ -4,7 +4,6 @@ import axios from "axios";
 import { ethers } from "ethers";
 import { toast } from "react-toastify";
 
-import { toBaseUnit } from "lib/utils";
 import APIProvider from "./APIProvider";
 import EthAPIProvider from "./EthAPIProvider";
 import Currencies from "config/Currencies";
@@ -110,41 +109,6 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
     return result;
   }
 
-  handleBridgeReceipt(
-    _receipt,
-    amount,
-    token,
-    type,
-    userId,
-    userAddress,
-    status
-  ) {
-    let receipt = {
-      date: +new Date(),
-      network: this.network,
-      amount,
-      token,
-      type,
-      userId,
-      userAddress,
-      _receipt,
-      status
-    };
-    const subdomain = this.network === 'zksyncv1' ? '' : 'goerli.';
-    if (!_receipt) {
-      return receipt;
-    }
-    if (_receipt.ethTx) {
-      receipt.txId = _receipt.ethTx.hash;
-      receipt.txUrl = `https://${subdomain}etherscan.io/tx/${receipt.txId}`;
-    } else if (_receipt.txHash) {
-      receipt.txId = _receipt.txHash.split(':')[1];
-      receipt.txUrl = `https://${subdomain}zkscan.io/explorer/transactions/${receipt.txId}`;
-    }
-
-    return receipt;
-  }
-
   async changePubKeyFee(currency = "USDC") {
     const { data } = await axios.post(
       this.ZKSYNC_BASE_URL + '/fee',
@@ -221,89 +185,29 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
     return signingKey;
   }
 
-  async withdrawL2(amountDecimals, token = "ETH") {
-    let transfer;
-    let bridgeReceiptData = {};
-
-    const amount = ethers.BigNumber.from(
-      toBaseUnit(
-        amountDecimals,
-        Currencies[token].decimals
-      )
-    );
-    const checksumAddress = await this.getAddress();
-    if (amount) {
-      try {
-        transfer = await this.syncWallet.withdrawFromSyncToEthereum({
-          token,
-          ethAddress: await this.getAddress(),
-          amount
-        });
-
-        await this.getBridgeReceiptStatus(transfer, 'withdraw').then((data) => {
-          bridgeReceiptData.status = data.status;
-        });
-
-        this.emit(
-          'bridgeReceipt',
-          this.handleBridgeReceipt(
-            transfer,
-            amountDecimals,
-            token,
-            'withdraw',
-            this.networkInterface._accountState.id,
-            checksumAddress,
-            bridgeReceiptData.status
-          )
-        );
-
-        return transfer;
-      } catch (err) {
-        console.log(err);
-      }
+  async withdrawL2(amount, address, token = "ETH") {
+    if (!amount) return;
+    try {
+      return await this.syncWallet.withdrawFromSyncToEthereum({
+        token,
+        ethAddress: address,
+        amount,
+      });
+    } catch (err) {
+      console.log(err);
     }
   }
 
-  async depositL2(amountDecimals, token = "ETH") {
-    let transfer;
-    let bridgeReceiptData = {};
-
-    const amount = ethers.BigNumber.from(
-      toBaseUnit(
-        amountDecimals,
-        Currencies[token].decimals
-      )
-    );
-    const checksumAddress = await this.getAddress();
-    if (amount) {
-      try {
-        transfer = await this.syncWallet.depositToSyncFromEthereum({
-          token,
-          depositTo: this.syncWallet.address(),
-          amount
-        });
-
-        await this.getBridgeReceiptStatus(transfer, 'deposit').then((data) => {
-          bridgeReceiptData.status = data.status;
-        });
-
-        this.emit(
-          'bridgeReceipt',
-          this.handleBridgeReceipt(
-            transfer,
-            amountDecimals,
-            token,
-            'deposit',
-            this.networkInterface._accountState.id,
-            checksumAddress,
-            bridgeReceiptData.status
-          )
-        );
-
-        return transfer;
-      } catch (err) {
-        console.log(err);
-      }
+  async depositL2(amount, address, token = "ETH") {
+    if (!amount) return;
+    try {
+      return await this.syncWallet.depositToSyncFromEthereum({
+        token,
+        depositTo: address,
+        amount,
+      });
+    } catch (err) {
+      console.log(err);
     }
   }
 
@@ -315,11 +219,15 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
     if (this.network === 'zksyncv1') url = 'https://api.zksync.io/api/v0.2';
     else url = 'https://goerli-api.zksync.io/api/v0.2';
 
-    if (type === 'deposit') statusReceipt.hash = receipt.ethTx.hash;
-    if (type !== 'deposit') statusReceipt.hash = receipt.txHash;
-    const { data } = await axios.get(`${url}/transactions/${statusReceipt.hash}`).catch((e) => {
-      console.log(`Request to ${e.config.url} failed with status code ${e.response.status}`);
-    });
+    if (type === "deposit") statusReceipt.hash = receipt.ethTx.hash;
+    else statusReceipt.hash = receipt.txHash;
+    const { data } = await axios
+      .get(`${url}/transactions/${statusReceipt.hash}`)
+      .catch((e) => {
+        console.log(
+          `Request to ${e.config.url} failed with status code ${e.response.status}`
+        );
+      });
     if (!data) return;
     if (data.result) {
       statusReceipt.status = data.result.status;
@@ -427,9 +335,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
   getParsedSellQuantity(tokenSell, sellQuantity) {
     const parsedSellQuantity = this.syncProvider.tokenSet.parseToken(
       tokenSell,
-      sellQuantity.toFixed(
-        Currencies[tokenSell].decimals
-      )
+      sellQuantity.toFixed(Currencies[tokenSell].decimals)
     );
 
     return parsedSellQuantity;

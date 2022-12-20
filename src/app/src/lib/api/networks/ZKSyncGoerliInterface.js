@@ -8,4 +8,7 @@ export default class ZKSyncGoerliInterface extends ZKSyncInterface {
   BRIDGE_CONTRACT = "0x5c56FC5757259c52747AbB7608F8822e7cE51484";
   CHAIN_ID = 5;
   SECURITY_TYPE = SecurityComp.Nonce;
+
+  ETHERSCAN_URL = "https://goerli.etherscan.io";
+  ZKSCAN_URL = "https://goerli.zkscan.io";
 }

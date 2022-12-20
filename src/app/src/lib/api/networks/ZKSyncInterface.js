@@ -1,4 +1,4 @@
-import { formatBalances } from "lib/utils";
+import { formatBalances, fromBaseUnit, toBaseUnit } from "lib/utils";
 import ZKSyncAPIProvider from "../providers/ZKSyncAPIProvider";
 import { ethers } from "ethers";
 import EthereumInterface from "./EthereumInterface";
@@ -7,6 +7,7 @@ import Decimal from "decimal.js";
 import NetworkInterface from "./NetworkInterface";
 import * as zksync from "zksync";
 import Currencies from "config/Currencies";
+import { maxAllowance } from "../constants";
 
 export default class ZKSyncInterface extends EthereumInterface {
   static Actions = [
@@ -25,6 +26,9 @@ export default class ZKSyncInterface extends EthereumInterface {
   HAS_BRIDGE = true;
   BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
   SECURITY_TYPE = SecurityComp.Nonce;
+
+  ETHERSCAN_URL = "https://etherscan.io";
+  ZKSCAN_URL = "https://zkscan.io";
 
   async signIn() {
     await super.signIn(false);
@@ -60,7 +64,11 @@ export default class ZKSyncInterface extends EthereumInterface {
     return await super.fetchAllowances(false);
   }
 
-  async approveL1(ticker, allowance, isLayerTwo) {
+  async approve(ticker, allowance = maxAllowance) {
+    return await super.approve(ticker, allowance, true);
+  }
+
+  async approveL1(ticker, allowance = maxAllowance) {
     return await super.approve(ticker, allowance, false);
   }
 
@@ -186,12 +194,46 @@ export default class ZKSyncInterface extends EthereumInterface {
     return tx;
   }
 
+  async bridgeTransferL2(amount, token, type) {
+    if (!amount || !type || !["deposit", "withdraw"].includes(type)) return;
+    const address = await this.getAddress();
+    const userId = (await this.getChainDetails())?.userId;
+    if (!address || !userId) return;
+    const decimals = Currencies[token].decimals;
+    amount = ethers.BigNumber.from(toBaseUnit(amount, decimals));
+
+    const transfer = await this.apiProvider?.[
+      type === "deposit" ? "depositL2" : "withdrawL2"
+    ](amount, address, token);
+
+    const receipt = await this.apiProvider?.getBridgeReceiptStatus(
+      transfer,
+      type
+    );
+
+    const readableAmount = fromBaseUnit(amount.toString(), decimals);
+
+    this.emit(
+      "bridgeReceipt",
+      this.handleBridgeReceipt(
+        transfer,
+        readableAmount,
+        token,
+        type,
+        userId,
+        address,
+        receipt?.status
+      )
+    );
+    return transfer;
+  }
+
   async depositL2(amount, token) {
-    return this.apiProvider?.depositL2(amount, token);
+    return await this.bridgeTransferL2(amount, token, "deposit");
   }
 
   async withdrawL2(amount, token) {
-    return this.apiProvider?.withdrawL2(amount, token);
+    return await this.bridgeTransferL2(amount, token, "withdraw");
   }
 
   async depositL2Fee(token) {
@@ -200,6 +242,40 @@ export default class ZKSyncInterface extends EthereumInterface {
 
   async withdrawL2Fee(token) {
     return this.apiProvider?.withdrawL2Fee(token);
+  }
+
+  handleBridgeReceipt(
+    _receipt,
+    amount,
+    token,
+    type,
+    userId,
+    userAddress,
+    status
+  ) {
+    let receipt = {
+      date: +new Date(),
+      network: this.network,
+      amount,
+      token,
+      type,
+      userId,
+      userAddress,
+      _receipt,
+      status,
+    };
+    if (!_receipt) {
+      return receipt;
+    }
+    if (_receipt.ethTx) {
+      receipt.txId = _receipt.ethTx.hash;
+      receipt.txUrl = `${this.ETHERSCAN_URL}/tx/${receipt.txId}`;
+    } else if (_receipt.txHash) {
+      receipt.txId = _receipt.txHash.split(":")[1];
+      receipt.txUrl = `${this.ZKSCAN_URL}/explorer/transactions/${receipt.txId}`;
+    }
+
+    return receipt;
   }
 
   async changePubKeyFee() {

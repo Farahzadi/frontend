@@ -1,10 +1,9 @@
-import get from "lodash/get";
 import { ethers } from "ethers";
 import { toast } from "react-toastify";
 import APIProvider from "./APIProvider";
-import axios from "axios";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
+import erc20ContractABI from "lib/contracts/ERC20.json";
 
 export default class EthAPIProvider extends APIProvider {
   static ETH_CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
@@ -135,21 +134,22 @@ export default class EthAPIProvider extends APIProvider {
   }
 
   async getAllowance(tokenAddress, userAddress, spenderAddress) {
-    const ERC20_ABI = [
-      "function allowance(address owner, address spender) view returns (uint256)",
-    ];
-    const token = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+    if (!userAddress) userAddress = await this.getAddress();
+    const token = new ethers.Contract(
+      tokenAddress,
+      erc20ContractABI,
+      this.provider
+    );
     const allowance = await token.allowance(userAddress, spenderAddress);
     return allowance;
   }
 
   async approve(tokenAddress, spenderAddress, amount) {
     amount = ethers.BigNumber.from(amount);
-    const erc20ContractABI = "";
     const contract = new ethers.Contract(
       tokenAddress,
       erc20ContractABI,
-      this.provider
+      this.wallet
     );
     await contract.approve(spenderAddress, amount);
   }
@@ -162,10 +162,11 @@ export default class EthAPIProvider extends APIProvider {
 
   async getTokenBalance(tokenAddress, userAddress) {
     if (!userAddress) userAddress = await this.getAddress();
-    const ERC20_ABI = [
-      "function balanceOf(address account) view returns (uint256)",
-    ];
-    const token = new ethers.Contract(tokenAddress, ERC20_ABI, this.provider);
+    const token = new ethers.Contract(
+      tokenAddress,
+      erc20ContractABI,
+      this.provider
+    );
     const balance = await token.balanceOf(userAddress);
     return balance;
   }
