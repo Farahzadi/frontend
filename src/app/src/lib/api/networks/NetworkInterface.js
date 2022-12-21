@@ -7,6 +7,7 @@ import {
   lastPricesSelector,
   marketInfoSelector,
   marketSummarySelector,
+  networkListSelector,
   userOrdersSelector,
   userSelector,
 } from "lib/store/features/api/apiSlice";
@@ -407,14 +408,6 @@ export default class NetworkInterface {
           ? [baseTokenAddress, quoteTokenAddress]
           : [quoteTokenAddress, baseTokenAddress];
 
-      try {
-        fee = new Decimal(fee);
-        if (fee.gt(1)) throw new Error();
-        if (fee.lt(0)) throw new Error();
-      } catch (err) {
-        throw new VError("Invalid fee");
-      }
-
       if (!isString(type) || !["l", "m"].includes(type))
         throw new VError("Invalid order type");
 
@@ -432,6 +425,21 @@ export default class NetworkInterface {
       );
 
       const state = store.getState();
+
+      try {
+        if (this.HAS_CONTRACT) {
+          const selectedNet = networkListSelector(state).find(
+            (net) => net.network === this.network
+          );
+          fee = Decimal.div(selectedNet.maxFeeRatio, 1000);
+        } else {
+          fee = new Decimal(configSelector(state).takerFee);
+        }
+        if (fee.gt(1)) throw new Error();
+        if (fee.lt(0)) throw new Error();
+      } catch (err) {
+        throw new VError("Invalid fee");
+      }
 
       if (side === "s" && baseBalance.lt(amount))
         throw new VError(`Amount exceeds ${baseCurrency} balance`);

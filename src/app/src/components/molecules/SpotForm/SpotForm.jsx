@@ -90,7 +90,7 @@ class SpotForm extends React.Component {
   }
 
   async buySellHandler(e) {
-    let amount, price, newstate, orderPendingToast, fee;
+    let amount, price, newstate, orderPendingToast;
     let orderType = this.props.orderType === "limit" ? "l" : "m";
 
     // amount
@@ -126,21 +126,9 @@ class SpotForm extends React.Component {
     } else {
       if (this.props.selectedPrice) {
         price = this.props.selectedPrice;
-        // price = Number(this.props.selectedPrice)
-        //   .toFixed(1)
-        //   .replace(/([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, "$1");
       } else {
         price = this.state.price;
       }
-    }
-
-    if (this.props.networkConfig.hasContract) {
-      const selectedNet = this.props.networkList.find(
-        (net) => net.network === this.props.network
-      );
-      fee = selectedNet.maxFeeRatio;
-    } else {
-      fee = this.props.config.takerFee;
     }
 
     let data;
@@ -150,7 +138,6 @@ class SpotForm extends React.Component {
         amount,
         price,
         side: this.props.side,
-        fee,
         type: orderType,
       });
     } catch (err) {
