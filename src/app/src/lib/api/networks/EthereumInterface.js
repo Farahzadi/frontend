@@ -3,7 +3,7 @@ import { getNetworkCurrencies, getNetworkCurrency } from "config/Currencies";
 import Decimal from "decimal.js";
 import { BigNumber, ethers } from "ethers";
 import { getENSName } from "lib/ens";
-import { formatBalances, getCurrentValidUntil } from "lib/utils";
+import { formatBalances, getCurrentValidUntil, getRatio } from "lib/utils";
 import { maxAllowance } from "../constants";
 import EthAPIProvider from "../providers/EthAPIProvider";
 import NetworkInterface from "./NetworkInterface";
@@ -163,9 +163,11 @@ export default class EthereumInterface extends NetworkInterface {
       throw new Error("Insufficient allowance");
     }
     const validUntil = getCurrentValidUntil();
+    const ratio = getRatio(side, price);
     return {
       ...res,
       validUntil,
+      ratio,
     };
   }
 
@@ -179,24 +181,43 @@ export default class EthereumInterface extends NetworkInterface {
     fee,
     type,
     validUntil,
+    ratio,
   }) {
+    let ratioSellArgument = ratio.ratioSellArgument;
+    let ratioBuyArgument = ratio.ratioBuyArgument;
+    let clientOrderId = Math.floor(Math.random() * 1000000);
     const order = {
+      recipient: await this.getAddress(),
+      chainId: this.CHAIN_ID,
+      clientOrderId,
       validUntil,
-      price,
+      ratioSellArgument,
+      ratioBuyArgument,
       sellTokenAddress,
       buyTokenAddress,
-      chainId: this.CHAIN_ID,
-      fee,
+      maxFeeRatio: fee * 1000,
     };
+
     const orderHash = ethers.utils.solidityKeccak256(
-      ["uint256", "uint256", "address", "address", "uint256", "uint256"],
       [
+        "uint16",
+        "uint64",
+        "uint64",
+        "uint64",
+        "uint256",
+        "uint256",
+        "address",
+        "address",
+      ],
+      [
+        order.maxFeeRatio,
+        order.clientOrderId,
         order.validUntil,
-        order.price,
+        order.chainId,
+        order.ratioSellArgument,
+        order.ratioBuyArgument,
         order.sellTokenAddress,
         order.buyTokenAddress,
-        order.chainId,
-        order.fee,
       ]
     );
     const signature = await this.apiProvider?.signOrder({ orderHash });

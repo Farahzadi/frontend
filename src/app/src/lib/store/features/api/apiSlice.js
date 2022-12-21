@@ -149,19 +149,6 @@ export const apiSlice = createSlice({
     _markets_config_get(state, { payload }) {
       state.config = payload.data.config.map(translators.markets_config)[0];
     },
-    // _swapfills(state, { payload }) {
-    //   return;
-    //   payload[0].forEach((fill) => {
-    //     const fillid = fill.id;
-    //     if (
-    //       fill.market === state.currentMarket &&
-    //       fill.chainId === state.network
-    //     ) {
-    //       state.marketFills[fillid] = fill;
-    //     }
-    //     state.userFills[fillid] = fill;
-    //   });
-    // },
     _fills_ws(state, { payload }) {
       payload.data.map(translators.fills).forEach((fill) => {
         const fillid = fill.id;
