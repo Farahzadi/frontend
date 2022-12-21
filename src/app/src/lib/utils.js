@@ -76,6 +76,19 @@ export function getCurrentValidUntil() {
   return ((Date.now() / 1000) | 0) + 24 * 3600;
 }
 
+export function getRatio(side, price) {
+  let ratio = {};
+  switch (side) {
+    case "b":
+      ratio.ratioSellArgument = +price;
+      ratio.ratioBuyArgument = 1;
+    case "s":
+      ratio.ratioSellArgument = 1;
+      ratio.ratioBuyArgument = +price;
+  }
+  return ratio;
+}
+
 export function hasOneDayPassed(time) {
   const date = new Date(time);
   const dateString = date.toLocaleDateString();
