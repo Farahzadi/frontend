@@ -22,11 +22,11 @@ th{
 .user-info-orders::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   .user-info-orders::-webkit-scrollbar-track {
     background-color: #383b47;
   }
-  
+
   .user-info-orders::-webkit-scrollbar-thumb {
     background-color: #898b91;
     border: 1px solid rgba(255,255,255,0.2);
@@ -167,7 +167,24 @@ th {
     position: sticky;
     top: 0;
     z-index: 2;
+}
+.footer-icons {
+    display: flex;
+    align-items: center;
+}
+.footer-icons ul {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    position: relative;
   }
+.footer-icons ul li a {
+    color: var(--dexpresssoTextPrimery);
+    list-style: none;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
 @media screen and (max-width: 697px) {
     .ft_tabs {
         /* flex-wrap: wrap; */
@@ -240,7 +257,7 @@ th {
         display: block;
         margin-bottom: 0.625em;
         font-size:1.5em;
-    }    
+    }
 }
 
 @media screen and (max-width: 991px){

@@ -20,7 +20,11 @@ const NetFormControl = styled(FormControl)(({ theme }) => ({
   minWidth: '200px',
   textAlign: 'center',
   paddingInlineStart: '0',
-  marginInlineEnd: '1rem',
+  marginBlockEnd: '3rem',
+  [theme.breakpoints.up('md')] : {
+    marginInlineEnd: '1rem',
+    marginBlockEnd: '0'
+  },
   '&:focus': {
     backgroundColor: theme.palette.primary.main,
   },
