@@ -80,11 +80,11 @@ export function getRatio(side, price) {
   let ratio = {};
   switch (side) {
     case "b":
-      ratio.ratioSellArgument = +price;
-      ratio.ratioBuyArgument = 1;
+      ratio.ratioSellArgument = price;
+      ratio.ratioBuyArgument = "1";
     case "s":
-      ratio.ratioSellArgument = 1;
-      ratio.ratioBuyArgument = +price;
+      ratio.ratioSellArgument = "1";
+      ratio.ratioBuyArgument = price;
   }
   return ratio;
 }

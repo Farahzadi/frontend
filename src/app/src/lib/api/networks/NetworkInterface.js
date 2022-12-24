@@ -429,7 +429,7 @@ export default class NetworkInterface {
       try {
         if (this.HAS_CONTRACT) {
           const selectedNet = networkListSelector(state).find(
-            (net) => net.network === this.network
+            (net) => net.network === this.NETWORK
           );
           fee = Decimal.div(selectedNet.maxFeeRatio, 1000);
         } else {
