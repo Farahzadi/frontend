@@ -1,10 +1,16 @@
 import Emitter from "tiny-emitter";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { getAppConfig } from ".";
 
 const DEFAULT_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK;
 
 export default class Core extends Emitter {
+  static instance = null;
+  static init(config) {
+    this.instance = new Core(config);
+  }
+
   static Actions = [
     "start",
     "stop",
@@ -16,8 +22,12 @@ export default class Core extends Emitter {
     "cancelOrder",
     "cancelAllOrders",
     "getOrderBook",
+    "validateOrder",
     "submitOrder",
     "getNetworks",
+    "emit",
+    "on",
+    "off",
   ];
 
   networkClasses = {};
@@ -34,8 +44,6 @@ export default class Core extends Emitter {
     websocketUrl,
     apiUrl,
     networkClasses,
-    currencies,
-    validMarkets,
     signInMessage,
   }) {
     super();
@@ -52,6 +60,10 @@ export default class Core extends Emitter {
       timeout: 3000,
     });
     this.signInMessage = signInMessage ?? "Login to Dexpresso";
+  }
+
+  setStore(store) {
+    this.store = store;
   }
 
   async setNetwork(network) {
@@ -335,5 +347,14 @@ export default class Core extends Emitter {
     if (Core.Actions.includes(action)) return await this[action](...args);
     if (this.networkInterface?.constructor.Actions?.includes(action))
       return await this.networkInterface[action](...args);
+  }
+
+  static async run(action, ...args) {
+    if (!this.instance) this.init(getAppConfig()); // throw new Error("running when instance is not initialised");
+    return await this.instance.run(action, ...args);
+  }
+
+  static getInstance() {
+    return this.instance;
   }
 }
