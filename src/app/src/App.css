@@ -67,3 +67,7 @@ html {
 .walletconnect-modal__base div:nth-child(3) {
   /* overflow-y: scroll; */
 }
+.active_link {
+  position: relative;
+  color: #fff !important;
+}

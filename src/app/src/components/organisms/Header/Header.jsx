@@ -8,18 +8,36 @@ import api from "lib/api";
 import logo from "assets/images/logo.svg";
 import menu from "assets/icons/menu.png";
 import darkPlugHead from "assets/icons/dark-plug-head.png";
-import "./Header.css";
 import NetworkSelection from "components/molecules/NetworkSelection/NetworkSelection";
+import { getDocsLink } from "lib/helpers/env";
+import { styled, useMediaQuery } from "@mui/material";
+import HamburgerIcon from "components/atoms/Icons/HamburgerIcon";
+import { BrandLogo, Logo } from "components/atoms/Icons/Logo";
+import { useTheme } from "@mui/styles";
+import {
+  DexHeader,
+  MainContent,
+  NavItem,
+  NavUl,
+  ActionBtnContainer,
+  XSLogoContainer
+} from "./Header.module";
 
-export const Header = (props) => {
+export const Header = () => {
   // state to open or close the sidebar in mobile
   const [show, setShow] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const user = useSelector(userSelector);
   const networkConfig = useSelector(networkConfigSelector);
-
   const hasBridge = networkConfig.hasBridge;
-
+  const links = [
+    { name: "Trade", to: "/" },
+    { name: "Bridge", to: "/bridge", isHidden: !hasBridge },
+    { name: "Security", to: "/security" },
+    { name: "Docs", to: getDocsLink(), target: "blank" }
+  ];
+  const theme = useTheme();
+  const matches = useMediaQuery(theme.breakpoints.down("md"));
   const handleMenu = ({ key }) => {
     switch (key) {
       case "signOut":
@@ -30,132 +48,66 @@ export const Header = (props) => {
     }
   };
 
-  const dropdownMenu = (
-    <Menu onSelect={handleMenu}>
-      <MenuItem key="signOut">Disconnect</MenuItem>
-    </Menu>
-  );
-
   const connect = () => {
     setConnecting(true);
     api.connectWallet().finally(() => {
       setConnecting(false);
     });
   };
+  const handleOpenNavbar = () => {
+    const body = document.getElementsByTagName("body")[0];
+    if (!show) {
+      body.style.overflow = "hidden";
+    } else {
+      body.style.overflow = "auto";
+    }
+    setShow(!show);
+  };
 
   return (
-    <header>
-      <div className="mobile_header mb_h">
-        <div>
-          <img src={logo} alt="logo" className="logo-container" />
-          <span class="Navbar_brandName">DEXPRESSO</span>
-        </div>
-
-        {/* open sidebar function */}
-        <img
-          onClick={() => {
-            setShow(!show);
-          }}
-          src={menu}
-          alt="..."
-        />
-      </div>
-      {/* mobile sidebar */}
-      <div
-        className="mb_header_container mb_h"
-        style={show ? { width: "100%", left: "0" } : { width: "0%", left: "-187%" }}>
-        <img src={logo} alt="logo" />
-        <div className="nav_items">
-          <ul className="p-0">
-            <li>
-              <NavLink exact to="/" activeClassName="active_link">
-                Trade
-              </NavLink>
-            </li>
-            {hasBridge && (
-              <li>
-                <NavLink exact to="/bridge" activeClassName="active_link">
-                  Bridge
-                </NavLink>
-              </li>
-            )}
-            <li>
-              <NavLink exact to="/security" activeClassName="active_link">
-                Security
-              </NavLink>
-            </li>
-            <li>
-              <a href="https://docs.dexpresso.exchange/" target={"_blank"}>
-                Docs
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div className="wallet justify-content-start">
+    <DexHeader>
+      <BrandLogo />
+      {matches && <HamburgerIcon isClicked={show} handleClick={handleOpenNavbar} />}
+      <MainContent show={show}>
+        {matches && (
+          <XSLogoContainer>
+            <Logo height={150} width={80} />
+          </XSLogoContainer>
+        )}
+        <NavUl>
+          {links.map(
+            ({ name, to, isHidden, target }) =>
+              !isHidden && (
+                <NavItem>
+                  {target === "blank" ? (
+                    <a href={to} target="_blank" rel="noreferrer noopener">
+                      {name}
+                    </a>
+                  ) : (
+                    <NavLink exact to={to} activeClassName="active_link">
+                      {name}
+                    </NavLink>
+                  )}
+                </NavItem>
+              )
+          )}
+        </NavUl>
+        <ActionBtnContainer>
           <NetworkSelection />
-          <div className="d-flex align-items-center justify-content-between mb-3 mb-lg-0">
-            {user.id && user.address ? (
-              <AccountDropdown />
-            ) : (
-              <Button loading={connecting} className="bg_btn" onClick={connect}>
-                <img src={darkPlugHead} alt="..." /> CONNECT WALLET
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* desktop header */}
-      <div className="head_wrapper_desktop dex_h">
-        <div className="nav_items">
-          <NavLink exact to="/">
-            <img src={logo} alt="logo" />
-            <span class="Navbar_brandName">DEXPRESSO</span>
-          </NavLink>
-          <ul className="mx-0 px-0 nav_items_li">
-            <li>
-              <NavLink exact to="/" activeClassName="active_link">
-                Trade
-              </NavLink>
-            </li>
-            {hasBridge && (
-              <li>
-                <NavLink exact to="/bridge" activeClassName="active_link">
-                  Bridge
-                </NavLink>
-              </li>
-            )}
-            <li>
-              <NavLink exact to="/security" activeClassName="active_link">
-                Security
-              </NavLink>
-            </li>
-            <li>
-              <a href="https://docs.dexpresso.exchange/" target={"_blank"}>
-                Docs
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <div className="wallet">
-          <NetworkSelection />
-
-          <div className="head_account_area">
-            {user.id || user.address ? (
-              <AccountDropdown />
-            ) : (
-              <Button
-                className="bg_btn"
-                loading={connecting}
-                text="CONNECT WALLET"
-                img={darkPlugHead}
-                onClick={connect}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-    </header>
+          {user.id && user.address ? (
+            <AccountDropdown />
+          ) : (
+            <Button
+              className="bg_btn"
+              loading={connecting}
+              text="CONNECT WALLET"
+              img={darkPlugHead}
+              onClick={connect}
+              style={{ width: "auto" }}
+            />
+          )}
+        </ActionBtnContainer>
+      </MainContent>
+    </DexHeader>
   );
 };
