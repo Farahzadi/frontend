@@ -452,7 +452,9 @@ export default class NetworkInterface {
       );
       if (amount.lt(minOrderSize))
         throw new VError(
-          `Minimum order size is ${minOrderSize.toFixed()} ${baseCurrency}`
+          `Minimum order size is ${minOrderSize
+            .div(Decimal.pow(10, baseDecimals))
+            .toFixed()} ${baseCurrency}`
         );
 
       const lastPrice = new Decimal(
