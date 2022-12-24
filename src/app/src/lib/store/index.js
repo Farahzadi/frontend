@@ -7,35 +7,60 @@ import apiReducer from "lib/store/features/api/apiSlice";
 import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 import sagas from "./sagas";
 
-const persistConfig = {
-  key: "root",
-  whitelist: [],
-  stateReconciler: autoMergeLevel2,
-  storage,
-};
+class Store {
+  static instance = null;
 
-const apiPersistConfig = {
-  key: "api",
-  whitelist: ["user", "currentMarket", "bridgeReceipts", "network"],
-  storage,
-};
+  static getInstance() {
+    return this.instance;
+  }
 
-const sagaMiddleware = createSagaMiddleware();
+  static init(config) {
+    const persistConfig = {
+      key: "root",
+      whitelist: [],
+      stateReconciler: autoMergeLevel2,
+      storage,
+    };
 
-const rootReducer = combineReducers({
-  api: persistReducer(apiPersistConfig, apiReducer),
-});
+    const apiPersistConfig = {
+      key: "api",
+      whitelist: ["user", "currentMarket", "bridgeReceipts", "network"],
+      storage,
+    };
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+    const sagaMiddleware = createSagaMiddleware();
 
-const store = configureStore({
-  reducer: persistedReducer,
-  devTools: process.env.NODE_ENV !== "production",
-  middleware: [sagaMiddleware],
-});
+    const rootReducer = combineReducers({
+      api: persistReducer(apiPersistConfig, apiReducer),
+    });
 
-sagaMiddleware.run(sagas);
+    const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-export const persistor = persistStore(store);
+    const store = configureStore({
+      reducer: persistedReducer,
+      devTools: process.env.NODE_ENV !== "production",
+      middleware: [sagaMiddleware],
+    });
 
-export default store;
+    const persistor = persistStore(store);
+
+    this.instance = new Store(config.core, store, persistor, sagaMiddleware);
+  }
+
+  constructor(core, store, persistor, sagaMiddleware) {
+    this.core = core;
+    this.reduxStore = store;
+    this.persistor = persistor;
+    this.sagaMiddleware = sagaMiddleware;
+  }
+
+  start() {
+    this.sagaMiddleware.run(sagas, this.core);
+  }
+
+  getState() {
+    return this.reduxStore.getState();
+  }
+}
+
+export default Store;

@@ -1,4 +1,3 @@
-import api from "lib/api";
 import { REHYDRATE } from "redux-persist";
 import { takeEvery, put, all, select, delay, apply } from "redux-saga/effects";
 
@@ -13,24 +12,22 @@ function* handleSingleMessageSaga({ payload }) {
   });
 }
 
-export function* messageHandlerSaga() {
+export function* messageHandlerSaga(core) {
   yield takeEvery("api/handleMessage", handleSingleMessageSaga);
 }
 
-export function* userPollingSaga() {
+export function* userPollingSaga(core) {
   const STEPS_TO_UPDATE_USER_CHAIN_DETAILS = 3;
   for (let i = 0; ; i = (i + 1) % STEPS_TO_UPDATE_USER_CHAIN_DETAILS) {
     const shouldUpdateUserChainDetails =
       i % STEPS_TO_UPDATE_USER_CHAIN_DETAILS === 0;
     try {
-      if (api) {
-        yield all([
-          apply(api, api.run, ["updateUserBalancesState", true]),
-          ...(shouldUpdateUserChainDetails
-            ? [apply(api, api.run, ["updateUserChainDetailsState", true])]
-            : []),
-        ]);
-      }
+      yield all([
+        apply(core, core.run, ["updateUserBalancesState", true]),
+        ...(shouldUpdateUserChainDetails
+          ? [apply(core, core.run, ["updateUserChainDetailsState", true])]
+          : []),
+      ]);
     } catch (err) {
       console.log("Error: Core balances and chain details update error:", err);
     }
@@ -38,33 +35,39 @@ export function* userPollingSaga() {
   }
 }
 
-function* handleHydration({ payload, key }) {
+function* handleHydration({ payload, key }, core) {
   if (key === "api") {
     if (payload && payload.network) {
       const user = yield select((state) => state.api?.user);
-      yield apply(api, api.setNetwork, [payload.network.name]);
+      yield apply(core, core.run, ["setNetwork", payload.network.name]);
 
       if (user?.address) {
         try {
-          yield apply(api, api.run, ["connectWallet"]);
+          yield apply(core, core.run, ["connectWallet"]);
         } catch (err) {
           console.log("There was an error reauthenticating", err);
         }
       }
     } else {
       console.log(`Switching to default network "${DEFAULT_NETWORK}"`);
-      yield apply(api, api.setNetwork, [DEFAULT_NETWORK ?? "ethereum"]);
+      yield apply(core, core.run, [
+        "setNetwork",
+        DEFAULT_NETWORK ?? "ethereum",
+      ]);
     }
   }
 }
 
-export function* hydrationHandlerSaga() {
+export function* hydrationHandlerSaga(core) {
   yield takeEvery(REHYDRATE, function* (data) {
-    yield handleHydration(data);
-    if (data?.key === "root") yield userPollingSaga();
+    yield handleHydration(data, core);
   });
 }
 
-export default function* apiSaga() {
-  yield all([messageHandlerSaga(), hydrationHandlerSaga()]);
+export default function* apiSaga(core) {
+  yield all([
+    userPollingSaga(core),
+    messageHandlerSaga(core),
+    hydrationHandlerSaga(core),
+  ]);
 }
