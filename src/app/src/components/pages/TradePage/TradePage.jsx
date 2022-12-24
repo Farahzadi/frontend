@@ -32,6 +32,7 @@ import {
 import "./style.css";
 import api from "lib/api";
 import { getFillDetailsWithoutFee } from "lib/utils";
+import networkManager from "../../../config/NetworkManager";
 
 const TradePage = () => {
   const [marketDataTab, updateMarketDataTab] = useState("pairs");
@@ -58,7 +59,8 @@ const TradePage = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (!uuid || !network) return;
+    if (!uuid || !network || !networkManager.has(network, currentMarket))
+      return;
 
     const sub = () => api.subscribeToMarket(currentMarket);
 

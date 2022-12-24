@@ -11,13 +11,12 @@ class NetworkManager {
       "WBTC-DAI",
       "DAI-USDT",
       "DAI-USDC",
-      "WETH-ETH",
       "FXS-FRAX",
       "ETH-FRAX",
     ],
     zksyncv1_goerli: ["ETH-USDC", "ETH-DAI", "DAI-USDC"],
-    ethereum: ["ETH-USDC", "ETH-DAI", "DAI-USDC"],
-    ethereum_goerli: ["ETH-USDC", "ETH-DAI", "DAI-USDC"],
+    ethereum: ["WETH-USDC", "WETH-DAI", "DAI-USDC"],
+    ethereum_goerli: ["WETH-USDC", "WETH-DAI", "DAI-USDC"],
   };
 
   set(data, expand = false) {

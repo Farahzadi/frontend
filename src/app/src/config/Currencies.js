@@ -20,6 +20,23 @@ const Currencies = {
       },
     },
   },
+  WETH: {
+    image: require("assets/images/currency/ETH.svg"),
+    name: "Wrapped Ether",
+    decimals: 18,
+    chain: {
+      zksyncv1: {
+        contract: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+        L2Contract: 61,
+      },
+      ethereum: {
+        contract: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      },
+      ethereum_goerli: {
+        contract: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
+      },
+    },
+  },
   USDC: {
     image: require("assets/images/currency/USDC.svg"),
     name: "USDC",

@@ -85,7 +85,7 @@ export const apiSlice = createSlice({
       hasContract: null,
     },
     providerState: "DISCONNECTED",
-    currentMarket: "ETH-DAI",
+    currentMarket: null,
     config: {},
     marketFills: {},
     bridgeReceipts: [],
@@ -131,20 +131,22 @@ export const apiSlice = createSlice({
     },
     _markets_stats_ws(state, { payload }) {
       if (!payload.data) return;
-      payload.data.map(translators.markets_stats).forEach((update) => {
-        const { market, price, priceChange: change } = update;
-        if (networkManager.has(state.network.name, market)) {
+      state.lastPrices = {};
+      payload.data
+        .map(translators.markets_stats)
+        .filter((update) =>
+          networkManager.has(state.network.name, update.market)
+        )
+        .forEach((update) => {
+          const { market, price, priceChange: change } = update;
           state.lastPrices[market] = {
             price,
             change,
           };
-        } else {
-          delete state.lastPrices[market];
-        }
-        if (market === state.currentMarket) {
-          state.marketSummary = { ...update };
-        }
-      });
+          if (market === state.currentMarket) {
+            state.marketSummary = { ...update };
+          }
+        });
     },
     _markets_config_get(state, { payload }) {
       state.config = payload.data.config.map(translators.markets_config)[0];
@@ -358,6 +360,10 @@ export const apiSlice = createSlice({
     },
     setNetwork(state, { payload }) {
       state.network = payload;
+      if (!networkManager.has(state.network.name, state.currentMarket))
+        apiSlice.caseReducers.setCurrentMarket(state, {
+          payload: networkManager.get(state.network.name)[0],
+        });
     },
     setProviderState(state, { payload }) {
       state.providerState = payload;
