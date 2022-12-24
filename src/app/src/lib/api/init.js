@@ -18,70 +18,70 @@ import {
   setUserChainDetails,
 } from "lib/store/features/api/apiSlice";
 
-export const initActions = (api, store) => {
-  api.on("bridgeReceipt", (bridgeReceipt) => {
+export const initActions = (core, store) => {
+  core.on("bridgeReceipt", (bridgeReceipt) => {
     store.dispatch(addBridgeReceipt(bridgeReceipt));
   });
 
-  api.on("bridgeReceiptStatus", (status) => {
+  core.on("bridgeReceiptStatus", (status) => {
     store.dispatch(addbridgeReceiptStatus(status));
   });
 
-  api.on("signOut", () => {
+  core.on("signOut", () => {
     store.dispatch(clearUserOrders());
     store.dispatch(clearUserDetails());
   });
 
-  api.on("networkChange", (payload) => {
+  core.on("networkChange", (payload) => {
     store.dispatch(setNetwork(payload));
   });
 
-  api.on("providerStateChange", (state) => {
+  core.on("providerStateChange", (state) => {
     console.log("PROVIDER STATE CHANGE", state);
     store.dispatch(setProviderState(state));
   });
 
-  api.on("message", (op, data) => {
+  core.on("message", (op, data) => {
     store.dispatch(handleMessage({ op, data }));
   });
 
-  api.on("rangePrice", (price) => {
+  core.on("rangePrice", (price) => {
     store.dispatch(rangePrice(price));
   });
 
-  api.on("selectedPrice", (price) => {
+  core.on("selectedPrice", (price) => {
     store.dispatch(setSelectedPrice(price));
   });
 
-  api.on("orderSide", (side) => {
+  core.on("orderSide", (side) => {
     store.dispatch(setOrderSide(side));
   });
 
-  api.on("close", () => {
+  core.on("close", () => {
     store.dispatch(clearUuid());
   });
 
-  api.on("setNetworkList", (networks) => {
+  core.on("setNetworkList", (networks) => {
     store.dispatch(setNetworkList(networks));
   });
 
-  api.on("updateUser", (user) => {
+  core.on("updateUser", (user) => {
     store.dispatch(setUserDetails(user));
   });
 
-  api.on("updateUserAddress", (userAddress) => {
+  core.on("updateUserAddress", (userAddress) => {
     store.dispatch(setUserAddress(userAddress));
   });
 
-  api.on("updateUserBalances", (balances) => {
+  core.on("updateUserBalances", (balances) => {
     store.dispatch(setUserBalances(balances));
   });
 
-  api.on("updateUserAvailableBalances", (availableBalances) => {
+  core.on("updateUserAvailableBalances", (availableBalances) => {
     store.dispatch(setUserAvailableBalances(availableBalances));
   });
 
-  api.on("updateUserChainDetails", (chainDetails) => {
+  core.on("updateUserChainDetails", (chainDetails) => {
     store.dispatch(setUserChainDetails(chainDetails));
   });
 };

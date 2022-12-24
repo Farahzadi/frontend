@@ -30,8 +30,8 @@ import {
   userSelector,
 } from "lib/store/features/api/apiSlice";
 import "./style.css";
-import api from "lib/api";
 import { getFillDetailsWithoutFee } from "lib/utils";
+import Core from "lib/api/Core";
 import networkManager from "../../../config/NetworkManager";
 
 const TradePage = () => {
@@ -62,23 +62,25 @@ const TradePage = () => {
     if (!uuid || !network || !networkManager.has(network, currentMarket))
       return;
 
-    const sub = () => api.subscribeToMarket(currentMarket);
+    const sub = () => Core.run("subscribeToMarket", currentMarket);
 
-    if (api.ws.readyState !== WebSocket.OPEN) api.on("open", sub);
+    const core = Core.getInstance();
+
+    if (core.ws.readyState !== WebSocket.OPEN) core.on("open", sub);
     else sub();
 
-    api.getOrderBook(currentMarket);
-    api.getMarketInfo(currentMarket);
-    api.getMarketConfig(currentMarket);
+    Core.run("getOrderBook", currentMarket);
+    Core.run("getMarketInfo", currentMarket);
+    Core.run("getMarketConfig", currentMarket);
 
     return () => {
-      api.off("open");
+      core.off("open");
     };
   }, [uuid, currentMarket, network]);
 
   // useEffect(() => {
   //   if (uuid && providerState === APIProvider.State.CONNECTED)
-  //     api.connectWallet();
+  //     Core.run("connectWallet");
   // }, [uuid, network, providerState]);
 
   const updateMarketChain = (market) => {
@@ -213,9 +215,9 @@ const TradePage = () => {
                           setRangePrice={setRangePrice}
                           signInHandler={() => {
                             setIsLoading(true);
-                            api
-                              .connectWallet()
-                              .finally(() => setIsLoading(false));
+                            Core.run("connectWallet").finally(() =>
+                              setIsLoading(false)
+                            );
                           }}
                           user={user}
                           currentMarket={currentMarket}

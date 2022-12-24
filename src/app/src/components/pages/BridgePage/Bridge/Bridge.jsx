@@ -6,10 +6,10 @@ import {
   userChainDetailsSelector,
   userAddressSelector,
   userBalancesSelector,
+  networkConfigSelector,
 } from "lib/store/features/api/apiSlice";
 import Loader from "react-loader-spinner";
 import ethLogo from "assets/images/currency/ETH.svg";
-import api from "lib/api";
 import { maxAllowance } from "lib/api/constants";
 import { formatUSD } from "lib/utils";
 import cx from "classnames";
@@ -23,6 +23,7 @@ import { networks } from "./utils";
 import { Modal } from "components/atoms/Modal";
 import Currencies from "config/Currencies";
 import Decimal from "decimal.js";
+import Core from "lib/api/Core";
 
 const defaultTransfer = {
   type: "deposit",
@@ -34,6 +35,7 @@ const Bridge = () => {
   const userL1Balances = userChainDetails?.L1Balances;
   const userBalances = useSelector(userBalancesSelector);
   const userAllowances = userChainDetails?.allowances;
+  const networkConfig = useSelector(networkConfigSelector);
   const [loading, setLoading] = useState(false);
   const [isApproving, setApproving] = useState(false);
   const [formErr, setFormErr] = useState("");
@@ -70,13 +72,13 @@ const Bridge = () => {
       const type = (transfer.type = "withdraw");
       setTransfer({ type });
     } else {
-      api.run("updateUserBalancesState", true);
+      Core.run("updateUserBalancesState", true);
       const type = (transfer.type = "deposit");
       setTransfer({ type });
     }
 
     if (fromNetwork.from.key === "ethereum") {
-      api.run("updateUserBalancesState", true);
+      Core.run("updateUserBalancesState", true);
       const currency = switchClicking ? swapDetails.currency : "ETH";
       setSwapDetails({ amount: "", currency });
     } else if (
@@ -92,9 +94,9 @@ const Bridge = () => {
   useEffect(() => {
     (async () => {
       // update changePubKeyFee fee if needed
-      if (userAddress && api.networkInterface?.HAS_BRIDGE) {
+      if (userAddress && networkConfig.hasBridge) {
         // TODO
-        const usdFee = await api.run("changePubKeyFee");
+        const usdFee = await Core.run("changePubKeyFee");
         setUsdFee(usdFee);
         if (Number.isFinite(usdFee / currencyValue)) {
           if (currencyValue) {
@@ -154,8 +156,7 @@ const Bridge = () => {
 
     if (userAddress && transfer.type === "withdraw") {
       setFee(null);
-      api
-        .run("withdrawL2Fee", details.currency)
+      Core.run("withdrawL2Fee", details.currency)
         .then((fee) => setFee(fee))
         .catch((err) => {
           console.log(err);
@@ -175,7 +176,7 @@ const Bridge = () => {
   };
 
   const disconnect = () => {
-    api.disconnectWallet().catch((err) => console.log(err));
+    Core.run("disconnectWallet").catch((err) => console.log(err));
   };
 
   const ethLayer1Header = (
@@ -217,8 +218,7 @@ const Bridge = () => {
   const approveSpend = (e) => {
     if (e) e.preventDefault();
     setApproving(true);
-    api
-      .run("approveL1", swapDetails.currency)
+    Core.run("approveL1", swapDetails.currency)
       .then(() => {
         setShowModal(false);
         setApproving(false);
@@ -239,8 +239,8 @@ const Bridge = () => {
     setLoading(true);
 
     if (transfer.type === "deposit")
-      await api.run("depositL2", swapDetails.amount, swapDetails.currency);
-    else await api.run("withdrawL2", swapDetails.amount, swapDetails.currency);
+      await Core.run("depositL2", swapDetails.amount, swapDetails.currency);
+    else await Core.run("withdrawL2", swapDetails.amount, swapDetails.currency);
 
     setLoading(false);
   };
@@ -333,7 +333,7 @@ const Bridge = () => {
                 className="bg_btn bg_btn-transfer"
                 text="CONNECT WALLET"
                 img={darkPlugHead}
-                onClick={() => api.connectWallet()}
+                onClick={() => Core.run("connectWallet")}
               />
             )}
             {userAddress && balances?.[swapDetails.currency] && !hasAllowance && (
@@ -657,7 +657,7 @@ const Bridge = () => {
                   className="bg_btn bg_btn-transfer"
                   text="CONNECT WALLET"
                   img={darkPlugHead}
-                  onClick={() => api.connectWallet()}
+                  onClick={() => Core.run("connectWallet")}
                 />
               )}
               {userAddress &&

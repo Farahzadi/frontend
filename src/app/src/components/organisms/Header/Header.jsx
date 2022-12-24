@@ -8,8 +8,7 @@ import {
   userChainDetailsSelector,
   userAddressSelector
 } from "lib/store/features/api/apiSlice";
-import api from "lib/api";
-import logo from "assets/images/logo.svg";
+import logo from "assets/images/LogoMarkCremeLight.svg";
 import menu from "assets/icons/menu.png";
 import darkPlugHead from "assets/icons/dark-plug-head.png";
 import NetworkSelection from "components/molecules/NetworkSelection/NetworkSelection";
@@ -26,6 +25,7 @@ import {
   ActionBtnContainer,
   XSLogoContainer
 } from "./Header.module";
+import Core from "lib/api/Core";
 
 export const Header = () => {
   // state to open or close the sidebar in mobile
@@ -46,7 +46,7 @@ export const Header = () => {
   const handleMenu = ({ key }) => {
     switch (key) {
       case "signOut":
-        api.disconnectWallet();
+        Core.run("disconnectWallet");
         return;
       default:
         throw new Error("Invalid dropdown option");
@@ -55,7 +55,7 @@ export const Header = () => {
 
   const connect = () => {
     setConnecting(true);
-    api.connectWallet().finally(() => {
+    Core.run("connectWallet").finally(() => {
       setConnecting(false);
     });
   };

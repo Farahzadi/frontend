@@ -5,7 +5,6 @@ import {
 } from "../../../lib/store/features/api/apiSlice";
 import React, { useEffect, useState } from "react";
 import { Modal } from "../../atoms/Modal";
-import api from "../../../lib/api";
 import Pane from "../../atoms/Pane/Pane";
 import { FaEquals, FaTimes, FaMinus } from "react-icons/all";
 import { userAddressSelector } from "../../../lib/store/features/api/apiSlice";
@@ -13,6 +12,7 @@ import Submit from "../../atoms/Form/Submit";
 import Form from "../../atoms/Form/Form";
 import { x } from "@xstyled/styled-components";
 import { toast } from "react-toastify";
+import Core from "lib/api/Core";
 
 const AllocationModal = ({ onClose, show, onSuccess, bytesToPurchase }) => {
   const userAddress = useSelector(userAddressSelector);
@@ -28,11 +28,11 @@ const AllocationModal = ({ onClose, show, onSuccess, bytesToPurchase }) => {
   const [totalPrice, setTotalPrice] = useState(fileSizeKB * pricePerKB);
   const [isUSDCBalanceSufficient, setIsUSDCBalanceSufficient] = useState(false);
 
-  useEffect(() => api.getBalances(), []);
+  useEffect(() => Core.run("updateUserBalancesState"), []);
 
   useEffect(() => {
     if (userAddress) {
-      api.refreshArweaveAllocation(userAddress);
+      Core.run("refreshArweaveAllocation", userAddress);
       const kbToPurchase = Number((bytesToPurchase - arweaveAllocation) / 1000);
       setTotalPrice(kbToPurchase * pricePerKB);
       if (totalPrice) {
@@ -96,7 +96,10 @@ const AllocationModal = ({ onClose, show, onSuccess, bytesToPurchase }) => {
       <Form
         onSubmit={async () => {
           try {
-            const transaction = await api.purchaseArweaveBytes(bytesToPurchase);
+            const transaction = await Core.run(
+              "purchaseArweaveBytes",
+              bytesToPurchase
+            );
             await transaction.awaitReceipt();
             await onSuccess();
           } catch (e) {

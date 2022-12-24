@@ -12,10 +12,10 @@ import {
   networkSelector,
   networkConfigSelector,
 } from "lib/store/features/api/apiSlice";
-import api from "lib/api";
 import { RangeSlider, Button } from "components";
 import "./SpotForm.css";
 import Currencies from "config/Currencies";
+import Core from "lib/api/Core";
 
 class SpotForm extends React.Component {
   constructor(props) {
@@ -49,7 +49,7 @@ class SpotForm extends React.Component {
     }
     const newState = { ...this.state };
     if (this.props.selectedPrice > 0 && this.props.orderType === "limit") {
-      api.emit("selectedPrice", e.target.value);
+      Core.run("emit", "selectedPrice", e.target.value);
       newState.price = this.props.selectedPrice;
     } else {
       newState.price = e.target.value;
@@ -66,7 +66,7 @@ class SpotForm extends React.Component {
     }
     const newState = { ...this.state };
     if (this.props.rangePrice > 0 && this.props.orderType === "limit") {
-      api.emit("rangePrice", e.target.value);
+      Core.run("emit", "rangePrice", e.target.value);
       newState.baseAmount = this.props.rangePrice;
     } else {
       newState.baseAmount = e.target.value;
@@ -133,7 +133,7 @@ class SpotForm extends React.Component {
 
     let data;
     try {
-      data = await api.validateOrder({
+      data = await Core.run("validateOrder", {
         market: this.props.currentMarket,
         amount,
         price,
@@ -155,7 +155,7 @@ class SpotForm extends React.Component {
 
     // send feeType for limit order (fee method)
     try {
-      await api.submitOrder(data);
+      await Core.run("submitOrder", data);
     } catch (e) {
       console.log(e);
       toast.error(e.message);
@@ -320,7 +320,7 @@ class SpotForm extends React.Component {
   rangeSliderHandler(e, val) {
     if (!this.props.user.address) return;
 
-    api.emit("rangePrice", 0);
+    Core.run("emit", "rangePrice", 0);
     const baseBalance = this.getBaseBalance();
     const baseCurrency = this.props.currentMarket.split("-")[0];
     const decimals = Currencies[baseCurrency].decimals;

@@ -4,7 +4,6 @@ import Decimal from "decimal.js";
 
 import "./Footer.css";
 import loadingGif from "assets/icons/loading.svg";
-import api from "lib/api";
 import {
   currentMarketSelector,
   unbroadcastedSelector,
@@ -12,7 +11,12 @@ import {
   networkSelector,
 } from "lib/store/features/api/apiSlice";
 import { Modal } from "../../atoms/Modal";
-import { getFillDetailsWithoutFee, getOrderDetailsWithoutFee, hasOneDayPassed } from "lib/utils";
+import {
+  getFillDetailsWithoutFee,
+  getOrderDetailsWithoutFee,
+  hasOneDayPassed,
+} from "lib/utils";
+import Core from "lib/api/Core";
 
 class Footer extends React.Component {
   constructor(props) {
@@ -249,7 +253,7 @@ class Footer extends React.Component {
                   <td data-label="Action">
                     <span
                       className="cancel_order_link"
-                      onClick={() => api.cancelOrder(orderId)}
+                      onClick={() => Core.run("cancelOrder", orderId)}
                     >
                       Cancel
                     </span>
@@ -588,9 +592,7 @@ class Footer extends React.Component {
         break;
       case "balances":
         if (this.props.user.balances) {
-          const balancesContent = Object.keys(
-            this.props.user.balances
-          )
+          const balancesContent = Object.keys(this.props.user.balances)
             .sort()
             .map((token) => {
               let balance = this.props.user.balances[token].valueReadable;
@@ -643,7 +645,7 @@ class Footer extends React.Component {
           onClose={this.handleClose}
           onSubmit={() => {
             this.handleClose();
-            api.cancelAllOrders();
+            Core.run("cancelAllOrders");
           }}
         ></Modal>
         <div className="user-info">

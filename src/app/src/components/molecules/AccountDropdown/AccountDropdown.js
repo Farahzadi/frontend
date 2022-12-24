@@ -14,10 +14,10 @@ import {
   networkConfigSelector,
 } from "lib/store/features/api/apiSlice";
 import { formatUSD } from "lib/utils";
-import api from "lib/api";
 import logo from "../../../../src/assets/images/LogoMarkCremeLight.svg";
 import { Button } from "@mui/material";
 import Currencies, { getNetworkCurrencies } from "config/Currencies";
+import Core from "lib/api/Core";
 
 const DropdownDisplay = styled("div")(({ show, theme }) => ({
   position: "absolute",
@@ -319,7 +319,7 @@ export const AccountDropdown = () => {
           )}
         </DropdownContent>
         <DropdownFooter>
-          <SignOutButton onClick={() => api.disconnectWallet()}>
+          <SignOutButton onClick={() => Core.run("disconnectWallet")}>
             <IoMdLogOut /> Disconnect
           </SignOutButton>
         </DropdownFooter>

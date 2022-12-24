@@ -1,7 +1,6 @@
 import { createIcon } from "@download/blockies";
 import { getNetworkCurrencies } from "config/Currencies";
 import Decimal from "decimal.js";
-import store from "lib/store";
 import {
   configSelector,
   lastPricesSelector,
@@ -307,7 +306,6 @@ export default class NetworkInterface {
   async getUserDetails() {
     const { userDetails } = this;
     const address = await this.getAddress();
-    console.log("addr1", address);
     const name = address && (await this.getProfileName(address));
     const image = address && (await this.getProfileImage(address));
     return {
@@ -332,7 +330,7 @@ export default class NetworkInterface {
     let balance = new Decimal(balances[ticker].value);
 
     const validStatuses = ["o", "b", "pm"];
-    Object.entries(userOrdersSelector(store.getState()))
+    Object.entries(userOrdersSelector(this.getStoreState()))
       .filter(
         ([id, order]) =>
           this.NETWORK === order.chainId && validStatuses.includes(order.status)
@@ -424,7 +422,7 @@ export default class NetworkInterface {
         true
       );
 
-      const state = store.getState();
+      const state = this.getStoreState();
 
       try {
         if (this.HAS_CONTRACT) {
@@ -527,5 +525,9 @@ export default class NetworkInterface {
 
   emit(msg, ...args) {
     this.core.emit(msg, ...args);
+  }
+
+  getStoreState() {
+    return this.core.store?.getState();
   }
 }

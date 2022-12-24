@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
-import api from "lib/api";
 import { DefaultTemplate } from "components";
 import { AiOutlineQuestionCircle, RiErrorWarningLine } from "react-icons/all";
 import "bootstrap";
@@ -34,6 +33,7 @@ import { sleep } from "../../../lib/helpers/utils";
 import { HiExternalLink } from "react-icons/hi";
 import ExternalLink from "./ExternalLink";
 import TextInput from "../../atoms/Form/TextInput";
+import Core from "lib/api/Core";
 
 export const TRADING_VIEW_CHART_KEY = "tradingViewChart";
 
@@ -80,7 +80,7 @@ export default function ListPairPage() {
   const bytesToPurchase = 500000;
 
   const refreshUserArweaveAllocation = () => {
-    return api.refreshArweaveAllocation(userAddress);
+    return Core.run("refreshArweaveAllocation", userAddress);
   };
 
   const getAmountForTargetNotional = (price) => {
@@ -130,10 +130,11 @@ export default function ListPairPage() {
   async function getBaseInfo(baseAssetId, chainId) {
     if (baseAssetId && baseAssetId !== "") {
       try {
-        const { symbol } = await api.getTokenInfo(baseAssetId, chainId);
+        const { symbol } = await Core.run("getTokenInfo", baseAssetId, chainId);
         if (symbol) {
           try {
-            const { price: apiPrice } = await api.getTokenPrice(
+            const { price: apiPrice } = await Core.run(
+              "getTokenPrice",
               baseAssetId,
               chainId
             );
@@ -166,10 +167,15 @@ export default function ListPairPage() {
   async function getQuoteInfo(quoteAssetId, chainId) {
     if (quoteAssetId && quoteAssetId !== "") {
       try {
-        const { symbol } = await api.getTokenInfo(quoteAssetId, chainId);
+        const { symbol } = await Core.run(
+          "getTokenInfo",
+          quoteAssetId,
+          chainId
+        );
         if (symbol) {
           try {
-            const { price: apiPrice } = await api.getTokenPrice(
+            const { price: apiPrice } = await Core.run(
+              "getTokenPrice",
               quoteAssetId,
               chainId
             );
@@ -238,8 +244,9 @@ export default function ListPairPage() {
       const timestamp = Date.now();
       const message = `${userAddress}:${timestamp}`;
       try {
-        const signature = await api.signMessage(message);
-        const response = await api.uploadArweaveFile(
+        const signature = await Core.run("signMessage", message);
+        const response = await Core.run(
+          "uploadArweaveFile",
           userAddress,
           timestamp,
           signature,

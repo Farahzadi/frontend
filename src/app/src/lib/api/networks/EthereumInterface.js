@@ -136,7 +136,6 @@ export default class EthereumInterface extends NetworkInterface {
   }
 
   async getProfileName(address) {
-    console.log(address);
     return (
       (await this.fetchENSName(address)) ??
       (await super.getProfileName(address))

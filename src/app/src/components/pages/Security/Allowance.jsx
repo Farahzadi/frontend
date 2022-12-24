@@ -8,8 +8,11 @@ import { useSelector } from "react-redux";
 import { balancesSelector } from "lib/store/features/api/apiSlice";
 import { validateNumberInputs } from "lib/utils";
 import api from "lib/api";
-import { useMediaQuery } from '@mui/material';
-import { useTheme } from '@mui/styles';
+import { useMediaQuery } from "@mui/material";
+import { useTheme } from "@mui/styles";
+import { userChainDetailsSelector } from "lib/store/features/api/apiSlice";
+import Core from "lib/api/Core";
+
 const Container = styled("div")(({ theme }) => ({
   justifyContent: "center",
   display: "flex",
@@ -17,7 +20,7 @@ const Container = styled("div")(({ theme }) => ({
   minHeight: "80vh",
   color: theme.palette.secondary.dark
 }));
-const InnerContainer = styled("div")(({theme}) => ({
+const InnerContainer = styled("div")(({ theme }) => ({
   padding: "1.25em",
   maxWidth: "min(765px, 100vw)",
   minHeight: "337px",
@@ -49,7 +52,7 @@ const Ellipsis = styled("span")(() => ({
   color: "white",
   borderRadius: "3px"
 }));
-const InputContainer = styled("div")(({theme}) => ({
+const InputContainer = styled("div")(({ theme }) => ({
   marginBottom: "0.5rem",
   display: "flex",
   flexFlow: "row",
@@ -64,8 +67,8 @@ const FormContainer = styled("div")(() => ({
 const Input = styled("input")(({ theme }) => ({
   border: "none",
   height: "52px",
-  minWidth: theme.breakpoints.down('sm') ? "100px" : "160px",
-  maxWidth: theme.breakpoints.down('sm') ? "min(150px, 100vw - 175px)" : "160px",
+  minWidth: theme.breakpoints.down("sm") ? "100px" : "160px",
+  maxWidth: theme.breakpoints.down("sm") ? "min(150px, 100vw - 175px)" : "160px",
   textAlign: "right",
   borderTopRightRadius: "24px",
   borderBottomRightRadius: "24px",
@@ -90,18 +93,18 @@ const BtnContainer = styled("div")(() => ({
 
 const Allowance = () => {
   const allowances = useSelector(userChainDetailsSelector)?.allowances;
-  const [allowance, setAllowance] = useState('');
+  const [allowance, setAllowance] = useState("");
   const [preAllowance, setPreAllowance] = useState();
   const [truncated, setTruncated] = useState(true);
   const [allowanceInfo, setAllowanceInfo] = useState(true);
   const [currency, setCurrency] = useState("ETH");
   const [pending, setPending] = useState(false);
   const theme = useTheme();
-  const matches = useMediaQuery(theme.breakpoints.down('sm'));
+  const matches = useMediaQuery(theme.breakpoints.down("sm"));
   useEffect(() => {
     if (currency) {
-      setAllowance(allowances?.[currency]?.allowance?.valueReadable?.toString() || '');
-      setPreAllowance(+allowances?.[currency]?.allowance?.valueReadable?.toString() || '');
+      setAllowance(allowances?.[currency]?.allowance?.valueReadable?.toString() || "");
+      setPreAllowance(+allowances?.[currency]?.allowance?.valueReadable?.toString() || "");
     }
   }, [currency]);
   useEffect(() => {
@@ -121,8 +124,7 @@ const Allowance = () => {
   };
   const handleSubmitAllowance = async () => {
     setPending(true);
-    await api
-      .approveSpendOfCurrency(currency, allowance)
+    await Core.run("approve", currency, allowance)
       .catch((err) => {
         console.log(err);
       })

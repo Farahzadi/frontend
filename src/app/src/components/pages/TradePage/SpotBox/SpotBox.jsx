@@ -11,7 +11,7 @@ import {
   allOrdersSelector,
   orderSideSelector,
 } from "lib/store/features/api/apiSlice";
-import api from "lib/api";
+import Core from "lib/api/Core";
 
 class SpotBox extends React.Component {
   constructor(props) {
@@ -21,9 +21,9 @@ class SpotBox extends React.Component {
 
   sellOrBuy = (isBuying) => {
     if (isBuying) {
-      api.emit("orderSide", isBuying);
+      Core.run("emit", "orderSide", isBuying);
     }
-    api.emit("orderSide", isBuying);
+    Core.run("emit", "orderSide", isBuying);
   };
 
   updateOrderType(orderType) {
