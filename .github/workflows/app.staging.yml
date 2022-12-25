@@ -58,3 +58,4 @@ jobs:
           docker-compose up -d --build
           chmod +x update.sh
           ./update.sh
+          docker system prune -f
