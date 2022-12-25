@@ -3,7 +3,12 @@ import { getNetworkCurrencies, getNetworkCurrency } from "config/Currencies";
 import Decimal from "decimal.js";
 import { BigNumber, ethers } from "ethers";
 import { getENSName } from "lib/ens";
-import { formatBalances, getCurrentValidUntil, getRatio } from "lib/utils";
+import {
+  formatBalances,
+  getCurrentValidUntil,
+  switchRatio,
+} from "lib/utils";
+import { toast } from "react-toastify";
 import { maxAllowance } from "../constants";
 import EthAPIProvider from "../providers/EthAPIProvider";
 import NetworkInterface from "./NetworkInterface";
@@ -14,7 +19,7 @@ export default class EthereumInterface extends NetworkInterface {
   NETWORK = "ethereum";
   CURRENCY = "ETH";
   CHAIN_ID = 1;
-  DEX_CONTRACT = "0x56FDEd225DD62B59CA3aa27E9Ddb01500e8505b8";
+  DEX_CONTRACT = "0xc38b66f48d86fce3802935d579f885c20aabe875";
   SECURITY_TYPE = SecurityComp.Allowance;
 
   async fetchBalance(ticker, userAddress, isLayerTwo = false) {
@@ -79,7 +84,7 @@ export default class EthereumInterface extends NetworkInterface {
     return allowances;
   }
 
-  async approve(ticker, allowance = maxAllowance, isLayerTwo = false) {
+  async approve(ticker, allowance, isLayerTwo = false) {
     const currency = getNetworkCurrency(this.NETWORK, ticker);
     if (!currency || ticker === this.CURRENCY) return;
     allowance = BigNumber.from(allowance ?? maxAllowance);
@@ -159,10 +164,16 @@ export default class EthereumInterface extends NetworkInterface {
       this.DEX_CONTRACT
     );
     if (new Decimal(allowance.toString()).lt(amount)) {
-      throw new Error("Insufficient allowance");
+      toast.warning("Insufficient allowance");
+      await this.approve(res.baseCurrency);
+      // TODO: throw the error and catch the correct error message to start approving procedure
+      // throw new Error("Insufficient allowance");
     }
     const validUntil = getCurrentValidUntil();
-    const ratio = getRatio(side, price);
+    const ratio = switchRatio(
+      side,
+      res.ratio
+    );
     return {
       ...res,
       validUntil,
@@ -182,8 +193,8 @@ export default class EthereumInterface extends NetworkInterface {
     validUntil,
     ratio,
   }) {
-    let ratioSellArgument = ratio.ratioSellArgument;
-    let ratioBuyArgument = ratio.ratioBuyArgument;
+    let ratioSellArgument = ratio.sell;
+    let ratioBuyArgument = ratio.buy;
     let clientOrderId = Math.floor(Math.random() * 1000000);
     const order = {
       recipient: await this.getAddress(),

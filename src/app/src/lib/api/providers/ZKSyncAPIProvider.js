@@ -341,11 +341,6 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
     return parsedSellQuantity;
   }
 
-  onAccountChange = (cb) => {
-    if (this.state.get() === APIProvider.State.CONNECTED)
-      this.provider.provider.on('accountsChanged', cb);
-  };
-
   getAccountState = async () => {
     const accountState = (await this.syncWallet?.getAccountState()) ?? {};
     return accountState;

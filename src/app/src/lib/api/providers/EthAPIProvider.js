@@ -6,7 +6,6 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 import erc20ContractABI from "lib/contracts/ERC20.json";
 
 export default class EthAPIProvider extends APIProvider {
-
   async start(emitChanges = true) {
     if (emitChanges) this.state.set(APIProvider.State.CONNECTING);
 
@@ -180,4 +179,9 @@ export default class EthAPIProvider extends APIProvider {
     );
     return result;
   }
+
+  onAccountChange = (cb) => {
+    if (this.state.get() === APIProvider.State.CONNECTED)
+      this.provider.provider.on("accountsChanged", cb);
+  };
 }

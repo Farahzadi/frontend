@@ -1,4 +1,4 @@
-import { formatBalances, fromBaseUnit, toBaseUnit } from "lib/utils";
+import { formatBalances, fromBaseUnit, getRatio, toBaseUnit } from "lib/utils";
 import ZKSyncAPIProvider from "../providers/ZKSyncAPIProvider";
 import { ethers } from "ethers";
 import EthereumInterface from "./EthereumInterface";
@@ -137,16 +137,16 @@ export default class ZKSyncInterface extends EthereumInterface {
     return await this.apiProvider.getAccountState();
   }
 
-  getTokenRatio(market, baseRatio, quoteRatio) {
+  getTokenRatio(market, ratio) {
     const [baseCurrency, quoteCurrency] = market.split("-");
     return {
-      [baseCurrency]: baseRatio,
-      [quoteCurrency]: quoteRatio,
+      [baseCurrency]: ratio.base,
+      [quoteCurrency]: ratio.quote,
     };
   }
 
   async validateOrder({ market, price, amount, side, fee, type }) {
-    const res = await NetworkInterface.prototype.validateOrder.call(this, {
+    const res = await super.validateOrder({
       market,
       price,
       amount,
@@ -155,13 +155,18 @@ export default class ZKSyncInterface extends EthereumInterface {
       type,
     });
 
+    
     const buyPrice = Decimal.mul(res.price, Decimal.add(1, res.fee)).toFixed();
     const sellPrice = Decimal.mul(res.price, Decimal.sub(1, res.fee)).toFixed();
-
+    
     const priceWithFee = res.side === "b" ? buyPrice : sellPrice;
+  
+    res.ratio = getRatio(priceWithFee, res.baseDecimals, res.quoteDecimals);
+
     const ratio = zksync.utils.tokenRatio(
-      this.getTokenRatio(res.market, 1, priceWithFee)
+      this.getTokenRatio(res.market, res.ratio)
     );
+
     return {
       ...res,
       ratio,

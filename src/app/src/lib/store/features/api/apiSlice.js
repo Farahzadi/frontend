@@ -16,7 +16,7 @@ const translators = {
     expires: o.expiration,
     userAddress: o.user_address,
     status: o.status,
-    remaining: o.unfilled,
+    remaining: +o.unfilled,
     type: o.type,
     insertTimestamp: o.created_at,
     unbroadcasted: o.unbroadcasted,

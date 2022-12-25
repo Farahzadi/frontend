@@ -70,7 +70,7 @@ export default class APIProvider {
 
   emit(msg, ...args) {
     this.networkInterface.emit(msg, ...args);
-  };
+  }
 
   constructor(networkInterface, onStateChange) {
     this.networkInterface = networkInterface;

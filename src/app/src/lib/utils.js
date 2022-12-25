@@ -76,17 +76,23 @@ export function getCurrentValidUntil() {
   return ((Date.now() / 1000) | 0) + 24 * 3600;
 }
 
-export function getRatio(side, price) {
-  let ratio = {};
-  switch (side) {
-    case "b":
-      ratio.ratioSellArgument = price;
-      ratio.ratioBuyArgument = "1";
-    case "s":
-      ratio.ratioSellArgument = "1";
-      ratio.ratioBuyArgument = price;
+export function getRatio(price, baseDecimals, quoteDecimals) {
+  return {
+    base: toBaseUnit("1", baseDecimals),
+    quote: toBaseUnit(price, quoteDecimals),
+  };
+}
+
+export function switchRatio(side, ratio) {
+  let sell, buy;
+  if (side === "b") {
+    buy = ratio.base;
+    sell = ratio.quote;
+  } else {
+    buy = ratio.quote;
+    sell = ratio.base;
   }
-  return ratio;
+  return { sell, buy };
 }
 
 export function hasOneDayPassed(time) {
