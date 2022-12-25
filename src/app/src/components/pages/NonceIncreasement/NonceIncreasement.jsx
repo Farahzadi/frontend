@@ -7,6 +7,7 @@ import { Button } from "react-bootstrap";
 import { networkSelector, userSelector } from "lib/store/features/api/apiSlice";
 import { toast } from "react-toastify";
 import { Modal } from "../../atoms/Modal";
+import Core from "lib/api/Core";
 
 const NonceIncreasement = () => {
   const [termsCheck, setTersmsCheck] = useState(false);
