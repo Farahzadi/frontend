@@ -65,3 +65,4 @@ jobs:
           export NEXT_PUBLIC_DOCS_LINK=https://docs.dexpresso.exchange
           export APP_BACKEND_API=https://api.dexpresso.exchange/api/v1
           docker-compose up -d
+          docker system prune -f
