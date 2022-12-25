@@ -15,7 +15,7 @@ const TradeSelect = (props) => {
     <>
       <Dropdown className="w-100 newBtn">
         <Dropdown.Toggle id="dropdown-basic">
-        {props.currentMarket}
+        {props.currentMarket ?? ""}
         </Dropdown.Toggle>
 
         <Dropdown.Menu className="dropdown-menu ">

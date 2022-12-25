@@ -3,14 +3,14 @@ import React from "react";
 import "./TradeRatesCard.css";
 
 class TradeRatesCard extends React.Component {
-  render() {
-    let baseCurrency = this.props.currentMarket.split("-")[0];
-    let quoteCurrency = this.props.currentMarket.split("-")[1];
-    const percentChange = (
-      (this.props.marketSummary.priceChange / this.props.marketSummary.price) *
-      100
-    ).toFixed(2);
-    const isMarketSummeryExist = this.props.marketSummary;
+    render() {
+        let baseCurrency = this.props.currentMarket?.split("-")[0] ?? "";
+        let quoteCurrency = this.props.currentMarket?.split("-")[1] ?? "";
+        const percentChange = (
+            (this.props.marketSummary.priceChange /
+                this.props.marketSummary.price) *
+            100
+        ).toFixed(2);
 
     return (
       <>

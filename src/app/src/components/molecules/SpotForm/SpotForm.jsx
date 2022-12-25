@@ -76,14 +76,14 @@ class SpotForm extends React.Component {
   }
 
   getBaseBalance() {
-    const baseCurrency = this.props.currentMarket.split("-")[0];
+    const baseCurrency = this.props.currentMarket?.split("-")[0];
     return (
       this.props.user.availableBalances?.[baseCurrency]?.valueReadable ?? "0"
     );
   }
 
   getQuoteBalance() {
-    const quoteCurrency = this.props.currentMarket.split("-")[1];
+    const quoteCurrency = this.props.currentMarket?.split("-")[1];
     return (
       this.props.user.availableBalances?.[quoteCurrency]?.valueReadable ?? "0"
     );
@@ -450,8 +450,10 @@ class SpotForm extends React.Component {
       this.props.orderType === "market"
         ? this.currentPrice()
         : this.marketPrice();
-    const baseCurrency = this.props.currentMarket.split("-")[0];
-    const quoteCurrency = this.props.currentMarket.split("-")[1];
+    // if (price === 0) price = this.props.rangePrice;
+
+    const baseCurrency = this.props.currentMarket?.split("-")[0];
+    const quoteCurrency = this.props.currentMarket?.split("-")[1];
 
     let baseBalance, quoteBalance;
     if (this.props.user.address) {
