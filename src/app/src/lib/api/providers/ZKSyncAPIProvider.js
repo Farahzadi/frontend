@@ -342,7 +342,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
   }
 
   getAccountState = async () => {
-    const accountState = (await this.syncWallet?.getAccountState()) ?? {};
+    const accountState = await this.syncWallet?.getAccountState();
     return accountState;
   };
 }

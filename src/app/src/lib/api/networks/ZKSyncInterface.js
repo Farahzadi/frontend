@@ -146,7 +146,7 @@ export default class ZKSyncInterface extends EthereumInterface {
   }
 
   async validateOrder({ market, price, amount, side, fee, type }) {
-    const res = await super.validateOrder({
+    const res = await NetworkInterface.prototype.validateOrder.call(this, {
       market,
       price,
       amount,
