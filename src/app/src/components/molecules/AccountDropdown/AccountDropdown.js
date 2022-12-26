@@ -291,7 +291,7 @@ export const AccountDropdown = () => {
           {wallet && (
             <CurrencyList>
               {tickers.map((ticker, key) => {
-                if (!wallet[ticker] || +wallet[ticker].valueReadable === 0) {
+                if (!wallet[ticker] || +wallet[ticker]?.valueReadable === 0) {
                   return null;
                 }
                 return (
@@ -303,12 +303,12 @@ export const AccountDropdown = () => {
                     />
                     <div>
                       <strong>
-                        {wallet[ticker].valueReadable} {ticker}
+                        {wallet[ticker]?.valueReadable} {ticker}
                       </strong>
                       <small>
                         $
                         {formatUSD(
-                          coinEstimator(ticker) * wallet[ticker].valueReadable
+                          coinEstimator(ticker) * wallet[ticker]?.valueReadable
                         )}
                       </small>
                     </div>
