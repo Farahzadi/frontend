@@ -99,7 +99,7 @@ export const Header = () => {
         </NavUl>
         <ActionBtnContainer>
           <NetworkSelection />
-          {userChainDetails?.userId && userAddress ? (
+          {userAddress ? (
             <AccountDropdown />
           ) : (
             <Button
