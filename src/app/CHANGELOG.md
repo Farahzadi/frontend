@@ -8,8 +8,6 @@
 
 🚀 improve decimal arithmetic operations
 
-🚀 improve problems in the phase of placing orders in spot form
-
 🚀 improve user connection via metamask wallet
 
 🚀 Improve security tools with considering the network (increase wallet nonce - allowance)
