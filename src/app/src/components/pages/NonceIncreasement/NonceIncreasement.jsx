@@ -2,13 +2,12 @@ import React, { useState, useEffect } from "react";
 import { DefaultTemplate } from "components";
 import { useHistory, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { userSelector } from "lib/store/features/auth/authSlice";
 import "./NonceIncreasement.css";
-import api from "lib/api";
 import { Button } from "react-bootstrap";
-import { networkSelector } from "lib/store/features/api/apiSlice";
+import { networkSelector, userSelector } from "lib/store/features/api/apiSlice";
 import { toast } from "react-toastify";
 import { Modal } from "../../atoms/Modal";
+import Core from "lib/api/Core";
 
 const NonceIncreasement = () => {
   const [termsCheck, setTersmsCheck] = useState(false);
@@ -26,7 +25,7 @@ const NonceIncreasement = () => {
 
   const connect = () => {
     setConnecting(true);
-    api.connectWallet().finally(() => setConnecting(false));
+    Core.run("connectWallet").finally(() => setConnecting(false));
   };
 
   const acceptNonce = () => {
@@ -36,12 +35,12 @@ const NonceIncreasement = () => {
   };
 
   const getOldNonce = () => {
-    const oldNonce = user.committed.nonce;
+    const oldNonce = user.nonce;
     setOldNonce(oldNonce);
   };
   const increaseWalletNonce = async () => {
     try {
-      const res = await api.increaseWalletNonce();
+      const res = await Core.run("increaseWalletNonce");
       const success = res.response.success;
       if (success) {
         toast.success("wallet nonce increased");
@@ -53,7 +52,7 @@ const NonceIncreasement = () => {
   };
 
   useEffect(() => {
-    if (user.committed) {
+    if (user.nonce) {
       getOldNonce();
     }
   }, []);
@@ -64,16 +63,15 @@ const NonceIncreasement = () => {
       <DefaultTemplate>
         <Modal
           show={open}
-          closeText='No'
-          actionText='Yes'
-          alert='Do you agree with all the changes?'
+          closeText="No"
+          actionText="Yes"
+          alert="Do you agree with all the changes?"
           onSubmit={() => {
             handleClose();
             increaseWalletNonce();
           }}
           onClose={handleClose}
-        >
-        </Modal>
+        ></Modal>
         <div className="nonce-bg">
           <h2 className="mt-2">change nonce setting</h2>
           <div className="nonce-text text-white">

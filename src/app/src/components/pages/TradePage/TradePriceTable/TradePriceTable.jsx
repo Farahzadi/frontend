@@ -4,7 +4,6 @@ import "./TradePriceTable.css";
 
 import { connect } from "react-redux";
 import { numStringToSymbol } from "lib/utils";
-import api from "lib/api";
 import Tooltip from "@mui/material/Tooltip";
 import { Fade } from "@mui/material";
 import {
@@ -14,6 +13,7 @@ import {
   userAddressSelector,
   orderSideSelector,
 } from "lib/store/features/api/apiSlice";
+import Core from "lib/api/Core";
 
 class TradePriceTable extends React.Component {
   constructor(props) {
@@ -74,14 +74,14 @@ class TradePriceTable extends React.Component {
   }
   setRangedPrice() {
     if (!this.props.latestTrades) {
-      api.emit("rangePrice", this.state.rangedData);
-      api.emit("selectedPrice", this.state.selectedPrice);
+      Core.run("emit", "rangePrice", this.state.rangedData);
+      Core.run("emit", "selectedPrice", this.state.selectedPrice);
       this.updateOrderType("limit");
       if (this.props.itsAsks) {
-        api.emit("orderSide", true);
+        Core.run("emit", "orderSide", true);
       }
       if (this.props.itsBids) {
-        api.emit("orderSide", false);
+        Core.run("emit", "orderSide", false);
       }
     }
   }
@@ -91,7 +91,7 @@ class TradePriceTable extends React.Component {
   }
 
   render() {
-    const quoteCurrency = this.props.currentMarket.split("-")[1];
+    const quoteCurrency = this.props.currentMarket?.split("-")[1] ?? "";
 
     const maxQuantity = Math.max(
       ...this.props.priceTableData.map((data) => data.remaining)

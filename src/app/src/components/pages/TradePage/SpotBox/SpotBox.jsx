@@ -9,10 +9,9 @@ import {
   setOrderType,
   orderTypeSelector,
   allOrdersSelector,
-  userAddressSelector,
   orderSideSelector,
 } from "lib/store/features/api/apiSlice";
-import api from "lib/api";
+import Core from "lib/api/Core";
 
 class SpotBox extends React.Component {
   constructor(props) {
@@ -22,9 +21,9 @@ class SpotBox extends React.Component {
 
   sellOrBuy = (isBuying) => {
     if (isBuying) {
-      api.emit("orderSide", isBuying);
+      Core.run("emit", "orderSide", isBuying);
     }
-    api.emit("orderSide", isBuying);
+    Core.run("emit", "orderSide", isBuying);
   };
 
   updateOrderType(orderType) {
@@ -45,7 +44,7 @@ class SpotBox extends React.Component {
           return res;
         }, {});
         
-    let filltered = this.props.userAddress
+    let filltered = this.props.user.address
       ? Object.filter(
           this.props.allOrders,
           (order) =>
@@ -153,7 +152,6 @@ class SpotBox extends React.Component {
 const mapStateToProps = (state) => ({
   orderType: orderTypeSelector(state),
   allOrders: allOrdersSelector(state),
-  userAddress: userAddressSelector(state),
   orderSide: orderSideSelector(state),
 });
 

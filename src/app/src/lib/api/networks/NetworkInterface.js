@@ -1,13 +1,22 @@
-import Decimal from "decimal.js";
 import { createIcon } from "@download/blockies";
-import Emitter from "tiny-emitter";
-import { ethers } from "ethers";
-
-import { getENSName } from "lib/ens";
-import { formatAmount, State } from "lib/utils";
-import erc20ContractABI from "lib/contracts/ERC20.json";
-import { maxAllowance } from "../constants";
-import axios from "axios";
+import { getNetworkCurrencies } from "config/Currencies";
+import Decimal from "decimal.js";
+import {
+  configSelector,
+  lastPricesSelector,
+  marketInfoSelector,
+  marketSummarySelector,
+  networkListSelector,
+  userOrdersSelector,
+  userSelector,
+} from "lib/store/features/api/apiSlice";
+import {
+  formatBalances,
+  getCurrentValidUntil,
+  State,
+  toBaseUnit,
+} from "lib/utils";
+import { isString } from "lodash";
 import { toast } from "react-toastify";
 import APIProvider from "../providers/APIProvider";
 
@@ -25,17 +34,45 @@ export default class NetworkInterface {
     _state = "DISCONNECTED";
   };
 
+  static Actions = [
+    "connectWallet",
+    "disconnectWallet",
+    "updateAddress",
+    "updateNonce",
+    "updateBalances",
+    "updateAvailableBalances",
+    "updateChainDetails",
+    "updateUserDetails",
+    "updateUserState",
+    "updateUserBalancesState",
+    "updateUserChainDetailsState",
+  ];
+
   static Provider = APIProvider;
+
+  static ValidSides = ["s", "b"];
 
   state = new NetworkInterface.State();
 
   NETWORK = "unknown";
+  CURRENCY = "CURRENCY_SYMBOL";
+  HAS_CONTRACT = true;
   HAS_BRIDGE = false;
-  BRIDGE_CONTRACT = "";
+  SECURITY_TYPE = null;
+  BRIDGE_CONTRACT = null;
+  DEX_CONTRACT = null;
 
   core = null;
 
   apiProvider = null;
+
+  userDetails = {
+    address: null,
+    nonce: null,
+    balances: null,
+    availableBalances: null,
+    chainDetails: null,
+  };
 
   shouldSignOut = false;
 
@@ -44,17 +81,19 @@ export default class NetworkInterface {
     this.signInMessage = signInMessage ?? "Login to Dexpresso";
   }
 
-  stop = async () => {
-    await this.stopAPIProvider();
-  };
+  async stop() {
+    await this.disconnectWallet();
+  }
 
-  getConfig = () => {
+  getConfig() {
     return {
-      HAS_BRIDGE: this.HAS_BRIDGE,
+      hasBridge: this.HAS_BRIDGE,
+      hasContract: this.HAS_CONTRACT,
+      securityType: this.SECURITY_TYPE,
     };
-  };
+  }
 
-  connectWallet = async () => {
+  async connectWallet() {
     await this.disconnectWallet();
     try {
       await this.startAPIProvider();
@@ -63,18 +102,15 @@ export default class NetworkInterface {
       console.log("Wallet connection failed with error, disconnecting.", err);
       await this.disconnectWallet();
     }
-  };
+  }
 
-  disconnectWallet = async () => {
+  async disconnectWallet() {
     await this.signOut();
     await this.stopAPIProvider();
-    this.emit("balanceUpdate", "wallet", {});
-    this.emit("balanceUpdate", this.NETWORK, {});
-    this.emit("accountState", {});
     this.emit("signOut");
-  };
+  }
 
-  onProviderStateChange = async (state) => {
+  async onProviderStateChange(state) {
     const mapping = {
       DISCONNECTED: "DISCONNECTED",
       CONNECTING: "PROVIDER_CONNECTING",
@@ -88,12 +124,14 @@ export default class NetworkInterface {
       this.state.set(translatedState);
     }
     this.emit("providerStateChange", state);
-  };
+  }
 
-  startAPIProvider = async () => {
+  async startAPIProvider() {
     if (this.apiProvider) return;
     const APIProviderClass = this.getAPIProviderClass();
-    this.apiProvider = new APIProviderClass(this, this.onProviderStateChange);
+    this.apiProvider = new APIProviderClass(this, (state) =>
+      this.onProviderStateChange(state)
+    );
 
     let result;
     try {
@@ -118,6 +156,7 @@ export default class NetworkInterface {
             href="https://wallet.zksync.io/?network=goerli"
             style={{ color: "white" }}
             target="_blank"
+            rel="noreferrer"
           >
             {" "}
             go to wallet.zksync.io
@@ -127,40 +166,18 @@ export default class NetworkInterface {
       throw new Error();
     }
 
-    this.apiProvider.onAccountChange(this.disconnectWallet);
-  };
+    this.apiProvider.onAccountChange(() => this.disconnectWallet());
+  }
 
-  stopAPIProvider = async () => {
+  async stopAPIProvider() {
     this.apiProvider?.stop();
     delete this.apiProvider;
     this.apiProvider = null;
-  };
+  }
 
-  _fetchENSName = async (address) => {
-    let ENS = {};
-    try {
-      await getENSName(address).then((res) => (ENS.name = res));
-      if (ENS.name) return ENS;
-      return {};
-    } catch (err) {
-      console.log(`ENS error: ${err}`);
-    }
-  };
-
-  getAccountState = async () => {
-    // if(![NetworkInterface.State.PROVIDER_CONNECTED, NetworkInterface.State.SIGNED_IN, NetworkInterface.State.SIGNING_IN
-    //   NetworkInterface.State.].includes(this.state.get()))
-    if (!this.apiProvider) return {};
-    const accountState = { ...(await this.apiProvider.getAccountState()) };
-    accountState.profile = await this.core.getProfile(accountState.address);
-    this.emit("accountState", accountState);
-    return accountState;
-  };
-
-  signIn = async () => {
+  async signIn(finalChecks = true) {
     const { uuid } = this.core.ws;
     const network = this.NETWORK;
-    let accountState;
     if (this.state.get() !== NetworkInterface.State.PROVIDER_CONNECTED)
       throw new Error("SignIn Error: wallet not connected");
     if (!uuid) throw new Error("SignIn Error: UUID not set");
@@ -188,7 +205,7 @@ export default class NetworkInterface {
       sessionStorage.setItem(networkKey, signature);
     }
 
-    this.emit("userChanged", address);
+    this.emit("updateUserAddress", address);
 
     await this.core.sendRequest("login", "POST", {
       network: network,
@@ -197,25 +214,14 @@ export default class NetworkInterface {
       user_data: true,
       uuid,
     });
-
-    try {
-      accountState = await this.getAccountState();
-    } catch (err) {
+    if (finalChecks) {
+      await this.updateUserState(true);
       this.state.set(NetworkInterface.State.SIGNED_IN);
-      throw err;
+      if (this.shouldSignOut) this.signOut();
     }
+  }
 
-    this.emit("signIn", accountState);
-    this._accountState = accountState;
-
-    this.state.set(NetworkInterface.State.SIGNED_IN);
-
-    if (this.shouldSignOut) this.signOut();
-
-    return accountState;
-  };
-
-  signOut = async () => {
+  async signOut() {
     const state = this.state.get();
     this.shouldSignOut = false;
     if (state !== NetworkInterface.State.SIGNED_IN) {
@@ -227,137 +233,316 @@ export default class NetworkInterface {
     this._accountState = null;
     sessionStorage.removeItem("access_token");
     this.state.set(NetworkInterface.State.SIGNED_OUT);
-  };
+  }
 
-  verifiedAccountNonce = async () => {
-    return await this._accountState.verified.nonce;
-  };
+  async updateAddress() {
+    if (!this.apiProvider) return;
+    const address = await this.apiProvider.getAddress();
+    this.userDetails.address = address;
+  }
 
-  increaseWalletNonce = async () => {
-    let increaseNonceResult = {};
+  async getAddress() {
+    return this.userDetails.address;
+  }
 
-    const increaseNonceRes = await this.apiProvider.increaseWalletNonce();
-    // cancel all orders if wallet nonce is increased
-    this.cancelAllOrders();
-    const verifiedAccountNonce = await this._accountState.verified.nonce;
-    if (increaseNonceRes) {
-      increaseNonceResult.response = increaseNonceRes;
-      increaseNonceResult.verifiedAccountNonce = verifiedAccountNonce;
-    }
+  async updateNonce() {
+    if (!this.apiProvider) return;
+    const nonce = await this.apiProvider.getNonce();
+    this.userDetails.nonce = nonce;
+  }
 
-    return increaseNonceResult;
-  };
+  async getNonce() {
+    return this.userDetails.nonce;
+  }
 
-  depositL2 = async (amount, token) => {
-    return this.apiProvider.depositL2(amount, token);
-  };
+  async updatePureBalances() {}
 
-  withdrawL2 = async (amount, token) => {
-    return this.apiProvider.withdrawL2(amount, token);
-  };
+  async updateBalances(...args) {
+    await this.updatePureBalances(...args);
+    await this.updateAvailableBalances(...args);
+  }
 
-  depositL2Fee = async (token) => {
-    return this.apiProvider.depositL2Fee(token);
-  };
+  async getBalances() {
+    return this.userDetails.balances;
+  }
 
-  withdrawL2Fee = async (token) => {
-    return this.apiProvider.withdrawL2Fee(token);
-  };
-
-  getCommitedBalance = async () => {
-    const commitedBalance = this.apiProvider.getCommitedBalance();
-    if (commitedBalance) {
-      return commitedBalance;
-    } else {
-      return 0;
-    }
-  };
-
-  getNetworkContract = () => {
-    return this.BRIDGE_CONTRACT;
-  };
-
-  approveSpendOfCurrency = async (currency, allowance = maxAllowance) => {
-    return await this.apiProvider?.approveSpendOfCurrency(
-      currency,
-      allowance || maxAllowance,
-      erc20ContractABI
+  async updateAvailableBalances() {
+    if (!this.getBalances()) return;
+    const currencies = getNetworkCurrencies(this.NETWORK);
+    const entriesPromises = Object.entries(currencies).map(
+      async ([ticker, currency]) => [
+        ticker,
+        await this.getAvailableBalance(ticker, currency.decimals),
+      ]
     );
-  };
-
-  getBalanceOfCurrency = async (currency) => {
-    return await this.apiProvider?.getBalanceOfCurrency(
-      currency,
-      erc20ContractABI,
-      maxAllowance
+    const entries = await Promise.all(entriesPromises);
+    const availableBalances = Object.fromEntries(entries);
+    this.userDetails.availableBalances = formatBalances(
+      availableBalances,
+      currencies
     );
-  };
+    return availableBalances;
+  }
 
-  getWalletBalances = async () => {
-    if (!this.apiProvider) return null;
-    const balances = {};
+  async getAvailableBalances() {
+    return this.userDetails.availableBalances;
+  }
 
-    const getBalance = async (ticker) => {
-      const { balance, allowance } = await this.getBalanceOfCurrency(ticker);
-      balances[ticker] = {
-        value: balance,
-        allowance,
-        valueReadable: formatAmount(balance, this.core.currencies[ticker]),
-      };
+  async updateChainDetails() {}
 
-      this.emit("balanceUpdate", "wallet", { ...balances });
+  async getChainDetails() {
+    return this.userDetails.chainDetails;
+  }
+
+  async updateUserDetails(...args) {
+    await Promise.all([
+      this.updateAddress(...args),
+      this.updateNonce(...args),
+      this.updateBalances(...args),
+      this.updateChainDetails(...args),
+    ]);
+  }
+
+  async getUserDetails() {
+    const { userDetails } = this;
+    const address = await this.getAddress();
+    const name = address && (await this.getProfileName(address));
+    const image = address && (await this.getProfileImage(address));
+    return {
+      ...userDetails,
+      name,
+      image,
     };
-    let tickers;
+  }
+
+  async getProfileImage(address) {
+    if (!address) return null;
+    return createIcon({ seed: address }).toDataURL();
+  }
+
+  async getProfileName(address) {
+    return `${address.substr(0, 6)}…${address.substr(-6)}`;
+  }
+
+  async getAvailableBalance(ticker, decimals, giveDecimal = false) {
+    const balances = await this.getBalances();
+    if (!balances[ticker]?.value) return giveDecimal ? new Decimal(0) : "0";
+    let balance = new Decimal(balances[ticker].value);
+
+    const validStatuses = ["o", "b", "pm"];
+    Object.entries(userOrdersSelector(this.getStoreState()))
+      .filter(
+        ([id, order]) =>
+          this.NETWORK === order.chainId && validStatuses.includes(order.status)
+      )
+      .forEach(([id, order]) => {
+        const [base, quote] = order.market.split("-");
+        if (order.side === "b" && quote === ticker)
+          balance = balance.sub(toBaseUnit(order.quoteQuantity, decimals));
+        if (order.side === "s" && base === ticker)
+          balance = balance.sub(toBaseUnit(order.baseQuantity, decimals));
+      });
+    return giveDecimal ? balance : balance.toFixed(0);
+  }
+
+  async updateUserState(shouldFetch = false) {
+    if (shouldFetch) await this.updateUserDetails();
+    const userDetails = await this.getUserDetails();
+    this.emit("updateUser", userDetails);
+  }
+
+  async updateUserBalancesState(shouldFetch = false) {
+    if (shouldFetch && !this.apiProvider) return;
+    if (shouldFetch) await this.updateBalances();
+    const balances = await this.getBalances();
+    const availableBalances = await this.getAvailableBalances();
+    this.emit("updateUserBalances", balances);
+    this.emit("updateUserAvailableBalances", availableBalances);
+  }
+
+  async updateUserChainDetailsState(shouldFetch = false) {
+    if (shouldFetch && !this.apiProvider) return;
+    if (shouldFetch) await this.updateChainDetails();
+    const chainDetails = await this.getChainDetails();
+    this.emit("updateUserChainDetails", chainDetails);
+  }
+
+  async validateOrder({ market, price, amount, side, fee, type }) {
+    class VError extends Error {}
     try {
-      tickers = Object.keys(this.core.currencies).filter(
-        (ticker) => this.core.currencies[ticker].chain[this.network]
+      if (!market) throw new VError("Invalid market");
+
+      const currencies = getNetworkCurrencies(this.NETWORK);
+      const [baseCurrency, quoteCurrency] = market.split("-");
+      const [baseDecimals, quoteDecimals] = [
+        currencies[baseCurrency].decimals,
+        currencies[quoteCurrency].decimals,
+      ];
+      const [baseTokenAddress, quoteTokenAddress] = [
+        currencies[baseCurrency].info.contract,
+        currencies[quoteCurrency].info.contract,
+      ];
+
+      try {
+        amount = new Decimal(toBaseUnit(amount, baseDecimals));
+      } catch (err) {
+        throw new VError("Invalid amount");
+      }
+
+      try {
+        price = new Decimal(price);
+      } catch (err) {
+        throw new VError("Invalid price");
+      }
+      if (price.eq(0)) throw new VError(`Price should not be equal to 0`);
+
+      if (side === "buy") side = "b";
+      if (side === "sell") side = "s";
+      if (!isString(side) || !["b", "s"].includes(side))
+        throw new VError("Invalid side");
+
+      const [buyTokenAddress, sellTokenAddress] =
+        side === "b"
+          ? [baseTokenAddress, quoteTokenAddress]
+          : [quoteTokenAddress, baseTokenAddress];
+
+      if (!isString(type) || !["l", "m"].includes(type))
+        throw new VError("Invalid order type");
+
+      await this.updateBalances();
+
+      const baseBalance = await this.getAvailableBalance(
+        baseCurrency,
+        baseDecimals,
+        true
       );
+      const quoteBalance = await this.getAvailableBalance(
+        quoteCurrency,
+        quoteDecimals,
+        true
+      );
+
+      const state = this.getStoreState();
+
+      try {
+        if (this.HAS_CONTRACT) {
+          const selectedNet = networkListSelector(state).find(
+            (net) => net.network === this.NETWORK
+          );
+          fee = Decimal.div(selectedNet.maxFeeRatio, 1000);
+        } else {
+          fee = new Decimal(configSelector(state).takerFee);
+        }
+        if (fee.gt(1)) throw new Error();
+        if (fee.lt(0)) throw new Error();
+      } catch (err) {
+        throw new VError("Invalid fee");
+      }
+
+      if (side === "s" && baseBalance.lt(amount))
+        throw new VError(`Amount exceeds ${baseCurrency} balance`);
+
+      if (side === "b" && quoteBalance.lt(amount.mul(price)))
+        throw new VError(`Total exceeds ${quoteCurrency} balance`);
+
+      const minOrderSize = new Decimal(
+        toBaseUnit(configSelector(state).minOrderSize, baseDecimals)
+      );
+      if (amount.lt(minOrderSize))
+        throw new VError(
+          `Minimum order size is ${minOrderSize
+            .div(Decimal.pow(10, baseDecimals))
+            .toFixed()} ${baseCurrency}`
+        );
+
+      const lastPrice = new Decimal(
+        lastPricesSelector(state)[market]?.price ?? price
+      );
+
+      const warnings = [];
+
+      if (price.gt(lastPrice.mul(1.2)))
+        warnings.push("Price is 20% above the spot");
+      if (price.lt(lastPrice.mul(0.8)))
+        warnings.push("Price is 20% lower than the spot");
+
+      const ratio = this.getRatio(price.toFixed(), baseDecimals, quoteDecimals);
+
+      const validUntil = getCurrentValidUntil();
+
+      const data = {
+        market,
+        amount: amount.toFixed(),
+        price: price.toFixed(),
+        side,
+        buyTokenAddress,
+        sellTokenAddress,
+        fee: fee.toFixed(),
+        type,
+        validUntil,
+        ratio,
+        baseCurrency,
+        quoteCurrency,
+        baseDecimals,
+        quoteDecimals,
+      };
+      return data;
     } catch (err) {
-      return null;
+      if (err instanceof VError) throw err;
+      console.error("Order Validation Error");
+      throw new Error("Unknown Error: Check console for more info");
     }
+  }
 
-    await Promise.all(tickers.map((ticker) => getBalance(ticker)));
-
-    return balances;
-  };
-
-  getBalances = async () => {
-    if (!this.apiProvider) return null;
-    const balances = await this.apiProvider.getBalances();
-    this.emit("balanceUpdate", this.network, balances);
-    return balances;
-  };
-
-  prepareOrder = async (
-    product,
-    side,
-    price,
+  async prepareOrder({
+    market,
     amount,
-    feeType,
+    price,
+    side,
+    buyTokenAddress,
+    sellTokenAddress,
     fee,
-    orderType
-  ) => {
-    if (!this.isSignedIn()) return;
-    return await this.apiProvider.prepareOrder(
-      product,
+    type,
+    validUntil,
+  }) {
+    const tx = await this.apiProvider.signOrder({
+      market,
       side,
       price,
       amount,
-      feeType,
       fee,
-      orderType
-    );
-  };
+      type,
+    });
+    return {
+      tx,
+      market,
+      amount,
+      price,
+      type,
+    };
+  }
 
-  isSignedIn = () => {
+  isSignedIn() {
     return sessionStorage.getItem("access_token") !== null;
-  };
+  }
 
-  getAPIProviderClass = () => {
+  getAPIProviderClass() {
     return this.constructor.Provider;
-  };
+  }
 
-  emit = (msg, ...args) => {
+  emit(msg, ...args) {
     this.core.emit(msg, ...args);
-  };
+  }
+
+  getStoreState() {
+    return this.core.store?.getState();
+  }
+
+  getRatio(price, baseDecimals = 0, quoteDecimals = 0) {
+    const useToBase = baseDecimals && quoteDecimals;
+    return {
+      base: useToBase ? toBaseUnit("1", baseDecimals) : "1",
+      quote: useToBase ? toBaseUnit(price, quoteDecimals) : price,
+    };
+  }
 }

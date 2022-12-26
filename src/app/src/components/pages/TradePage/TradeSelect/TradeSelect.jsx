@@ -1,6 +1,5 @@
 import React from "react";
 import { Dropdown } from "react-bootstrap";
-// import api from "lib/api";
 // import { useState } from "react";
 // css
 import "./TradeSelect.css";
@@ -9,14 +8,14 @@ import "./TradeSelect.css";
 const TradeSelect = (props) => {
 //  const [currencyLogo , setCurrencyLogo]= useState('')
   // const test = function(){
-  //   let v = api.getCurrencyLogo("ETH")
+  //   let v = Core.run("getCurrencyLogo", "ETH")
   //   setCurrencyLogo(v.default)
   //   console.log(currencyLogo)  }
   return (
     <>
       <Dropdown className="w-100 newBtn">
         <Dropdown.Toggle id="dropdown-basic">
-        {props.currentMarket}
+        {props.currentMarket ?? ""}
         </Dropdown.Toggle>
 
         <Dropdown.Menu className="dropdown-menu ">

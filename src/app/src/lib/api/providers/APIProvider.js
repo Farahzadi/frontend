@@ -21,41 +21,56 @@ export default class APIProvider {
 
   /// Common fields
 
-  // network name used in backend api calls
-  NETWORK = "ethereum";
   // network name used in web3modal
   NETWORK_NAME = "mainnet";
-  // address of smart contract used for bridge functionality
-  BRIDGE_CONTRACT = "0x0000000000000000000000000000000000000000";
-  // either we supports a bridge for this network
-  HAS_BRIDGE = false;
 
   state = new APIProvider.State();
 
   /// Methods required to be implemented
 
-  start = notImplemented("start");
-  stop = notImplemented("stop");
-  getAccountState = notImplemented("getAccountState");
-  prepareOrder = notImplemented("submitOrder");
-  depositL2 = notImplemented("depositL2");
-  withdrawL2 = notImplemented("withdrawL2");
-  depositL2Fee = notImplemented("depositL2Fee");
-  withdrawL2Fee = notImplemented("withdrawL2Fee");
-  getBalances = notImplemented("getBalances");
-  getProfile = notImplemented("getProfile");
+  async start() {
+    return notImplemented("start");
+  }
+  async stop() {
+    return notImplemented("stop");
+  }
+  async prepareOrder() {
+    return notImplemented("submitOrder");
+  }
+  async depositL2() {
+    return notImplemented("depositL2");
+  }
+  async withdrawL2() {
+    return notImplemented("withdrawL2");
+  }
+  async depositL2Fee() {
+    return notImplemented("depositL2Fee");
+  }
+  async withdrawL2Fee() {
+    return notImplemented("withdrawL2Fee");
+  }
+  async getBalances() {
+    return notImplemented("getBalances");
+  }
+  async signMessage() {
+    return notImplemented("signMessage");
+  }
+  async verifyMessage() {
+    return notImplemented("verifyMessage");
+  }
 
-  signMessage = notImplemented("signMessage");
-  verifyMessage = notImplemented("verifyMessage");
-  
   // returns true if the network did switch and false if it didn't (or didn't need to)
-  switchNetwork = notImplemented("switchNetwork");
+  async switchNetwork() {
+    return notImplemented("switchNetwork");
+  }
 
-  onAccountChange = notImplemented("onAccountChange");
+  async onAccountChange() {
+    return notImplemented("onAccountChange");
+  }
 
-  emit = (msg, ...args) => {
+  emit(msg, ...args) {
     this.networkInterface.emit(msg, ...args);
-  };
+  }
 
   constructor(networkInterface, onStateChange) {
     this.networkInterface = networkInterface;

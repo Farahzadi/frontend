@@ -5,7 +5,6 @@ import {
   userAddressSelector,
   clearBridgeReceipts,
 } from "lib/store/features/api/apiSlice";
-import api from "lib/api";
 
 import { formatDistance } from "date-fns";
 
@@ -28,6 +27,8 @@ const BridgeReceipts = (props) => {
       setFinalReceipts(final);
     }
   };
+
+  const api = {}; // TODO replace api
 
   return (
     <div

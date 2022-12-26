@@ -26,10 +26,13 @@ import {
   uuidSelector,
   resetData,
   providerStateSelector,
+  userChainDetailsSelector,
+  userSelector,
 } from "lib/store/features/api/apiSlice";
-import { userSelector } from "lib/store/features/auth/authSlice";
 import "./style.css";
-import api from "lib/api";
+import { getFillDetailsWithoutFee } from "lib/utils";
+import Core from "lib/api/Core";
+import networkManager from "../../../config/NetworkManager";
 
 const TradePage = () => {
   const [marketDataTab, updateMarketDataTab] = useState("pairs");
@@ -56,25 +59,28 @@ const TradePage = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (!uuid || !network) return;
+    if (!uuid || !network || !networkManager.has(network, currentMarket))
+      return;
 
-    const sub = () => api.subscribeToMarket(currentMarket);
+    const sub = () => Core.run("subscribeToMarket", currentMarket);
 
-    if (api.ws.readyState !== WebSocket.OPEN) api.on("open", sub);
+    const core = Core.getInstance();
+
+    if (core.ws.readyState !== WebSocket.OPEN) core.on("open", sub);
     else sub();
 
-    api.getOrderBook(currentMarket);
-    api.getMarketInfo(currentMarket);
-    api.getMarketConfig(currentMarket);
+    Core.run("getOrderBook", currentMarket);
+    Core.run("getMarketInfo", currentMarket);
+    Core.run("getMarketConfig", currentMarket);
 
     return () => {
-      api.off("open");
+      core.off("open");
     };
   }, [uuid, currentMarket, network]);
 
   // useEffect(() => {
   //   if (uuid && providerState === APIProvider.State.CONNECTED)
-  //     api.connectWallet();
+  //     Core.run("connectWallet");
   // }, [uuid, network, providerState]);
 
   const updateMarketChain = (market) => {
@@ -109,7 +115,7 @@ const TradePage = () => {
     .forEach((fill) => {
       if (fill.status !== "e" && fill.status !== "r" && fill.status !== "c") {
         if (["zksyncv1", "zksyncv1_goerli"].includes(network)) {
-          const fillWithoutFee = api.getFillDetailsWithoutFee(fill);
+          const fillWithoutFee = getFillDetailsWithoutFee(fill);
           fillData.push({
             price: fillWithoutFee.price,
             remaining: fillWithoutFee.baseQuantity,
@@ -165,10 +171,12 @@ const TradePage = () => {
   );
 
   let tradingViewMarket = currentMarket;
-  const baseCurrency = currentMarket.split("-")[0];
-  const quoteCurrency = currentMarket.split("-")[1];
-  if (baseCurrency === "WBTC") tradingViewMarket = "BTC-" + quoteCurrency;
-  if (quoteCurrency === "WBTC") tradingViewMarket = baseCurrency + "-BTC";
+  const baseCurrency = currentMarket?.split("-")[0];
+  const quoteCurrency = currentMarket?.split("-")[1];
+  if (baseCurrency === "WBTC")
+    tradingViewMarket = quoteCurrency && "BTC-" + quoteCurrency;
+  if (quoteCurrency === "WBTC")
+    tradingViewMarket = baseCurrency && baseCurrency + "-BTC";
 
   return (
     <DefaultTemplate>
@@ -209,9 +217,9 @@ const TradePage = () => {
                           setRangePrice={setRangePrice}
                           signInHandler={() => {
                             setIsLoading(true);
-                            api
-                              .connectWallet()
-                              .finally(() => setIsLoading(false));
+                            Core.run("connectWallet").finally(() =>
+                              setIsLoading(false)
+                            );
                           }}
                           user={user}
                           currentMarket={currentMarket}

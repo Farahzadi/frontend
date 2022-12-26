@@ -1,7 +1,7 @@
-import { ethers } from "ethers";
-import api from "lib/api";
+import { REHYDRATE } from "redux-persist";
 import { takeEvery, put, all, select, delay, apply } from "redux-saga/effects";
-import { setUserAddress, resetData } from "./apiSlice";
+
+const DEFAULT_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK;
 
 function* handleSingleMessageSaga({ payload }) {
   let { op, data } = payload;
@@ -12,54 +12,62 @@ function* handleSingleMessageSaga({ payload }) {
   });
 }
 
-function* delegateAuthChangeSaga({ type, payload }) {
-  if (type.indexOf("auth/") !== 0) {
-    yield put(resetData());
-  }
-
-  if (type === "auth/signIn" || type === "auth/signOut") {
-    console.log("test auth", payload);
-    yield put(
-      setUserAddress(
-        payload?.address && ethers.utils.getAddress(payload?.address)
-      )
-    );
-  }
+export function* messageHandlerSaga(core) {
+  yield takeEvery("api/handleMessage", handleSingleMessageSaga);
 }
 
-export function* messageHandlerSaga() {
-  yield all([
-    takeEvery("api/handleMessage", handleSingleMessageSaga),
-    takeEvery("auth/signOut", delegateAuthChangeSaga),
-    takeEvery("auth/signIn", delegateAuthChangeSaga),
-  ]);
-}
-
-export function* userPollingSaga() {
-  while (1) {
-    const address = yield select((state) => {
-      return state.auth.user && state.auth.user.address;
-    });
-
-    const allSagas = [
-      apply(api, api.getWalletBalances),
-      apply(api, api.getBalances),
-    ];
-
-    if (address) {
-      allSagas.push(apply(api, api.getAccountState));
-    }
-
+export function* userPollingSaga(core) {
+  const STEPS_TO_UPDATE_USER_CHAIN_DETAILS = 3;
+  for (let i = 0; ; i = (i + 1) % STEPS_TO_UPDATE_USER_CHAIN_DETAILS) {
+    const shouldUpdateUserChainDetails =
+      i % STEPS_TO_UPDATE_USER_CHAIN_DETAILS === 0;
     try {
-      yield all(allSagas);
+      yield all([
+        apply(core, core.run, ["updateUserBalancesState", true]),
+        ...(shouldUpdateUserChainDetails
+          ? [apply(core, core.run, ["updateUserChainDetailsState", true])]
+          : []),
+      ]);
     } catch (err) {
-      console.log(err);
+      console.log("Error: Core balances and chain details update error:", err);
     }
-
     yield delay(4000);
   }
 }
 
-export default function* apiSaga() {
-  yield all([userPollingSaga(), messageHandlerSaga()]);
+function* handleHydration({ payload, key }, core) {
+  if (key === "api") {
+    if (payload && payload.network) {
+      const user = yield select((state) => state.api?.user);
+      yield apply(core, core.run, ["setNetwork", payload.network.name]);
+
+      if (user?.address) {
+        try {
+          yield apply(core, core.run, ["connectWallet"]);
+        } catch (err) {
+          console.log("There was an error reauthenticating", err);
+        }
+      }
+    } else {
+      console.log(`Switching to default network "${DEFAULT_NETWORK}"`);
+      yield apply(core, core.run, [
+        "setNetwork",
+        DEFAULT_NETWORK ?? "ethereum",
+      ]);
+    }
+  }
+}
+
+export function* hydrationHandlerSaga(core) {
+  yield takeEvery(REHYDRATE, function* (data) {
+    yield handleHydration(data, core);
+  });
+}
+
+export default function* apiSaga(core) {
+  yield all([
+    userPollingSaga(core),
+    messageHandlerSaga(core),
+    hydrationHandlerSaga(core),
+  ]);
 }

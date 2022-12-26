@@ -1,95 +1,25 @@
-import Decimal from 'decimal.js';
-import * as zksync from 'zksync';
-import axios from 'axios';
-import { ethers } from 'ethers';
-import { toast } from 'react-toastify';
-import Web3Modal from 'web3modal';
-import WalletConnectProvider from '@walletconnect/web3-provider';
+import Decimal from "decimal.js";
+import * as zksync from "zksync";
+import axios from "axios";
+import { ethers } from "ethers";
+import { toast } from "react-toastify";
 
-import { toBaseUnit } from 'lib/utils';
-import APIProvider from './APIProvider';
-import { maxAllowance } from '../constants';
+import APIProvider from "./APIProvider";
+import EthAPIProvider from "./EthAPIProvider";
+import Currencies from "config/Currencies";
 
-export default class ZKSyncAPIProvider extends APIProvider {
-  static seedStorageKey = '@ZZ/ZKSYNC_SEEDS';
-  static validSides = ['b', 's'];
-  NETWORK = 'zksyncv1';
-  NETWORK_NAME = 'mainnet';
-  ZKSYNC_BASE_URL = 'https://api.zksync.io/api/v0.2';
+export default class ZKSyncAPIProvider extends EthAPIProvider {
+  static seedStorageKey = "@ZZ/ZKSYNC_SEEDS";
+  ZKSYNC_BASE_URL = "https://api.zksync.io/api/v0.2";
 
   syncWallet = null;
   syncProvider = null;
-  zksyncCompatible = true;
-  accountState = null;
   _tokenWithdrawFees = {};
 
-  constructor(api, onStateChange /*, infuraId*/) {
-    super(api, onStateChange);
-    // this.infuraId = infuraId;
-  }
-
-  start = async () => {
+  async start() {
     this.state.set(APIProvider.State.CONNECTING);
 
-    const providerOptions = {
-      walletconnect: {
-        package: WalletConnectProvider,
-        options: {
-          infuraId: process.env.REACT_APP_INFURA_ID // this.infuraId,
-        }
-      }
-      // "custom-walletlink": {
-      //   display: {
-      //     logo: "https://play-lh.googleusercontent.com/PjoJoG27miSglVBXoXrxBSLveV6e3EeBPpNY55aiUUBM9Q1RCETKCOqdOkX2ZydqVf0",
-      //     name: "Coinbase",
-      //     description: "Connect to Coinbase Wallet (not Coinbase App)",
-      //   },
-      //   options: {
-      //     appName: "Coinbase", // Your app name
-      //     networkUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
-      //     chainId: 1,
-      //   },
-      //   package: WalletLink,
-      //   connector: async (_, options) => {
-      //     const { appName, networkUrl, chainId } = options;
-      //     const walletLink = new WalletLink({
-      //       appName,
-      //     });
-      //     const provider = walletLink.makeWeb3Provider(networkUrl, chainId);
-      //     await provider.enable();
-      //     return provider;
-      //   },
-      // },
-    };
-
-    if (typeof window === 'undefined') {
-      toast.error("Browser doesn't support Web3.");
-      return;
-    }
-
-    const web3Modal = new Web3Modal({
-      network: this.NETWORK_NAME,
-      cacheProvider: true,
-      providerOptions,
-      theme: 'dark'
-    });
-    this.web3Modal = web3Modal;
-
-    const provider = await web3Modal.connect();
-
-    this.provider = new ethers.providers.Web3Provider(provider);
-
-    const networkChanged = await this.switchNetwork();
-
-    if (networkChanged) return await this.start();
-
-    const signer = this.provider.getSigner();
-
-    // const address = await signer.getAddress();
-
-    // const network = await this.provider.getNetwork();
-
-    this.wallet = signer;
+    await super.start(false);
 
     try {
       this.syncProvider = await zksync.getDefaultProvider(this.NETWORK_NAME);
@@ -123,57 +53,33 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
     this.state.set(APIProvider.State.CONNECTED);
     return result;
-  };
+  }
 
-  stop = async () => {
-    // this.web3Modal.clearCachedProvider();
-    delete this.provider;
-    delete this.wallet;
+  async stop() {
+    await super.stop(false);
     delete this.syncProvider;
     delete this.syncWallet;
     this.state.set(APIProvider.State.DISCONNECTED);
-  };
+  }
 
-  getAddress = async () => {
-    const address = this.syncWallet?.cachedAddress ?? (await this.wallet?.getAddress());
+  async getAddress() {
+    const address =
+      this.syncWallet?.cachedAddress ?? (await this.wallet?.getAddress());
     return ethers.utils.getAddress(address);
-  };
+  }
 
-  signMessage = async (message) => {
-    const address = await this.getAddress();
-    try {
-      const signature = await this.provider.provider.request({
-        method: 'personal_sign',
-        params: [message, address]
-      });
-      return signature;
-    } catch (err) {
-      console.error(err);
-      return null;
-    }
-  };
-
-  verifyMessage = async (message, signature) => {
-    const address = await this.getAddress();
-    try {
-      const signedAddress = ethers.utils.verifyMessage(message, signature);
-      return signedAddress.toLowerCase() === address.toLowerCase();
-    } catch (err) {
-      console.error('Error on verifying signature:', err);
-      return false;
-    }
-  };
-
-  isActivated = async () => {
+  async isActivated() {
     return this.syncWallet?.isSigningKeySet();
-  };
+  }
 
-  getTransactionState = async (txHash) => {
-    const { data } = await axios.get(`https://api.zksync.io/api/v0.2/transactions/${txHash}`);
+  async getTransactionState(txHash) {
+    const { data } = await axios.get(
+      `https://api.zksync.io/api/v0.2/transactions/${txHash}`
+    );
     return data.result.state;
-  };
+  }
 
-  getTransactionFee = async (txType) => {
+  async getTransactionFee(txType) {
     const { data } = await axios.post(
       'https://api.zksync.io/api/v0.2/fee',
       {
@@ -189,109 +95,19 @@ export default class ZKSyncAPIProvider extends APIProvider {
     );
     const feeUSD = data.result.totalFee / 10 ** 6;
     return feeUSD;
-  };
+  }
 
-  prepareOrder = async (product, side, price, amount, feeType, fee, orderType) => {
-    let buyWithFee,
-      sellWithFee,
-      tokenBuy,
-      tokenSell,
-      tokenRatio,
-      priceWithFee = 0;
-
-    amount = new Decimal(parseFloat(amount));
-    price = new Decimal(parseFloat(price).toPrecision(8));
-
-    buyWithFee = price.mul(1 + fee);
-    sellWithFee = price.mul(1 - fee);
-
-    const currencies = product.split('-');
-    const nowUnix = (Date.now() / 1000) | 0;
-    const validUntil = nowUnix + 24 * 3600;
-
-    if (currencies[0] === 'USDC' || currencies[0] === 'USDT') {
-      amount = amount.toFixed(7).slice(0, -1);
-    }
-
-    if (!ZKSyncAPIProvider.validSides.includes(side)) {
-      throw new Error('Invalid side');
-    }
-    side === 'b' ? ([tokenBuy, tokenSell] = currencies) : ([tokenSell, tokenBuy] = currencies);
-    const parsedQuantity = this.syncProvider.tokenSet.parseToken(currencies[0], amount.toString());
-    priceWithFee = side === 'b' ? buyWithFee : sellWithFee;
-    tokenRatio = this.getTokenRatio(product, 1, priceWithFee.toString());
-    const ratio = zksync.utils.tokenRatio(tokenRatio);
-
-    const order = await this.syncWallet.signLimitOrder({
-      tokenSell,
-      tokenBuy,
+  async signOrder({ sellCurrency, buyCurrency, ratio, validUntil }) {
+    const result = await this.syncWallet?.signLimitOrder({
+      tokenSell: sellCurrency,
+      tokenBuy: buyCurrency,
       ratio,
       validUntil
     });
+    return result;
+  }
 
-    return {
-      tx: order,
-      market: product,
-      amount: parsedQuantity.toString(),
-      price: price,
-      type: orderType
-    };
-  };
-
-  getBalances = async () => {
-    const account = await this.getAccountState();
-    // console.log("accountState", account);
-    const balances = {};
-
-    Object.keys(this.networkInterface.core.currencies).forEach((ticker) => {
-      const currency = this.networkInterface.core.currencies[ticker];
-      const balance = new Decimal(
-        account && account.committed ? account.committed.balances[ticker] || 0 : 0
-      );
-
-      balances[ticker] = {
-        value: balance,
-        valueReadable: balance && balance.div(10 ** currency.decimals),
-        allowance: maxAllowance
-      };
-    });
-
-    return balances;
-  };
-
-  getAccountState = async () => {
-    let accountState = (await this.syncWallet?.getAccountState()) ?? {};
-    return accountState;
-  };
-
-  handleBridgeReceipt = (_receipt, amount, token, type, userId, userAddress, status) => {
-    let receipt = {
-      date: +new Date(),
-      network: this.network,
-      amount,
-      token,
-      type,
-      userId,
-      userAddress,
-      _receipt,
-      status
-    };
-    const subdomain = this.network === 'zksyncv1' ? '' : 'goerli.';
-    if (!_receipt) {
-      return receipt;
-    }
-    if (_receipt.ethTx) {
-      receipt.txId = _receipt.ethTx.hash;
-      receipt.txUrl = `https://${subdomain}etherscan.io/tx/${receipt.txId}`;
-    } else if (_receipt.txHash) {
-      receipt.txId = _receipt.txHash.split(':')[1];
-      receipt.txUrl = `https://${subdomain}zkscan.io/explorer/transactions/${receipt.txId}`;
-    }
-
-    return receipt;
-  };
-
-  changePubKeyFee = async (currency = 'USDC') => {
+  async changePubKeyFee(currency = "USDC") {
     const { data } = await axios.post(
       this.ZKSYNC_BASE_URL + '/fee',
       {
@@ -304,10 +120,10 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
     if (currency === 'USDC') return (data.result.totalFee / 10 ** 6) * 2;
     else return (data.result.totalFee / 10 ** 18) * 2;
-  };
+  }
 
-  activateAccount = async (accountState) => {
-    if (this.NETWORK === 'zksyncv1') {
+  async activateAccount(accountState) {
+    if (this.networkInterface.NETWORK === "zksyncv1") {
       try {
         const { data } = await axios.post(
           'https://api.zksync.io/api/v0.2/fee',
@@ -333,8 +149,10 @@ export default class ZKSyncAPIProvider extends APIProvider {
           `You need to sign a one-time transaction to activate your zksync account. The fee for this tx will be ~$2.5`
         );
       }
-    } else if (this.NETWORK === 'zksyncv1_goerli') {
-      toast.info('You need to sign a one-time transaction to activate your zksync account.');
+    } else if (this.networkInterface.NETWORK === "zksyncv1_goerli") {
+      toast.info(
+        "You need to sign a one-time transaction to activate your zksync account."
+      );
     }
     let feeToken = 'ETH';
     const _accountState = accountState || (await this.syncWallet?.getAccountState());
@@ -365,97 +183,35 @@ export default class ZKSyncAPIProvider extends APIProvider {
     }
 
     return signingKey;
-  };
+  }
 
-  getCommitedBalance = async () => {
-    const balance = await this.syncWallet.getCommitedBalance();
-    console.log(`this is sync wallet commited balance: ${balance}`);
-    return balance;
-  };
-
-  withdrawL2 = async (amountDecimals, token = 'ETH') => {
-    let transfer;
-    let bridgeReceiptData = {};
-
-    const amount = toBaseUnit(
-      amountDecimals,
-      this.networkInterface.core.currencies[token].decimals
-    );
-    const checksumAddress = await this.getAddress();
-    if (amount) {
-      try {
-        transfer = await this.syncWallet.withdrawFromSyncToEthereum({
-          token,
-          ethAddress: await this.getAddress(),
-          amount
-        });
-
-        await this.getBridgeReceiptStatus(transfer, 'withdraw').then((data) => {
-          bridgeReceiptData.status = data.status;
-        });
-
-        this.emit(
-          'bridgeReceipt',
-          this.handleBridgeReceipt(
-            transfer,
-            amountDecimals,
-            token,
-            'withdraw',
-            this.networkInterface._accountState.id,
-            checksumAddress,
-            bridgeReceiptData.status
-          )
-        );
-
-        return transfer;
-      } catch (err) {
-        console.log(err);
-      }
+  async withdrawL2(amount, address, token = "ETH") {
+    if (!amount) return;
+    try {
+      return await this.syncWallet.withdrawFromSyncToEthereum({
+        token,
+        ethAddress: address,
+        amount,
+      });
+    } catch (err) {
+      console.log(err);
     }
-  };
+  }
 
-  depositL2 = async (amountDecimals, token = 'ETH') => {
-    let transfer;
-    let bridgeReceiptData = {};
-
-    const amount = toBaseUnit(
-      amountDecimals,
-      this.networkInterface.core.currencies[token].decimals
-    );
-    const checksumAddress = await this.getAddress();
-    if (amount) {
-      try {
-        transfer = await this.syncWallet.depositToSyncFromEthereum({
-          token,
-          depositTo: this.syncWallet.address(),
-          amount
-        });
-
-        await this.getBridgeReceiptStatus(transfer, 'deposit').then((data) => {
-          bridgeReceiptData.status = data.status;
-        });
-
-        this.emit(
-          'bridgeReceipt',
-          this.handleBridgeReceipt(
-            transfer,
-            amountDecimals,
-            token,
-            'deposit',
-            this.networkInterface._accountState.id,
-            checksumAddress,
-            bridgeReceiptData.status
-          )
-        );
-
-        return transfer;
-      } catch (err) {
-        console.log(err);
-      }
+  async depositL2(amount, address, token = "ETH") {
+    if (!amount) return;
+    try {
+      return await this.syncWallet.depositToSyncFromEthereum({
+        token,
+        depositTo: address,
+        amount,
+      });
+    } catch (err) {
+      console.log(err);
     }
-  };
+  }
 
-  getBridgeReceiptStatus = async (receipt, type) => {
+  async getBridgeReceiptStatus(receipt, type) {
     let url;
     let statusReceipt = {};
     let statusReceipts = [];
@@ -463,11 +219,15 @@ export default class ZKSyncAPIProvider extends APIProvider {
     if (this.network === 'zksyncv1') url = 'https://api.zksync.io/api/v0.2';
     else url = 'https://goerli-api.zksync.io/api/v0.2';
 
-    if (type === 'deposit') statusReceipt.hash = receipt.ethTx.hash;
-    if (type !== 'deposit') statusReceipt.hash = receipt.txHash;
-    const { data } = await axios.get(`${url}/transactions/${statusReceipt.hash}`).catch((e) => {
-      console.log(`Request to ${e.config.url} failed with status code ${e.response.status}`);
-    });
+    if (type === "deposit") statusReceipt.hash = receipt.ethTx.hash;
+    else statusReceipt.hash = receipt.txHash;
+    const { data } = await axios
+      .get(`${url}/transactions/${statusReceipt.hash}`)
+      .catch((e) => {
+        console.log(
+          `Request to ${e.config.url} failed with status code ${e.response.status}`
+        );
+      });
     if (!data) return;
     if (data.result) {
       statusReceipt.status = data.result.status;
@@ -479,13 +239,13 @@ export default class ZKSyncAPIProvider extends APIProvider {
     }
     console.log(`status receipt : ${JSON.stringify(statusReceipts)}`);
     return statusReceipt;
-  };
+  }
 
-  depositL2Fee = async (token = 'ETH') => {
+  async depositL2Fee(token = "ETH") {
     return 0;
-  };
+  }
 
-  withdrawL2Fee = async (token = 'ETH') => {
+  async withdrawL2Fee(token = "ETH") {
     if (!this._tokenWithdrawFees[token]) {
       const fee = await this.syncProvider.getTransactionFee(
         'Withdraw',
@@ -495,26 +255,26 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
       const totalFee = new Decimal(parseInt(fee.totalFee));
       this._tokenWithdrawFees[token] = totalFee.div(
-        10 ** this.networkInterface.core.currencies[token].decimals
+        10 ** Currencies[token].decimals
       );
     }
 
     return this._tokenWithdrawFees[token];
-  };
+  }
 
-  getSeeds = () => {
+  getSeeds() {
     try {
       return JSON.parse(window.localStorage.getItem(ZKSyncAPIProvider.seedStorageKey) || '{}');
     } catch {
       return {};
     }
-  };
+  }
 
-  getSeedKey = async () => {
-    return `${this.network}-${await this.getAddress()}`;
-  };
+  async getSeedKey() {
+    return `${this.networkInterface.NETWORK}-${await this.getAddress()}`;
+  }
 
-  getSeed = async () => {
+  async getSeed() {
     const seedKey = await this.getSeedKey();
     let seeds = this.getSeeds();
 
@@ -529,9 +289,9 @@ export default class ZKSyncAPIProvider extends APIProvider {
 
     seeds[seedKey].seed = Uint8Array.from(seeds[seedKey].seed);
     return seeds[seedKey];
-  };
+  }
 
-  genSeed = async () => {
+  async genSeed() {
     const { wallet } = this;
     let chainID = 1;
     if (wallet.provider) {
@@ -553,9 +313,9 @@ export default class ZKSyncAPIProvider extends APIProvider {
     );
     const seed = ethers.utils.arrayify(signature);
     return { seed, ethSignatureType };
-  };
+  }
 
-  increaseWalletNonce = async () => {
+  async increaseWalletNonce() {
     // const token = "ETH";
     // const memo = "";
     // const walletAddress = await this.ethWallet.getAddress();
@@ -570,98 +330,19 @@ export default class ZKSyncAPIProvider extends APIProvider {
     const transferReceipt = await transfer.awaitReceipt();
 
     return transferReceipt;
-  };
+  }
 
-  getTokenRatio = (product, baseRatio, quoteRatio) => {
-    let tokenRatio = {};
-    const currencies = product.split('-');
-    const baseCurrency = currencies[0];
-    const quoteCurrency = currencies[1];
-
-    tokenRatio[baseCurrency] = baseRatio;
-    tokenRatio[quoteCurrency] = quoteRatio;
-
-    return tokenRatio;
-  };
-
-  getParsedSellQuantity = (tokenSell, sellQuantity) => {
+  getParsedSellQuantity(tokenSell, sellQuantity) {
     const parsedSellQuantity = this.syncProvider.tokenSet.parseToken(
       tokenSell,
-      sellQuantity.toFixed(this.networkInterface.core.currencies[tokenSell].decimals)
+      sellQuantity.toFixed(Currencies[tokenSell].decimals)
     );
 
     return parsedSellQuantity;
-  };
+  }
 
-  onAccountChange = (cb) => {
-    if (this.state.get() === APIProvider.State.CONNECTED)
-      this.provider.provider.on('accountsChanged', cb);
-  };
-
-  switchNetwork = async () => {
-    const chainId = this.networkToChainId(this.NETWORK);
-    if (!chainId) return false;
-    try {
-      const currentChainId = ethers.utils.hexStripZeros(
-        (await this.provider.getNetwork())?.chainId ?? 0
-      );
-      if (currentChainId === chainId) return false;
-
-      await this.provider.provider.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId }]
-      });
-    } catch (err) {
-      console.error('Error on switching network!', err);
-      return false;
-    }
-    return true;
-  };
-
-  networkToChainId = (network) => {
-    const map = {
-      zksyncv1: '0x1',
-      ethereum: '0x1',
-      zksyncv1_goerli: '0x5',
-      ethereum_goerli: '0x5'
-    };
-    return map[network];
-  };
-
-  approveSpendOfCurrency = async (currency, allowance, erc20ContractABI) => {
-    const netContract = this.networkInterface.getNetworkContract();
-    if (netContract) {
-      // const account = await this.getAddress();
-      const { contract: contractAddress } =
-        this.networkInterface.core.currencies[currency].chain[this.NETWORK];
-      const contract = new ethers.Contract(contractAddress, erc20ContractABI, this.provider);
-      await contract.functions.approve(netContract, allowance);
-    }
-  };
-
-  getBalanceOfCurrency = async (currency, erc20ContractABI, maxAllowance) => {
-    const { contract: contractAddress } =
-      this.networkInterface.core.currencies[currency].chain[this.NETWORK];
-    let result = { balance: 0, allowance: maxAllowance };
-    if (/* !this.ethersProvider || */ !contractAddress) return result;
-
-    try {
-      const netContract = this.networkInterface.getNetworkContract();
-      const account = await this.getAddress();
-      console.log('account', account);
-      if (currency === 'ETH') {
-        result.balance = await this.provider.getBalance(account);
-        return result;
-      }
-      const contract = new ethers.Contract(contractAddress, erc20ContractABI, this.provider);
-      result.balance = await contract.functions.balanceOf(account);
-      if (netContract) {
-        result.allowance = await contract.functions.allowance(account, netContract);
-      }
-      return result;
-    } catch (e) {
-      console.log(e);
-      return result;
-    }
+  getAccountState = async () => {
+    const accountState = await this.syncWallet?.getAccountState();
+    return accountState;
   };
 }

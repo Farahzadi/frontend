@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@xstyled/styled-components";
-import api from "lib/api";
+import Currencies from "config/Currencies";
 
 const InputContainer = styled.div`
   display: flex;
@@ -70,7 +70,7 @@ const PoolModalInput = (props) => {
     <>
     <InputContainer>
       <div className="leftGroup">
-        <img src={api.currencies[props.currency].image.default} alt={props.currency.name}  className="pool_token_image"/> {props.currency}
+        <img src={Currencies[props.currency].image.default} alt={props.currency.name}  className="pool_token_image"/> {props.currency}
       </div>
       <input placeholder="0.00" type="text" />
       <a className="maxLink" href="#max">

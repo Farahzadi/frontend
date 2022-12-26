@@ -3,8 +3,8 @@ import {useSelector} from "react-redux";
 import {networkSelector} from "../../../lib/store/features/api/apiSlice";
 import {Button} from "../Button";
 import darkPlugHead from "../../../assets/icons/dark-plug-head.png";
-import api from "../../../lib/api";
 import {useHistory, useLocation} from "react-router-dom";
+import Core from "lib/api/Core";
 
 const ConnectWalletButton = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -24,7 +24,7 @@ const ConnectWalletButton = () => {
     img={darkPlugHead}
     onClick={() => {
       setIsLoading(true)
-      api.connectWallet().finally(() => setIsLoading(false))
+      Core.run("connectWallet").finally(() => setIsLoading(false))
     }}
   />
 }

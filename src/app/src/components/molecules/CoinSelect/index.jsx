@@ -1,40 +1,38 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
+import { Autocomplete, TextField, autocompleteClasses } from "@mui/material";
+import { useSelector } from "react-redux";
 import {
-  Autocomplete,
-  TextField,
-  autocompleteClasses,
-} from '@mui/material';
-import api from 'lib/api';
-import { useSelector } from 'react-redux';
-import { networkSelector } from 'lib/store/features/api/apiSlice';
-import { userSelector } from 'lib/store/features/auth/authSlice';
-import { FiChevronDown } from 'react-icons/fi';
-import { styled } from '@mui/material/styles';
-import { ClickAwayListener, Popper } from '@mui/material';
+  networkSelector,
+  userChainDetailsSelector,
+} from "lib/store/features/api/apiSlice";
+import { FiChevronDown } from "react-icons/fi";
+import { styled } from "@mui/material/styles";
+import { ClickAwayListener, Popper } from "@mui/material";
+import Currencies from "config/Currencies";
 
-const CoinBtn = styled('button')(() => ({
-  width: '175px',
-  border: 'none',
-  paddingRight: '13px',
-  paddingLeft: '7px',
-  height: '52px',
-  position: 'relative',
-  display: 'inline-flex',
-  alignItems: 'center',
-  backgroundColor: 'white',
-  borderTopLeftRadius: '24px',
-  borderBottomLeftRadius: '24px',
-  fontSize: '1.2rem',
-  textAlign: 'start',
-  '& img': {
-    marginInlineEnd: '7px',
-    marginInlineStart: '5px',
+const CoinBtn = styled("button")(() => ({
+  width: "175px",
+  border: "none",
+  paddingRight: "13px",
+  paddingLeft: "7px",
+  height: "52px",
+  position: "relative",
+  display: "inline-flex",
+  alignItems: "center",
+  backgroundColor: "white",
+  borderTopLeftRadius: "24px",
+  borderBottomLeftRadius: "24px",
+  fontSize: "1.2rem",
+  textAlign: "start",
+  "& img": {
+    marginInlineEnd: "7px",
+    marginInlineStart: "5px",
   },
-  '& svg': {
-    position: 'absolute',
-    right: '10px',
-    left: 'auto',
-    top: 'calc(50% - 10.2px)',
+  "& svg": {
+    position: "absolute",
+    right: "10px",
+    left: "auto",
+    top: "calc(50% - 10.2px)",
   },
 }));
 const Title = styled('div')(({theme}) => ({
@@ -42,16 +40,16 @@ const Title = styled('div')(({theme}) => ({
   fontSize: '0.9rem',
   borderBottom: `1px solid ${theme.palette.primary.main}`,
 }));
-const StyledAutocompletePopper = styled('div')(({ theme }) => ({
+const StyledAutocompletePopper = styled("div")(({ theme }) => ({
   [`& .${autocompleteClasses.paper}`]: {
-    boxShadow: 'none',
+    boxShadow: "none",
     margin: 0,
-    color: 'white',
+    color: "white",
     fontSize: 13,
     backgroundColor: theme.palette.secondary.dark,
   },
   [`& .${autocompleteClasses.listbox}`]: {
-    backgroundColor: 'inherit',
+    backgroundColor: "inherit",
     padding: 0,
     maxHeight: '221px',
     [`& .${autocompleteClasses.option}`]: {
@@ -72,7 +70,7 @@ const StyledAutocompletePopper = styled('div')(({ theme }) => ({
     },
   },
   [`&.${autocompleteClasses.popperDisablePortal}`]: {
-    position: 'relative',
+    position: "relative",
   },
   [`&.${autocompleteClasses.paper}`]: {},
 }));
@@ -104,29 +102,29 @@ const StyledInput = styled(TextField)(({ theme }) => ({
   },
 }));
 
-function PopperComponent(props: PopperComponentProps) {
+function PopperComponent(props) {
   const { disablePortal, anchorEl, open, ...other } = props;
   return <StyledAutocompletePopper {...other} />;
 }
 const CoinSelect = ({ currency, handleCurrencyChange }) => {
-  const [input, setInput] = useState('');
-  const [coin, setCoin] = useState('');
+  const [input, setInput] = useState("");
+  const [coin, setCoin] = useState("");
   const [tickers, setTickers] = useState([]);
   const [anchorEl, setAnchorEl] = useState();
   const [open, setOpen] = useState(false);
   const network = useSelector(networkSelector);
-  const user = useSelector(userSelector);
+  const userChainDetails = useSelector(userChainDetailsSelector);
   useEffect(() => {
-    const tickers = Object.keys(api.currencies)
+    const tickers = Object.keys(Currencies)
       .filter((c) => {
-        return api.currencies[c].chain[network];
+        return Currencies[c].chain[network];
       })
       .sort();
     setTickers(tickers);
-  }, [user.id, network]);
+  }, [userChainDetails.userId, network]);
   useEffect(() => {
     if (currency) {
-      setCoin(api.currencies[currency]);
+      setCoin(Currencies[currency]);
     }
   }, [currency]);
   const searchCoins = (event, newValue) => {
@@ -136,13 +134,12 @@ const CoinSelect = ({ currency, handleCurrencyChange }) => {
     if (newValue) {
       handleCurrencyChange(newValue);
       setOpen(false);
-
     }
   };
   return (
     <>
       <CoinBtn
-        type='button'
+        type="button"
         onClick={(event) => {
           setOpen(!open);
           setAnchorEl(event.currentTarget);
@@ -150,7 +147,7 @@ const CoinSelect = ({ currency, handleCurrencyChange }) => {
       >
         {currency && (
           <img
-            src={api.currencies[currency]?.image?.default}
+            src={Currencies[currency]?.image?.default}
             alt={coin?.name}
             width={23}
             height={23}
@@ -160,10 +157,10 @@ const CoinSelect = ({ currency, handleCurrencyChange }) => {
         <FiChevronDown />
       </CoinBtn>
       <StyledPopper
-        id='select-coin-popper'
+        id="select-coin-popper"
         open={open}
         anchorEl={anchorEl}
-        placement='bottom-start'
+        placement="bottom-start"
       >
         <ClickAwayListener
           onClickAway={() => {
@@ -174,18 +171,18 @@ const CoinSelect = ({ currency, handleCurrencyChange }) => {
             <Title>Select a token</Title>
             <Autocomplete
               open
-              value={''}
+              value={""}
               onChange={handleChange}
               inputValue={input}
               onInputChange={searchCoins}
-              id='coin-select'
+              id="coin-select"
               options={tickers || []}
               getOptionLabel={(val) => val}
               renderOption={(props, val) => (
                 <div {...props}>
                   <img
-                    src={api.currencies[val].image.default}
-                    alt={api.currencies[val]?.name}
+                    src={Currencies[val].image.default}
+                    alt={Currencies[val]?.name}
                     width={23}
                     height={23}
                   />
@@ -194,10 +191,10 @@ const CoinSelect = ({ currency, handleCurrencyChange }) => {
               )}
               renderInput={(params) => (
                 <StyledInput
-                  placeholder='Search'
+                  placeholder="Search"
                   {...params}
                   value={params.inputProps.value}
-                  autoComplete='new-password'
+                  autoComplete="new-password"
                 />
               )}
               PopperComponent={PopperComponent}

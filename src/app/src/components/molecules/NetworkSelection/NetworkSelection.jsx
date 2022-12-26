@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { GoGlobe } from 'react-icons/go';
+import React, { useEffect, useState } from "react";
+import { GoGlobe } from "react-icons/go";
 import {
   networkListSelector,
   networkSelector,
-} from 'lib/store/features/api/apiSlice';
-import { useSelector } from 'react-redux';
-import api from 'lib/api';
+} from "lib/store/features/api/apiSlice";
+import { useSelector } from "react-redux";
 import {
   FormControl,
   InputAdornment,
   MenuItem,
   TextField,
-} from '@mui/material';
-import { styled } from '@mui/material/styles';
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
+import Core from "lib/api/Core";
 
 const NetFormControl = styled(FormControl)(({ theme }) => ({
   border: `1.5px solid ${theme.palette.primary.main}`,
@@ -30,17 +30,17 @@ const NetFormControl = styled(FormControl)(({ theme }) => ({
   },
 }));
 const NetInput = styled(TextField)(({ theme }) => ({
-  paddingLeft: '0',
-  '& .MuiInputBase-root': {
-    paddingLeft: '0',
+  paddingLeft: "0",
+  "& .MuiInputBase-root": {
+    paddingLeft: "0",
   },
-  '& .MuiSelect-select': {
-    paddingLeft: '30px',
+  "& .MuiSelect-select": {
+    paddingLeft: "30px",
   },
 }));
 const GlobAdornment = styled(InputAdornment)(() => ({
-  position: 'absolute',
-  left: '10px',
+  position: "absolute",
+  left: "10px",
 }));
 const NetworkSelection = () => {
   const networks = useSelector(networkListSelector);
@@ -48,7 +48,7 @@ const NetworkSelection = () => {
 
   const [selectedNet, setSelectedNet] = useState(network ?? "");
   useEffect(() => {
-    api.getNetworks();
+    Core.run("getNetworks");
   }, []);
   useEffect(() => {
     if (network && networks.length) {
@@ -56,24 +56,24 @@ const NetworkSelection = () => {
     }
   }, [network, networks]);
   const transformNetName = (network) => {
-    return network.replace('_', ' ');
+    return network.replace("_", " ");
   };
 
   const handleChangeNetwork = async (network) => {
-    await api.setNetwork(network);
+    await Core.run("setNetwork", network);
   };
 
   return (
     <>
       <NetFormControl>
         <NetInput
-          size='small'
+          size="small"
           value={selectedNet}
           select
           onChange={(e) => handleChangeNetwork(e.target.value)}
           InputProps={{
             startAdornment: (
-              <GlobAdornment position='start'>
+              <GlobAdornment position="start">
                 <GoGlobe />
               </GlobAdornment>
             ),

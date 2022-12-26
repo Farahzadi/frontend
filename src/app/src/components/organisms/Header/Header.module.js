@@ -33,8 +33,7 @@ const MainContent = styled("div")(({ show, theme }) => ({
   justifyContent: "space-between",
   flexFlow: "row",
   alignItems: "center",
-  transition: ".3s",
-  overflow: "hidden"
+  transition: ".3s"
 }));
 const NavUl = styled("ul")(({ theme }) => ({
   display: "flex",

@@ -5,15 +5,19 @@ import { AiOutlineCaretDown } from "react-icons/ai";
 import { styled } from "@mui/material/styles";
 import { useCoinEstimator } from "components";
 import Loader from "react-loader-spinner";
-import { userSelector } from "lib/store/features/auth/authSlice";
 import {
   networkSelector,
-  balancesSelector,
+  userNameSelector,
+  userImageSelector,
+  userChainDetailsSelector,
+  userBalancesSelector,
+  networkConfigSelector,
 } from "lib/store/features/api/apiSlice";
 import { formatUSD } from "lib/utils";
-import api from "lib/api";
 import logo from "../../../../src/assets/images/LogoMarkCremeLight.svg";
 import { Button } from "@mui/material";
+import Currencies, { getNetworkCurrencies } from "config/Currencies";
+import Core from "lib/api/Core";
 
 const DropdownDisplay = styled("div")(({ show, theme }) => ({
   position: "absolute",
@@ -187,32 +191,31 @@ const LoaderContainer = styled("div")(({ theme }) => ({
 }));
 
 export const AccountDropdown = () => {
-  const user = useSelector(userSelector);
+  const userName = useSelector(userNameSelector);
+  const userImage = useSelector(userImageSelector);
+  const networkConfig = useSelector(networkConfigSelector);
+  const { hasBridge } = networkConfig;
+  const userChainDetails = useSelector(userChainDetailsSelector);
+  const userL1Balances = userChainDetails?.L1Balances;
+  const userBalances = useSelector(userBalancesSelector);
   const [tickers, setTickers] = useState([]);
   const network = useSelector(networkSelector);
-  const balanceData = useSelector(balancesSelector);
   const [show, setShow] = useState(false);
   const [selectedLayer, setSelectedLayer] = useState(2);
   const [windowSize, setWindowSize] = useState(getWindowSize());
   const coinEstimator = useCoinEstimator();
-  const { profile } = user;
   const layers = [
     { id: 1, name: "L1" },
     { id: 2, name: "L2" },
   ];
 
-  const wallet =
-    selectedLayer === 1 ? balanceData.wallet : balanceData[network];
+  const wallet = !hasBridge || selectedLayer === 2 ? userBalances : userL1Balances;
 
   useEffect(() => {
-    const tickers = Object.keys(api.currencies)
-      .filter((c) => {
-        return api.currencies[c].chain[network];
-      })
-      .sort();
+    const tickers = Object.keys(getNetworkCurrencies(network)).sort();
 
     setTickers(tickers);
-  }, [user.id, network]);
+  }, [network]);
 
   const handleKeys = (e) => {
     if (~[32, 13, 27].indexOf(e.which)) {
@@ -253,11 +256,8 @@ export const AccountDropdown = () => {
       tabIndex="0"
     >
       <DropdownButton onClick={() => setShow(!show)} tabIndex="0">
-        <AvatarImg
-          src={profile.image != null ? profile.image : logo}
-          alt={profile.name}
-        />
-        {profile.name}
+        <AvatarImg src={userImage != null ? userImage : logo} alt={userName} />
+        {userName}
         <AiOutlineCaretDown />
       </DropdownButton>
       <DropdownDisplay
@@ -267,18 +267,20 @@ export const AccountDropdown = () => {
         show={show}
       >
         <DropdownHeader>
-          <h3>Your Wallet</h3>
-          <WalletToggle>
-            {layers.map(({ id, name }) => (
-              <WalletToggleItem
-                key={id}
-                onClick={() => setSelectedLayer(id)}
-                selected={selectedLayer === id}
-              >
-                {name}
-              </WalletToggleItem>
-            ))}
-          </WalletToggle>
+          <h3>Your Wallet</h3>{" "}
+          {hasBridge && (
+            <WalletToggle>
+              {layers.map(({ id, name }) => (
+                <WalletToggleItem
+                  key={id}
+                  onClick={() => setSelectedLayer(id)}
+                  selected={selectedLayer === id}
+                >
+                  {name}
+                </WalletToggleItem>
+              ))}
+            </WalletToggle>
+          )}
         </DropdownHeader>
         <DropdownContent>
           {!wallet && (
@@ -289,27 +291,24 @@ export const AccountDropdown = () => {
           {wallet && (
             <CurrencyList>
               {tickers.map((ticker, key) => {
-                if (!wallet[ticker] || wallet[ticker].value === 0) {
+                if (!wallet[ticker] || +wallet[ticker]?.valueReadable === 0) {
                   return null;
                 }
                 return (
                   <CurrencyListItem key={key}>
                     <img
                       className="currency-icon"
-                      src={api.currencies[ticker].image.default}
+                      src={Currencies[ticker].image.default}
                       alt={ticker}
                     />
                     <div>
                       <strong>
-                        {selectedLayer === 2
-                          ? wallet[ticker].valueReadable.toPrecision(6)
-                          : wallet[ticker].valueReadable}{" "}
-                        {ticker}
+                        {wallet[ticker]?.valueReadable} {ticker}
                       </strong>
                       <small>
                         $
                         {formatUSD(
-                          coinEstimator(ticker) * wallet[ticker].valueReadable
+                          coinEstimator(ticker) * wallet[ticker]?.valueReadable
                         )}
                       </small>
                     </div>
@@ -320,7 +319,7 @@ export const AccountDropdown = () => {
           )}
         </DropdownContent>
         <DropdownFooter>
-          <SignOutButton onClick={() => api.disconnectWallet()}>
+          <SignOutButton onClick={() => Core.run("disconnectWallet")}>
             <IoMdLogOut /> Disconnect
           </SignOutButton>
         </DropdownFooter>

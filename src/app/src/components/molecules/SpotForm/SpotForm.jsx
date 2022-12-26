@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import Decimal from "decimal.js";
 import { toast } from "react-toastify";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
@@ -9,10 +8,14 @@ import {
   rangePriceSelector,
   selectedPriceSelector,
   userOrdersSelector,
+  networkListSelector,
+  networkSelector,
+  networkConfigSelector,
 } from "lib/store/features/api/apiSlice";
-import api from "lib/api";
 import { RangeSlider, Button } from "components";
 import "./SpotForm.css";
+import Currencies from "config/Currencies";
+import Core from "lib/api/Core";
 
 class SpotForm extends React.Component {
   constructor(props) {
@@ -46,7 +49,7 @@ class SpotForm extends React.Component {
     }
     const newState = { ...this.state };
     if (this.props.selectedPrice > 0 && this.props.orderType === "limit") {
-      api.emit("selectedPrice", e.target.value);
+      Core.run("emit", "selectedPrice", e.target.value);
       newState.price = this.props.selectedPrice;
     } else {
       newState.price = e.target.value;
@@ -63,7 +66,7 @@ class SpotForm extends React.Component {
     }
     const newState = { ...this.state };
     if (this.props.rangePrice > 0 && this.props.orderType === "limit") {
-      api.emit("rangePrice", e.target.value);
+      Core.run("emit", "rangePrice", e.target.value);
       newState.baseAmount = this.props.rangePrice;
     } else {
       newState.baseAmount = e.target.value;
@@ -73,59 +76,32 @@ class SpotForm extends React.Component {
   }
 
   getBaseBalance() {
-    let totalActiveLimitOrderBaseQuantity = 0;
-    const baseCurrency = this.props.currentMarket.split("-")[0];
-    let committedBaseBalance = new Decimal(
-      this.props.user.committed.balances?.[baseCurrency] || 0
+    const baseCurrency = this.props.currentMarket?.split("-")[0];
+    return (
+      this.props.user.availableBalances?.[baseCurrency]?.valueReadable ?? "0"
     );
-    let baseBalance = committedBaseBalance.dividedBy(
-      Math.pow(10, api.currencies[baseCurrency].decimals)
-    );
-    this.props.activeLimitAndMarketOrders.map((order) => {
-      if (order.side === "s")
-        totalActiveLimitOrderBaseQuantity += order.baseQuantity;
-    });
-    let finalBaseBalance = baseBalance.minus(totalActiveLimitOrderBaseQuantity);
-    return finalBaseBalance;
   }
 
   getQuoteBalance() {
-    let totalActiveLimitOrderQuoteQuantity = 0;
-    const quoteCurrency = this.props.currentMarket.split("-")[1];
-    let committedQuoteBalance = new Decimal(
-      this.props.user.committed.balances?.[quoteCurrency] || 0
+    const quoteCurrency = this.props.currentMarket?.split("-")[1];
+    return (
+      this.props.user.availableBalances?.[quoteCurrency]?.valueReadable ?? "0"
     );
-    let quoteBalance = committedQuoteBalance.dividedBy(
-      Math.pow(10, api.currencies[quoteCurrency].decimals)
-    );
-    this.props.activeLimitAndMarketOrders.map((order) => {
-      if (order.side === "b")
-        totalActiveLimitOrderQuoteQuantity += order.quoteQuantity;
-    });
-    let finalQuoteBalance = quoteBalance.minus(
-      totalActiveLimitOrderQuoteQuantity
-    );
-    return finalQuoteBalance;
   }
 
   async buySellHandler(e) {
-    let amount, baseBalance, quoteBalance, newstate, orderPendingToast, price;
-    // this variable will change when different fee method has developed
-    let feeType = "withoutNBX";
+    let amount, price, newstate, orderPendingToast;
     let orderType = this.props.orderType === "limit" ? "l" : "m";
 
+    // amount
     if (typeof this.state.amount === "string") {
       if (this.props.rangePrice > 0) {
-        amount = Number(this.props.rangePrice.replace(",", "."));
+        amount = this.props.rangePrice.replace(",", ".");
       } else {
-        amount = Number(this.state.amount.replace(",", "."));
+        amount = this.state.amount.replace(",", ".");
       }
     } else {
       amount = this.state.amount;
-    }
-    if (isNaN(amount)) {
-      toast.error("Invalid amount");
-      return;
     }
 
     if (sessionStorage.getItem("test") === null) {
@@ -134,8 +110,7 @@ class SpotForm extends React.Component {
       );
       sessionStorage.setItem("test", true);
     }
-    const [baseCurrency, quoteCurrency] = this.props.currentMarket.split("-");
-    amount = Number(amount.toFixed(api.currencies[baseCurrency].decimals));
+
     if (this.props.activeLimitAndMarketOrders.length > 0) {
       if (this.props.orderType === "market") {
         toast.error("Your limit or market order should fill first");
@@ -143,76 +118,33 @@ class SpotForm extends React.Component {
       }
     }
 
-    if (this.props.user.id) {
-      baseBalance = this.getBaseBalance().toNumber();
-      quoteBalance = this.getQuoteBalance().toNumber();
-    } else {
-      baseBalance = 0;
-      quoteBalance = 0;
-    }
-
+    // price
     if (this.props.orderType === "market") {
       price = this.currentPrice();
     } else if (this.props.orderType === "marketOrder") {
       price = this.marketPrice();
     } else {
       if (this.props.selectedPrice) {
-        price = Number(this.props.selectedPrice)
-          .toFixed(1)
-          .replace(/([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, "$1");
+        price = this.props.selectedPrice;
       } else {
         price = this.state.price;
       }
     }
-    if (!price) {
-      if (this.props.orderType === "limit") {
-        toast.error("Invalid price");
-        return;
-      } else {
-        toast.error(
-          `${this.props.currentMarket}: No price available right now!`
-        );
-        return;
-      }
+
+    let data;
+    try {
+      data = await Core.run("validateOrder", {
+        market: this.props.currentMarket,
+        amount,
+        price,
+        side: this.props.side,
+        type: orderType,
+      });
+    } catch (err) {
+      toast.error(err.message);
+      return;
     }
 
-    if (this.props.side === "s" && isNaN(baseBalance)) {
-      toast.error(`No ${baseCurrency} balance`);
-      return;
-    }
-    if (this.props.side === "b" && isNaN(quoteBalance)) {
-      toast.error(`No ${quoteCurrency} balance`);
-      return;
-    }
-    if (this.props.side === "s" && amount > baseBalance) {
-      toast.error(`Amount exceeds ${baseCurrency} balance`);
-      return;
-    }
-    if (this.props.side === "b" && amount * price > quoteBalance) {
-      toast.error(`Total exceeds ${quoteCurrency} balance`);
-      return;
-    }
-    if (amount < this.props.marketInfo.min_order_size) {
-      toast.error(
-        `Minimum order size is ${Number(
-          this.props.marketInfo.min_order_size
-        )} ${baseCurrency}`
-      );
-      return;
-    }
-    if (isNaN(price)) {
-      toast.error(`Price is not a number`);
-    }
-    if (price > this.props.lastPrice * 1.2) {
-      toast.warning("Price is 20% above the spot");
-    }
-    if (price < this.props.lastPrice * 0.8) {
-      toast.warning("Price is 20% lower than the spot");
-    }
-    if (price === 0) {
-      toast.error(`Price should not be equal to 0`);
-      return;
-    }
     newstate = { ...this.state };
     newstate.orderButtonDisabled = true;
     this.setState(newstate);
@@ -223,15 +155,7 @@ class SpotForm extends React.Component {
 
     // send feeType for limit order (fee method)
     try {
-      await api.submitOrder(
-        this.props.currentMarket,
-        this.props.side,
-        price,
-        amount,
-        feeType,
-        this.props.config.takerFee,
-        orderType
-      );
+      await Core.run("submitOrder", data);
     } catch (e) {
       console.log(e);
       toast.error(e.message);
@@ -255,11 +179,9 @@ class SpotForm extends React.Component {
     if (!this.props.user.id) return 0;
     let finalAmount;
 
-    const baseCurrency = this.props.currentMarket.split("-")[0];
-    const quoteCurrency = this.props.currentMarket.split("-")[1];
     if (this.props.side === "s") {
-      const baseBalance =
-        this.getBaseBalance() - api.currencies[baseCurrency].gasFee;
+      const baseBalance = this.getBaseBalance();
+      if (!+baseBalance) return 0;
       const amount = this.state.amount || 0;
       finalAmount = amount / baseBalance;
       if (
@@ -276,10 +198,10 @@ class SpotForm extends React.Component {
     }
     if (this.props.side === "b") {
       const quoteBalance = this.getQuoteBalance();
+      if (!+quoteBalance) return 0;
       const amount = this.state.amount || 0;
       const total = amount * this.currentPrice();
-      finalAmount =
-        total / (quoteBalance - api.currencies[quoteCurrency].gasFee);
+      finalAmount = total / quoteBalance;
       if (
         this.props.orderType === "limit" ||
         this.props.orderType === "marketOrder" ||
@@ -396,12 +318,12 @@ class SpotForm extends React.Component {
   }
 
   rangeSliderHandler(e, val) {
-    if (!this.props.user.id) return;
+    if (!this.props.user.address) return;
 
-    api.emit("rangePrice", 0);
+    Core.run("emit", "rangePrice", 0);
     const baseBalance = this.getBaseBalance();
     const baseCurrency = this.props.currentMarket.split("-")[0];
-    const decimals = api.currencies[baseCurrency].decimals;
+    const decimals = Currencies[baseCurrency].decimals;
     const quoteBalance = this.getQuoteBalance();
     const quoteCurrency = this.props.currentMarket.split("-")[1];
 
@@ -414,7 +336,7 @@ class SpotForm extends React.Component {
     }
     if (this.props.side === "s") {
       let displayAmount = (baseBalance * val) / 100;
-      displayAmount -= api.currencies[baseCurrency].gasFee;
+      displayAmount -= Currencies[baseCurrency].gasFee;
       displayAmount = parseFloat(displayAmount.toFixed(decimals)).toPrecision(
         7
       );
@@ -430,7 +352,7 @@ class SpotForm extends React.Component {
       }
     } else if (this.props.side === "b") {
       let quoteAmount =
-        ((quoteBalance - api.currencies[quoteCurrency].gasFee) * val) /
+        ((quoteBalance - Currencies[quoteCurrency].gasFee) * val) /
         100 /
         this.currentPrice();
       quoteAmount = parseFloat(quoteAmount.toFixed(decimals)).toPrecision(7);
@@ -528,11 +450,13 @@ class SpotForm extends React.Component {
       this.props.orderType === "market"
         ? this.currentPrice()
         : this.marketPrice();
-    const baseCurrency = this.props.currentMarket.split("-")[0];
-    const quoteCurrency = this.props.currentMarket.split("-")[1];
+    // if (price === 0) price = this.props.rangePrice;
+
+    const baseCurrency = this.props.currentMarket?.split("-")[0];
+    const quoteCurrency = this.props.currentMarket?.split("-")[1];
 
     let baseBalance, quoteBalance;
-    if (this.props.user.id) {
+    if (this.props.user.address) {
       baseBalance = this.getBaseBalance();
       quoteBalance = this.getQuoteBalance();
     } else {
@@ -549,11 +473,11 @@ class SpotForm extends React.Component {
     const balanceHtml =
       this.props.side === "b" ? (
         <strong>
-          {quoteBalance.toPrecision(8)} {quoteCurrency}
+          {quoteBalance} {quoteCurrency}
         </strong>
       ) : (
         <strong>
-          {baseBalance.toPrecision(8)} {baseCurrency}
+          {baseBalance} {baseCurrency}
         </strong>
       );
 
@@ -646,7 +570,7 @@ class SpotForm extends React.Component {
           </div>
           <div className="spot_box_footer">
             <div className="connect-btn">
-              {this.props.user.id ? (
+              {this.props.user.address ? (
                 <>
                   <div className="spf_head_total_amount">
                     <span>{this.state.orderSide}</span>
@@ -723,7 +647,7 @@ class SpotForm extends React.Component {
                 </>
               ) : null}
             </div>
-            {this.props.user.id ? (
+            {this.props.user.address ? (
               <>
                 <div className="spf_btn">
                   <button
@@ -758,6 +682,9 @@ const mapStateToProps = (state) => ({
   rangePrice: rangePriceSelector(state),
   selectedPrice: selectedPriceSelector(state),
   userOrders: userOrdersSelector(state),
+  networkList: networkListSelector(state),
+  network: networkSelector(state),
+  networkConfig: networkConfigSelector(state),
 });
 
 export default connect(mapStateToProps)(SpotForm);

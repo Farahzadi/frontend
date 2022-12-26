@@ -1,8 +1,7 @@
 import { createSlice, createAction } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
-import api from "lib/api";
-
-const makeScope = (state) => `${state.network}-${state.userAddress}`;
+import networkManager from "config/NetworkManager";
+import { getOrderDetailsWithoutFee } from "lib/utils";
 
 const translators = {
   // used for both initial orders and order updates
@@ -17,7 +16,7 @@ const translators = {
     expires: o.expiration,
     userAddress: o.user_address,
     status: o.status,
-    remaining: o.unfilled,
+    remaining: +o.unfilled,
     type: o.type,
     insertTimestamp: o.created_at,
     unbroadcasted: o.unbroadcasted,
@@ -61,6 +60,7 @@ const translators = {
     makerFee: c.maker_fee,
     swapFee: c.swapFee,
     minMatchAmount: c.min_match_amount,
+    minOrderSize: c.min_order_size,
   }),
 
   markets_stats: (s) => ({
@@ -81,10 +81,11 @@ export const apiSlice = createSlice({
     network: {
       name: null,
       hasBridge: null,
+      securityType: null,
+      hasContract: null,
     },
     providerState: "DISCONNECTED",
-    userAddress: null,
-    currentMarket: "ETH-DAI",
+    currentMarket: null,
     config: {},
     marketFills: {},
     bridgeReceipts: [],
@@ -92,7 +93,6 @@ export const apiSlice = createSlice({
     lastPrices: {},
     marketSummary: {},
     marketinfo: {},
-    balances: {},
     liquidity: [],
     userOrders: {},
     userFills: {},
@@ -103,59 +103,56 @@ export const apiSlice = createSlice({
     selectedPrice: 0,
     orderSide: false,
     uuid: null,
+    user: {
+      address: null,
+      name: null,
+      image: null,
+      nonce: null,
+      // network main balances
+      balances: null,
+      availableBalances: null,
+      chainDetails: null,
+    },
   },
   reducers: {
     _connected_ws(state, { payload }) {
-      api.ws.uuid = payload.uuid;
-      state.uuid = payload.uuid;
+      state.uuid = payload.data.uuid;
     },
     _login_post(state, { payload }) {
-      sessionStorage.setItem("access_token", payload.access_token);
-      // payload.user_id
       apiSlice.caseReducers._user_orders(state, {
-        payload: payload.user_orders,
+        payload: { data: payload.data.user_orders },
       });
-      apiSlice.caseReducers._user_fills(state, { payload: payload.user_fills });
+      apiSlice.caseReducers._user_fills(state, {
+        payload: { data: payload.data.user_fills },
+      });
     },
     _markets_info_get(state, { payload }) {
-      state.marketinfo = payload.info[0];
+      state.marketinfo = payload.data.info[0];
     },
     _markets_stats_ws(state, { payload }) {
-      if (!payload) return;
-      payload.map(translators.markets_stats).forEach((update) => {
-        const { market, price, priceChange: change } = update;
-        if (api.validMarkets[state.network.name]?.includes(market)) {
+      if (!payload.data) return;
+      state.lastPrices = {};
+      payload.data
+        .map(translators.markets_stats)
+        .filter((update) =>
+          networkManager.has(state.network.name, update.market)
+        )
+        .forEach((update) => {
+          const { market, price, priceChange: change } = update;
           state.lastPrices[market] = {
             price,
             change,
           };
-        } else {
-          delete state.lastPrices[market];
-        }
-        if (market === state.currentMarket) {
-          state.marketSummary = { ...update };
-        }
-      });
+          if (market === state.currentMarket) {
+            state.marketSummary = { ...update };
+          }
+        });
     },
     _markets_config_get(state, { payload }) {
-      state.config = payload.config.map(translators.markets_config)[0];
+      state.config = payload.data.config.map(translators.markets_config)[0];
     },
-    // _swapfills(state, { payload }) {
-    //   return;
-    //   payload[0].forEach((fill) => {
-    //     const fillid = fill.id;
-    //     if (
-    //       fill.market === state.currentMarket &&
-    //       fill.chainId === state.network
-    //     ) {
-    //       state.marketFills[fillid] = fill;
-    //     }
-    //     state.userFills[fillid] = fill;
-    //   });
-    // },
     _fills_ws(state, { payload }) {
-      // console.log("fills", payload);
-      payload.map(translators.fills).forEach((fill) => {
+      payload.data.map(translators.fills).forEach((fill) => {
         const fillid = fill.id;
         if (
           fill.market === state.currentMarket &&
@@ -166,13 +163,13 @@ export const apiSlice = createSlice({
       });
     },
     _user_fills(state, { payload }) {
-      payload
+      payload.data
         .map(translators.fills)
         .filter((fill) => fill.chainId === state.network.name)
         .forEach((fill) => {
           state.userFills[fill.id] = {
             ...fill,
-            isTaker: fill.takerUserAddress === state.userAddress,
+            isTaker: fill.takerUserAddress === state.user.address,
           };
         });
     },
@@ -180,7 +177,7 @@ export const apiSlice = createSlice({
       apiSlice.caseReducers._user_fills(state, { payload });
     },
     _user_fills_update_ws(state, { payload }) {
-      payload.map(translators.fills).forEach((update) => {
+      payload.data.map(translators.fills).forEach((update) => {
         let transactionHash;
         const fillId = update.id;
         const newStatus = update.status;
@@ -193,31 +190,33 @@ export const apiSlice = createSlice({
       });
     },
     _user_orders(state, { payload }) {
-      if (!state.userAddress) return;
-      payload
+      if (!state.user.address) return;
+      payload.data
         .map(translators.userOrder)
         .filter((order) => order.chainId === state.network.name)
         .forEach((order) => {
-          if (order.userAddress === state.userAddress) {
+          if (order.userAddress === state.user.address) {
             state.userOrders[order.id] = order;
             state.unbroadcasted = order.unbroadcasted;
           }
         });
     },
     _user_order_post(state, { payload }) {
-      apiSlice.caseReducers._user_orders(state, { payload: [payload] });
+      apiSlice.caseReducers._user_orders(state, {
+        payload: { data: [payload.data] },
+      });
     },
     _user_order_delete(state, { payload }) {
-      if (payload.success && state.userOrders[payload.id])
-        state.userOrders[payload.id].status = "c";
+      if (payload.data.success && state.userOrders[payload.data.id])
+        state.userOrders[payload.data.id].status = "c";
     },
     _user_orders_delete(state, { payload }) {
-      for (const id of payload.ids)
-        if (payload.success && state.userOrders[id])
+      for (const id of payload.data.ids)
+        if (payload.data.success && state.userOrders[id])
           state.userOrders[id].status = "c";
     },
     _user_orders_update_ws(state, { payload }) {
-      payload.map(translators.userOrder).forEach(async (update) => {
+      payload.data.map(translators.userOrder).forEach(async (update) => {
         let filledOrder, partialmatchorder;
         switch (update.status) {
           case "c":
@@ -235,8 +234,7 @@ export const apiSlice = createSlice({
               const baseCurrency = partialmatchorder.market.split("-")[0];
               partialmatchorder.remaining = remaining;
               partialmatchorder.status = "pm";
-              const noFeeOrder =
-                api.getOrderDetailsWithoutFee(partialmatchorder);
+              const noFeeOrder = getOrderDetailsWithoutFee(partialmatchorder);
               toast.success(
                 `Your ${sideText} order for ${
                   noFeeOrder.baseQuantity.toPrecision(4) / 1
@@ -253,8 +251,8 @@ export const apiSlice = createSlice({
             matchedOrder.remaining = update.remaining;
             if (
               matchedOrder &&
-              state.userAddress &&
-              matchedOrder.userAddress === state.userAddress
+              state.user.address &&
+              matchedOrder.userAddress === state.user.address
             ) {
               if (!state.userOrders[matchedOrder.id])
                 state.userOrders[matchedOrder.id] = matchedOrder;
@@ -267,7 +265,7 @@ export const apiSlice = createSlice({
               const baseCurrency = filledOrder.market.split("-")[0];
               filledOrder.status = "f";
               filledOrder.remaining = 0;
-              const noFeeOrder = api.getOrderDetailsWithoutFee(filledOrder);
+              const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
               toast.success(
                 `Your ${sideText} order for ${
                   noFeeOrder.baseQuantity.toPrecision(4) / 1
@@ -287,7 +285,7 @@ export const apiSlice = createSlice({
           //     const baseCurrency = filledOrder.market.split("-")[0];
           //     filledOrder.status = "pf";
           //     filledOrder.remaining = remaining;
-          //     const noFeeOrder = api.getOrderDetailsWithoutFee(filledOrder);
+          //     const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
           //     toast.success(
           //       `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1
           //       } ${baseCurrency} @ ${noFeeOrder.price.toPrecision(4) / 1
@@ -310,7 +308,7 @@ export const apiSlice = createSlice({
               const baseCurrency = filledOrder.market.split("-")[0];
               filledOrder.status = "r";
               filledOrder.txHash = update.txHash;
-              const noFeeOrder = api.getOrderDetailsWithoutFee(filledOrder);
+              const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
               toast.error(
                 `Your ${sideText} order for ${
                   noFeeOrder.baseQuantity.toPrecision(4) / 1
@@ -336,27 +334,20 @@ export const apiSlice = createSlice({
     _markets_subscription_post(state, { payload }) {},
     _markets_subscription_delete(state, { payload }) {},
     _orderbook(state, { payload }) {
-      state.orders = payload.map(translators.orderBook).reduce((res, order) => {
-        res[order.price] = order;
-        return res;
-      }, {});
+      state.orders = payload.data
+        .map(translators.orderBook)
+        .reduce((res, order) => {
+          res[order.price] = order;
+          return res;
+        }, {});
     },
     _orderbook_ws(state, { payload }) {
       apiSlice.caseReducers._orderbook(state, { payload });
     },
     _orders_get(state, { payload }) {
-      apiSlice.caseReducers._orderbook(state, { payload: payload.orderbook });
-    },
-    setBalances(state, { payload }) {
-      const scope = makeScope(state);
-      state.balances[scope] = state.balances[scope] || {};
-      state.balances[scope] = {
-        ...state.balances[scope],
-        [payload.key]: {
-          ...(state.balances[scope][payload.key] || {}),
-          ...payload.balances,
-        },
-      };
+      apiSlice.caseReducers._orderbook(state, {
+        payload: { data: payload.data.orderbook },
+      });
     },
     setCurrentMarket(state, { payload }) {
       if (state.currentMarket !== payload) {
@@ -367,12 +358,12 @@ export const apiSlice = createSlice({
         state.orders = {};
       }
     },
-    setUserAddress(state, { payload }) {
-      state.userAddress = payload;
-    },
     setNetwork(state, { payload }) {
-      state.network.name = payload.name;
-      state.network.hasBridge = payload.hasBridge;
+      state.network = payload;
+      if (!networkManager.has(state.network.name, state.currentMarket))
+        apiSlice.caseReducers.setCurrentMarket(state, {
+          payload: networkManager.get(state.network.name)[0],
+        });
     },
     setProviderState(state, { payload }) {
       state.providerState = payload;
@@ -402,12 +393,12 @@ export const apiSlice = createSlice({
     addBridgeReceipt(state, { payload }) {
       if (!payload || !payload.txId) return;
       const { amount, token, txUrl, type, userAddress } = payload;
-      if (!state.userAddress) {
+      if (!state.user.address) {
         //‌This is for addresses that have not yet been activated
         state.bridgeReceipts.unshift(payload);
         toast.info("Your wallet address is going to be activate!");
       }
-      if (state.userAddress === userAddress) {
+      if (state.user.address === userAddress) {
         state.bridgeReceipts.unshift(payload);
       } else {
         return {};
@@ -474,6 +465,48 @@ export const apiSlice = createSlice({
     clearUuid(state) {
       state.uuid = null;
     },
+    setUserAddress(state, { payload }) {
+      state.user.address = payload;
+    },
+    setUserName(state, { payload }) {
+      state.user.name = payload;
+    },
+    setUserImage(state, { payload }) {
+      state.user.image = payload;
+    },
+    setUserNonce(state, { payload }) {
+      state.user.nonce = payload;
+    },
+    setUserBalances(state, { payload }) {
+      state.user.balances = payload;
+    },
+    setUserAvailableBalances(state, { payload }) {
+      state.user.availableBalances = payload;
+    },
+    setUserChainDetails(state, { payload }) {
+      state.user.chainDetails = {
+        ...(state.user.chainDetails ?? {}),
+        ...payload,
+      };
+    },
+    setUserDetails(state, { payload }) {
+      state.user.address = payload.address;
+      state.user.name = payload.name;
+      state.user.image = payload.image;
+      state.user.nonce = payload.nonce;
+      state.user.balances = payload.balances;
+      state.user.availableBalances = payload.availableBalances;
+      state.user.chainDetails = payload.chainDetails;
+    },
+    clearUserDetails(state) {
+      state.user.address = null;
+      state.user.name = null;
+      state.user.image = null;
+      state.user.nonce = null;
+      state.user.balances = null;
+      state.user.availableBalances = null;
+      state.user.chainDetails = null;
+    },
   },
 });
 
@@ -483,7 +516,6 @@ export const {
   setProviderState,
   clearBridgeReceipts,
   setBalances,
-  setUserAddress,
   addBridgeReceipt,
   addbridgeReceiptStatus,
   setCurrentMarket,
@@ -495,6 +527,14 @@ export const {
   setOrderSide,
   resetOrderBook,
   clearUuid,
+  setUserAddress,
+  setUserName,
+  setUserNonce,
+  setUserBalances,
+  setUserAvailableBalances,
+  setUserChainDetails,
+  setUserDetails,
+  clearUserDetails,
 } = apiSlice.actions;
 
 export const configSelector = (state) => state.api.config;
@@ -511,7 +551,6 @@ export const marketInfoSelector = (state) => state.api.marketinfo;
 export const liquiditySelector = (state) => state.api.liquidity;
 export const currentMarketSelector = (state) => state.api.currentMarket;
 export const bridgeReceiptsSelector = (state) => state.api.bridgeReceipts;
-export const userAddressSelector = (state) => state.api.userAddress;
 export const orderTypeSelector = (state) => state.api.orderType;
 export const unbroadcastedSelector = (state) => state.api.unbroadcasted;
 export const rangePriceSelector = (state) => state.api.rangePrice;
@@ -520,10 +559,18 @@ export const selectedPriceSelector = (state) => state.api.selectedPrice;
 export const uuidSelector = (state) => state.api.uuid;
 export const bridgeReceiptsStatusSelector = (state) =>
   state.api.bridgeReceiptsStatus;
-export const balancesSelector = (state) =>
-  state.api.balances[makeScope(state.api)] || {};
 
 export const networkListSelector = (state) => state.api.networks;
+
+export const userAddressSelector = (state) => state.api.user.address;
+export const userNameSelector = (state) => state.api.user.name;
+export const userImageSelector = (state) => state.api.user.image;
+export const userNonceSelector = (state) => state.api.user.nonce;
+export const userBalancesSelector = (state) => state.api.user.balances;
+export const userAvailableBalancesSelector = (state) =>
+  state.api.user.availableBalances;
+export const userChainDetailsSelector = (state) => state.api.user.chainDetails;
+export const userSelector = (state) => state.api.user;
 
 export const handleMessage = createAction("api/handleMessage");
 
