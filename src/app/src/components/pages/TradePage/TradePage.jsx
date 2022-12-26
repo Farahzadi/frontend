@@ -352,7 +352,7 @@ const TradePage = () => {
                 Powered By Dexpresso
               </div>
               <div className="mt-3 mt-lg-0 d-flex align-items-center justify-content-center">
-                <p>v0.0.1</p>{" "}
+                <p>v1.0.0</p>{" "}
               </div>
               <div className="head_left_socials my-1 my-lg-0 footer-icons">
                 {" "}
