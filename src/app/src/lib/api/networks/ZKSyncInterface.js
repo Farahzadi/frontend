@@ -1,4 +1,4 @@
-import { formatBalances, fromBaseUnit, getRatio, toBaseUnit } from "lib/utils";
+import { formatBalances, fromBaseUnit, toBaseUnit } from "lib/utils";
 import ZKSyncAPIProvider from "../providers/ZKSyncAPIProvider";
 import { ethers } from "ethers";
 import EthereumInterface from "./EthereumInterface";
@@ -133,7 +133,8 @@ export default class ZKSyncInterface extends EthereumInterface {
     return await this.apiProvider.getAccountState();
   }
 
-  getTokenRatio(market, ratio) {
+  getZKRatio(price, market) {
+    const ratio = this.getRatio(price);
     const [baseCurrency, quoteCurrency] = market.split("-");
     return {
       [baseCurrency]: ratio.base,
@@ -154,8 +155,7 @@ export default class ZKSyncInterface extends EthereumInterface {
     const sellPrice = Decimal.mul(res.price, Decimal.sub(1, res.fee)).toFixed();
 
     const priceWithFee = res.side === "b" ? buyPrice : sellPrice;
-    res.ratio = getRatio(priceWithFee);
-    const ratio = zksync.utils.tokenRatio(this.getTokenRatio(res.market, res.ratio));
+    const ratio = zksync.utils.tokenRatio(this.getZKRatio(priceWithFee, res.market));
 
     return {
       ...res,

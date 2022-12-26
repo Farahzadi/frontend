@@ -76,13 +76,6 @@ export function getCurrentValidUntil() {
   return ((Date.now() / 1000) | 0) + 24 * 3600;
 }
 
-export function getRatio(price) {
-  return {
-    base: "1",
-    quote: price
-  };
-}
-
 export function switchRatio(side, ratio) {
   let sell, buy;
   if (side === "b") {

@@ -13,7 +13,6 @@ import {
 import {
   formatBalances,
   getCurrentValidUntil,
-  getRatio,
   State,
   toBaseUnit,
 } from "lib/utils";
@@ -467,7 +466,7 @@ export default class NetworkInterface {
       if (price.lt(lastPrice.mul(0.8)))
         warnings.push("Price is 20% lower than the spot");
 
-      const ratio = getRatio(price.toFixed(), baseDecimals, quoteDecimals);
+      const ratio = this.getRatio(price.toFixed(), baseDecimals, quoteDecimals);
 
       const validUntil = getCurrentValidUntil();
 
@@ -537,5 +536,13 @@ export default class NetworkInterface {
 
   getStoreState() {
     return this.core.store?.getState();
+  }
+
+  getRatio(price, baseDecimals = 0, quoteDecimals = 0) {
+    const useToBase = baseDecimals && quoteDecimals;
+    return {
+      base: useToBase ? toBaseUnit("1", baseDecimals) : "1",
+      quote: useToBase ? toBaseUnit(price, quoteDecimals) : price,
+    };
   }
 }
