@@ -66,7 +66,7 @@ export function formatBalances(balances, currencies) {
     const balance = balances[ticker];
     result[ticker] = {
       value: balance,
-      valueReadable: fromBaseUnit(balance, decimals),
+      valueReadable: fromBaseUnit(balance, decimals)
     };
   }
   return result;
@@ -76,10 +76,10 @@ export function getCurrentValidUntil() {
   return ((Date.now() / 1000) | 0) + 24 * 3600;
 }
 
-export function getRatio(price, baseDecimals, quoteDecimals) {
+export function getRatio(price) {
   return {
-    base: toBaseUnit("1", baseDecimals),
-    quote: toBaseUnit(price, quoteDecimals),
+    base: "1",
+    quote: price
   };
 }
 
@@ -132,15 +132,10 @@ export function getOrderDetailsWithoutFee(order) {
   const price = new Decimal(order.price);
   const quoteQuantity = price.mul(baseQuantity);
   let fee = order.feeAmount ? order.feeAmount : 0;
-  const remaining = isNaN(Number(order.remaining))
-    ? order.baseQuantity
-    : order.remaining;
+  const remaining = isNaN(Number(order.remaining)) ? order.baseQuantity : order.remaining;
   const orderStatus = order.status;
   const orderType = order.type;
-  let baseQuantityWithoutFee,
-    quoteQuantityWithoutFee,
-    priceWithoutFee,
-    remainingWithoutFee;
+  let baseQuantityWithoutFee, quoteQuantityWithoutFee, priceWithoutFee, remainingWithoutFee;
 
   if (side === "s") {
     if (orderType === "l") {
@@ -167,8 +162,7 @@ export function getOrderDetailsWithoutFee(order) {
     } else {
       quoteQuantityWithoutFee = quoteQuantity.minus(fee);
       priceWithoutFee = quoteQuantityWithoutFee.dividedBy(baseQuantity);
-      baseQuantityWithoutFee =
-        quoteQuantityWithoutFee.dividedBy(priceWithoutFee);
+      baseQuantityWithoutFee = quoteQuantityWithoutFee.dividedBy(priceWithoutFee);
       if (orderStatus === "o" || orderStatus === "c" || orderStatus === "m") {
         remainingWithoutFee = baseQuantity;
       } else {
@@ -180,7 +174,7 @@ export function getOrderDetailsWithoutFee(order) {
     price: priceWithoutFee,
     quoteQuantity: quoteQuantityWithoutFee,
     baseQuantity: baseQuantityWithoutFee,
-    remaining: remainingWithoutFee,
+    remaining: remainingWithoutFee
   };
 }
 
@@ -202,6 +196,6 @@ export function getFillDetailsWithoutFee(fill) {
     price: price,
     quoteQuantity: quoteQuantity,
     baseQuantity: baseQuantity,
-    time: finalTime,
+    time: finalTime
   };
 }

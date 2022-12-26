@@ -18,7 +18,7 @@ export default class ZKSyncInterface extends EthereumInterface {
     "withdrawL2",
     "withdrawL2Fee",
     "depositL2Fee",
-    "approveL1",
+    "approveL1"
   ];
 
   static Provider = ZKSyncAPIProvider;
@@ -95,12 +95,8 @@ export default class ZKSyncInterface extends EthereumInterface {
 
   async updatePureBalances(_accountState) {
     if (!_accountState && !this.apiProvider) return;
-    const accountState =
-      _accountState ?? (await this.apiProvider.getAccountState());
-    this.userDetails.balances = formatBalances(
-      accountState.committed.balances,
-      Currencies
-    );
+    const accountState = _accountState ?? (await this.apiProvider.getAccountState());
+    this.userDetails.balances = formatBalances(accountState.committed.balances, Currencies);
   }
 
   async updateChainDetails(_accountState) {
@@ -112,16 +108,16 @@ export default class ZKSyncInterface extends EthereumInterface {
     const [accountState, l1Balances, allowances] = await Promise.all([
       accountStatePromise,
       balancesPromise,
-      allowancesPromise,
+      allowancesPromise
     ]);
     this.userDetails.chainDetails = {
       verified: {
         nonce: +accountState.committed.nonce,
-        balances: formatBalances(accountState.committed.balances, Currencies),
+        balances: formatBalances(accountState.committed.balances, Currencies)
       },
       userId: accountState.id,
       L1Balances: formatBalances(l1Balances, Currencies),
-      allowances: formatBalances(allowances, Currencies),
+      allowances: formatBalances(allowances, Currencies)
     };
   }
 
@@ -141,7 +137,7 @@ export default class ZKSyncInterface extends EthereumInterface {
     const [baseCurrency, quoteCurrency] = market.split("-");
     return {
       [baseCurrency]: ratio.base,
-      [quoteCurrency]: ratio.quote,
+      [quoteCurrency]: ratio.quote
     };
   }
 
@@ -152,24 +148,18 @@ export default class ZKSyncInterface extends EthereumInterface {
       amount,
       side,
       fee,
-      type,
+      type
     });
-
-    
     const buyPrice = Decimal.mul(res.price, Decimal.add(1, res.fee)).toFixed();
     const sellPrice = Decimal.mul(res.price, Decimal.sub(1, res.fee)).toFixed();
-    
-    const priceWithFee = res.side === "b" ? buyPrice : sellPrice;
-  
-    res.ratio = getRatio(priceWithFee, res.baseDecimals, res.quoteDecimals);
 
-    const ratio = zksync.utils.tokenRatio(
-      this.getTokenRatio(res.market, res.ratio)
-    );
+    const priceWithFee = res.side === "b" ? buyPrice : sellPrice;
+    res.ratio = getRatio(priceWithFee);
+    const ratio = zksync.utils.tokenRatio(this.getTokenRatio(res.market, res.ratio));
 
     return {
       ...res,
-      ratio,
+      ratio
     };
   }
 
@@ -183,19 +173,16 @@ export default class ZKSyncInterface extends EthereumInterface {
     fee,
     type,
     validUntil,
-    ratio,
+    ratio
   }) {
     const [baseCurrency, quoteCurrency] = market.split("-");
     const [buyCurrency, sellCurrency] =
-      side === "b"
-        ? [baseCurrency, quoteCurrency]
-        : [quoteCurrency, baseCurrency];
-
+      side === "b" ? [baseCurrency, quoteCurrency] : [quoteCurrency, baseCurrency];
     const tx = await this.apiProvider?.signOrder({
       sellCurrency,
       buyCurrency,
       ratio,
-      validUntil,
+      validUntil
     });
     return tx;
   }
@@ -208,15 +195,13 @@ export default class ZKSyncInterface extends EthereumInterface {
     const decimals = Currencies[token].decimals;
     amount = ethers.BigNumber.from(toBaseUnit(amount, decimals));
 
-    const transfer = await this.apiProvider?.[
-      type === "deposit" ? "depositL2" : "withdrawL2"
-    ](amount, address, token);
-
-    const receipt = await this.apiProvider?.getBridgeReceiptStatus(
-      transfer,
-      type
+    const transfer = await this.apiProvider?.[type === "deposit" ? "depositL2" : "withdrawL2"](
+      amount,
+      address,
+      token
     );
 
+    const receipt = await this.apiProvider?.getBridgeReceiptStatus(transfer, type);
     const readableAmount = fromBaseUnit(amount.toString(), decimals);
 
     this.emit(
@@ -250,15 +235,7 @@ export default class ZKSyncInterface extends EthereumInterface {
     return this.apiProvider?.withdrawL2Fee(token);
   }
 
-  handleBridgeReceipt(
-    _receipt,
-    amount,
-    token,
-    type,
-    userId,
-    userAddress,
-    status
-  ) {
+  handleBridgeReceipt(_receipt, amount, token, type, userId, userAddress, status) {
     let receipt = {
       date: +new Date(),
       network: this.network,
@@ -268,7 +245,7 @@ export default class ZKSyncInterface extends EthereumInterface {
       userId,
       userAddress,
       _receipt,
-      status,
+      status
     };
     if (!_receipt) {
       return receipt;
