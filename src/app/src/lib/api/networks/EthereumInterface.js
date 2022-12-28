@@ -168,7 +168,6 @@ export default class EthereumInterface extends NetworkInterface {
       if (new Decimal(allowance.toString()).lt(compareAmount)) {
         toast.warning("Insufficient allowance");
       await this.approve(currency);
-      return;
       // TODO: throw the error and catch the correct error message to start approving procedure
       // throw new Error("Insufficient allowance");
     }

@@ -149,7 +149,8 @@ export default class EthAPIProvider extends APIProvider {
       erc20ContractABI,
       this.wallet
     );
-    await contract.approve(spenderAddress, amount);
+    const tx = await contract.approve(spenderAddress, amount);
+    await tx.wait();
   }
 
   async getBalance(userAddress) {
