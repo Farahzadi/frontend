@@ -20,23 +20,6 @@ const Currencies = {
       },
     },
   },
-  WETH: {
-    image: require("assets/images/currency/ETH.svg"),
-    name: "Wrapped Ether",
-    decimals: 18,
-    chain: {
-      zksyncv1: {
-        contract: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-        L2Contract: 61,
-      },
-      ethereum: {
-        contract: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-      },
-      ethereum_goerli: {
-        contract: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-      },
-    },
-  },
   USDC: {
     image: require("assets/images/currency/USDC.svg"),
     name: "USDC",
@@ -159,6 +142,26 @@ const Currencies = {
       },
     },
   },
+  ESP: {
+    image: require("assets/images/currency/ESP.svg"),
+    name: "Espresso",
+    decimals: 18,
+    chain: {
+      ethereum_goerli: {
+        contract: "0x2b61F70Dbd9ad64f2890336300e731622C5e61F4",
+      },
+    },
+  },
+  CPC: {
+    image: require("assets/images/currency/CPC.svg"),
+    name: "Cappuccino",
+    decimals: 18,
+    chain: {
+      ethereum_goerli: {
+        contract: "0x959A48D4b694D7AD404e2EB848A42409d232E349",
+      },
+    },
+  }
 };
 
 export function getNetworkCurrencies(network) {
