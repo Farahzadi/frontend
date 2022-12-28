@@ -388,9 +388,10 @@ export default class NetworkInterface {
       } catch (err) {
         throw new VError("Invalid amount");
       }
-
+      let unitPrice;
       try {
         price = new Decimal(price);
+        unitPrice = Decimal.mul(price, Decimal.pow(10, quoteDecimals - baseDecimals))
       } catch (err) {
         throw new VError("Invalid price");
       }
@@ -485,6 +486,7 @@ export default class NetworkInterface {
         quoteCurrency,
         baseDecimals,
         quoteDecimals,
+        unitPrice,
       };
       return data;
     } catch (err) {
