@@ -143,7 +143,7 @@ const Currencies = {
     },
   },
   WETH: {
-    image: require("assets/images/currency/ETH.svg"),
+    image: require("assets/images/currency/WETH.svg"),
     name: "Wrapped Ether",
     decimals: 18,
     chain: {
