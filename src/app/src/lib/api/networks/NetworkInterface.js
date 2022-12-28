@@ -442,8 +442,7 @@ export default class NetworkInterface {
 
       if (side === "s" && baseBalance.lt(amount))
         throw new VError(`Amount exceeds ${baseCurrency} balance`);
-
-      if (side === "b" && quoteBalance.lt(amount.mul(price)))
+      if (side === "b" && quoteBalance.lt(amount.mul(unitPrice)))
         throw new VError(`Total exceeds ${quoteCurrency} balance`);
 
       const minOrderSize = new Decimal(
