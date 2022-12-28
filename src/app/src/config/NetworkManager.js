@@ -16,7 +16,7 @@ class NetworkManager {
     ],
     zksyncv1_goerli: ["ETH-USDC", "ETH-DAI", "DAI-USDC"],
     ethereum: ["WETH-USDC", "WETH-DAI", "DAI-USDC"],
-    ethereum_goerli: ["WETH-USDC", "WETH-DAI", "DAI-USDC"],
+    ethereum_goerli: ["WETH-USDC", "WETH-DAI", "DAI-USDC", "ESP-CPC"],
   };
 
   set(data, expand = false) {
