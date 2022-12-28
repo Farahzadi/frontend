@@ -16,6 +16,8 @@ import { getDocsLink } from "lib/helpers/env";
 import { styled, useMediaQuery } from "@mui/material";
 import HamburgerIcon from "components/atoms/Icons/HamburgerIcon";
 import { BrandLogo, Logo } from "components/atoms/Icons/Logo";
+import Drawerx from "@mui/material";
+import { NotificationDrawer } from "./NotificationDrawer";
 import { useTheme } from "@mui/styles";
 import {
   DexHeader,
@@ -23,7 +25,8 @@ import {
   NavItem,
   NavUl,
   ActionBtnContainer,
-  XSLogoContainer
+  XSLogoContainer,
+  ResponsiveItems
 } from "./Header.module";
 import Core from "lib/api/Core";
 
@@ -72,7 +75,12 @@ export const Header = () => {
   return (
     <DexHeader>
       <BrandLogo />
-      {matches && <HamburgerIcon isClicked={show} handleClick={handleOpenNavbar} />}
+      {matches && (
+        <ResponsiveItems>
+          {process.env.NODE_ENV === "development" && <NotificationDrawer />}
+          <HamburgerIcon isClicked={show} handleClick={handleOpenNavbar} />
+        </ResponsiveItems>
+      )}
       <MainContent show={show}>
         {matches && (
           <XSLogoContainer>
@@ -111,6 +119,7 @@ export const Header = () => {
               style={{ width: "auto" }}
             />
           )}
+          {process.env.NODE_ENV === "development" && !matches && <NotificationDrawer />}
         </ActionBtnContainer>
       </MainContent>
     </DexHeader>

@@ -1,4 +1,5 @@
 import { styled } from "@mui/material";
+import { display, justifyContent } from "@xstyled/styled-components";
 
 const DexHeader = styled("header")(({ theme }) => ({
   display: "flex",
@@ -20,6 +21,7 @@ const MainContent = styled("div")(({ show, theme }) => ({
     position: "fixed",
     justifyContent: "center",
     flexFlow: "column",
+    transform: show ? "0" : "translateX(-250px)",
     backgroundColor: theme.palette.secondary.dark
   },
   position: "relative",
@@ -80,11 +82,43 @@ const ActionBtnContainer = styled("div")(({ theme }) => ({
   flexDirection: "column",
   display: "flex",
   [theme.breakpoints.up("md")]: {
-    flexDirection: "row"
+    flexDirection: "row",
+    justifyContent: "flex-end"
   },
   alignItems: "center",
   flex: "0.75 1 auto",
-  justifyContent: "flex-end"
+  justifyContent: "center"
+}));
+const NotifictionSidebar = styled("button")(({ theme }) => ({
+  width: "50px",
+  height: "45px",
+  alignSelf: "center",
+  background: "none",
+  border: "1px solid var(--dexpressoPrimery)",
+  borderRadius: "5px",
+  marginLeft: "0.25rem",
+  fontSize: "1.25rem !important",
+  color: "#ffffffb8 !important",
+  transition: "0.2s !important",
+
+  "&:hover": {
+    color: "#fff !important",
+    boxShadow: "0px 0px 15px 0px var(--dexpressoPrimery)"
+  }
+}));
+const ResponsiveItems = styled("div")(() => ({
+  display: "flex",
+  width: "90px",
+  justifyContent: "space-between"
 }));
 
-export { DexHeader, MainContent, NavUl, NavItem, XSLogoContainer, ActionBtnContainer };
+export {
+  DexHeader,
+  MainContent,
+  NavUl,
+  NavItem,
+  XSLogoContainer,
+  ActionBtnContainer,
+  NotifictionSidebar,
+  ResponsiveItems
+};
