@@ -178,6 +178,7 @@ export function getNetworkCurrencies(network) {
 }
 
 export function getNetworkCurrency(network, ticker) {
+  if (!Currencies[ticker]) return null;
   const { chain, ...curr } = Currencies[ticker];
   return { ...curr, info: chain?.[network] };
 }

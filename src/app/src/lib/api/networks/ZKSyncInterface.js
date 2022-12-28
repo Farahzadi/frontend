@@ -6,7 +6,7 @@ import { SecurityComp } from "components/pages/Security/types";
 import Decimal from "decimal.js";
 import NetworkInterface from "./NetworkInterface";
 import * as zksync from "zksync";
-import Currencies from "config/Currencies";
+import Currencies, { getNetworkCurrency } from "config/Currencies";
 import { maxAllowance } from "../constants";
 
 export default class ZKSyncInterface extends EthereumInterface {
@@ -73,6 +73,13 @@ export default class ZKSyncInterface extends EthereumInterface {
     return await super.approve(ticker, allowance, false);
   }
 
+  formatZkSyncBalances(balances) {
+    const entries = Object.entries(balances)
+      .map(([ticker, currency]) => [ticker.toUpperCase(), currency])
+      .filter(([ticker, currency]) => getNetworkCurrency(this.NETWORK, ticker));
+    return Object.fromEntries(entries);
+  }
+
   async updateAddress(_accountState) {
     if (_accountState) {
       this.userDetails.address = ethers.utils.getAddress(_accountState.address);
@@ -96,7 +103,8 @@ export default class ZKSyncInterface extends EthereumInterface {
   async updatePureBalances(_accountState) {
     if (!_accountState && !this.apiProvider) return;
     const accountState = _accountState ?? (await this.apiProvider.getAccountState());
-    this.userDetails.balances = formatBalances(accountState.committed.balances, Currencies);
+    const zkBalances = this.formatZkSyncBalances(accountState.committed.balances);
+    this.userDetails.balances = formatBalances(zkBalances, Currencies);
   }
 
   async updateChainDetails(_accountState) {
@@ -110,10 +118,11 @@ export default class ZKSyncInterface extends EthereumInterface {
       balancesPromise,
       allowancesPromise
     ]);
+    const verifiedZkBalances = this.formatZkSyncBalances(accountState.verified.balances);
     this.userDetails.chainDetails = {
       verified: {
-        nonce: +accountState.committed.nonce,
-        balances: formatBalances(accountState.committed.balances, Currencies)
+        nonce: +accountState.verified.nonce,
+        balances: formatBalances(verifiedZkBalances, Currencies)
       },
       userId: accountState.id,
       L1Balances: formatBalances(l1Balances, Currencies),
