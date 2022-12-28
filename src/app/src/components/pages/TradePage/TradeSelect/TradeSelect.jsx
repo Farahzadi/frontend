@@ -24,20 +24,6 @@ const TradeSelect = (props) => {
           ))}
         </Dropdown.Menu>
       </Dropdown>
-      {/* <div className="tl_select">
-        <div>
-          <select
-            value={props.currentMarket}
-            onChange={(e) => props.updateMarketChain(e.target.value)}
-          >
-            {props.markets.map((market) => (
-              <option className="select-options" key={market} value={market}>
-                {market.replace("-", "/")}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div> */}
     </>
   );
 };

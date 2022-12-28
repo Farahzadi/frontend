@@ -14,24 +14,26 @@
   background-color: transparent;
   border-radius: 6px;
   border: 1px solid var(--dexpressoPrimery);
+  transition: 0.2s;
 }
 .btn-check:active + .btn-success:focus,
 .btn-check:checked + .btn-success:focus,
 .btn-success.active:focus,
 .btn-success:active:focus,
 .show > .btn-success.dropdown-toggle:focus {
-  box-shadow: var(--dexpressoPrimery);
+  box-shadow: 0px 0px 15px 0px var(--dexpressoPrimery);
 }
 .btn-check:active + .btn-primary:focus,
+.btn-primary:hover,
 .btn-check:checked + .btn-primary:focus,
 .btn-primary.active:focus,
 .btn-primary:active:focus,
 .show > .btn-primary.dropdown-toggle:focus {
-  box-shadow: var(--dexpressoPrimery);
+  box-shadow: 0px 0px 15px 0px var(--dexpressoPrimery);
 }
 .btn-check:focus + .btn-primary,
 .btn-primary:focus {
-  box-shadow: var(--dexpressoPrimery);
+  box-shadow: 0px 0px 15px 0px var(--dexpressoPrimery);
 }
 .btn-check:active + .btn-primary,
 .btn-check:checked + .btn-primary,
