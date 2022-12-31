@@ -24,10 +24,7 @@ import {
   currentMarketSelector,
   setCurrentMarket,
   uuidSelector,
-  resetData,
-  providerStateSelector,
-  userChainDetailsSelector,
-  userSelector,
+  userSelector
 } from "lib/store/features/api/apiSlice";
 import "./style.css";
 import { getFillDetailsWithoutFee } from "lib/utils";
@@ -36,10 +33,10 @@ import networkManager from "../../../config/NetworkManager";
 
 const TradePage = () => {
   const [marketDataTab, updateMarketDataTab] = useState("pairs");
+  const [isLoading, setIsLoading] = useState(false);
   const [rangePrice, setRangePrice] = useState(0);
   const user = useSelector(userSelector);
   const network = useSelector(networkSelector);
-  const providerState = useSelector(providerStateSelector);
   const currentMarket = useSelector(currentMarketSelector);
   const userOrders = useSelector(userOrdersSelector);
   const userFills = useSelector(userFillsSelector);
@@ -54,13 +51,8 @@ const TradePage = () => {
   const lastPriceTableData = [];
   const markets = [];
 
-  const [isLoading, setIsLoading] = useState(false);
-  const history = useHistory();
-  const location = useLocation();
-
   useEffect(() => {
-    if (!uuid || !network || !networkManager.has(network, currentMarket))
-      return;
+    if (!uuid || !network || !networkManager.has(network, currentMarket)) return;
 
     const sub = () => Core.run("subscribeToMarket", currentMarket);
 
@@ -108,29 +100,21 @@ const TradePage = () => {
   //Only display recent trades
   //There's a bunch of user trades in this list that are too old to display
   const fillData = [];
+  const liveOrderStatuses = ["e", "r", "c"];
   const maxFillId = Math.max(...Object.values(marketFills).map((f) => f.id));
   Object.values(marketFills)
     .filter((fill) => fill.id > maxFillId - 500)
     .sort((a, b) => b.id - a.id)
     .forEach((fill) => {
-      if (fill.status !== "e" && fill.status !== "r" && fill.status !== "c") {
-        if (["zksyncv1", "zksyncv1_goerli"].includes(network)) {
-          const fillWithoutFee = getFillDetailsWithoutFee(fill);
-          fillData.push({
-            price: fillWithoutFee.price,
-            remaining: fillWithoutFee.baseQuantity,
-            quoteQuantity: fillWithoutFee.quoteQuantity,
-            side: fill.takerSide,
-            time: fillWithoutFee.time,
-          });
-        } else {
-          fillData.push({
-            price: fill.price,
-            remaining: fill.amount,
-            quoteQuantity: fill.price * fill.amount,
-            side: fill.takerSide,
-          });
-        }
+      if (!liveOrderStatuses.includes(fill.status)) {
+        const fillWithoutFee = getFillDetailsWithoutFee(fill);
+        fillData.push({
+          price: fillWithoutFee.price,
+          remaining: fillWithoutFee.baseQuantity,
+          quoteQuantity: fillWithoutFee.quoteQuantity,
+          side: fill.takerSide,
+          time: fillWithoutFee.time
+        });
       }
     });
 
@@ -173,10 +157,8 @@ const TradePage = () => {
   let tradingViewMarket = currentMarket;
   const baseCurrency = currentMarket?.split("-")[0];
   const quoteCurrency = currentMarket?.split("-")[1];
-  if (baseCurrency === "WBTC")
-    tradingViewMarket = quoteCurrency && "BTC-" + quoteCurrency;
-  if (quoteCurrency === "WBTC")
-    tradingViewMarket = baseCurrency && baseCurrency + "-BTC";
+  if (baseCurrency === "WBTC") tradingViewMarket = quoteCurrency && "BTC-" + quoteCurrency;
+  if (quoteCurrency === "WBTC") tradingViewMarket = baseCurrency && baseCurrency + "-BTC";
 
   return (
     <DefaultTemplate>
@@ -217,15 +199,11 @@ const TradePage = () => {
                           setRangePrice={setRangePrice}
                           signInHandler={() => {
                             setIsLoading(true);
-                            Core.run("connectWallet").finally(() =>
-                              setIsLoading(false)
-                            );
+                            Core.run("connectWallet").finally(() => setIsLoading(false));
                           }}
                           user={user}
                           currentMarket={currentMarket}
-                          activeLimitAndMarketOrders={
-                            activeLimitAndMarketOrders
-                          }
+                          activeLimitAndMarketOrders={activeLimitAndMarketOrders}
                           activeSwapOrdersCount={activeSwapOrders}
                           liquidity={liquidity}
                           marketSummary={marketSummary}
@@ -237,23 +215,13 @@ const TradePage = () => {
                       <div className="order-boook-trades  bg_pannel">
                         <div className="trade-price-head-third">
                           <strong
-                            className={
-                              marketDataTab === "pairs"
-                                ? "trade-price-active-tab"
-                                : ""
-                            }
-                            onClick={() => updateMarketDataTab("pairs")}
-                          >
+                            className={marketDataTab === "pairs" ? "trade-price-active-tab" : ""}
+                            onClick={() => updateMarketDataTab("pairs")}>
                             Order Book
                           </strong>
                           <strong
-                            className={
-                              marketDataTab === "fills"
-                                ? "trade-price-active-tab"
-                                : ""
-                            }
-                            onClick={() => updateMarketDataTab("fills")}
-                          >
+                            className={marketDataTab === "fills" ? "trade-price-active-tab" : ""}
+                            onClick={() => updateMarketDataTab("fills")}>
                             Latest Trades
                           </strong>
                         </div>
@@ -278,9 +246,7 @@ const TradePage = () => {
                         <div>
                           {/* Trade Price Second Head */}
                           {marketDataTab !== "fills" ? (
-                            <TradePriceHeadSecond
-                              marketSummary={marketSummary}
-                            />
+                            <TradePriceHeadSecond marketSummary={marketSummary} />
                           ) : null}
                         </div>
                         {!showMarketTable && (
@@ -330,22 +296,14 @@ const TradePage = () => {
                 </div>
                 {/* order table  */}
                 <div className="m-auto user-info-container order dexpresso-border mt-1 bg_pannel  orders_table_lg">
-                  <Footer
-                    userFills={userFills}
-                    userOrders={userOrders}
-                    user={user}
-                  />
+                  <Footer userFills={userFills} userOrders={userOrders} user={user} />
                 </div>
                 {/* order table  */}
               </div>
             </div>
 
             <div className="m-auto user-info-container order dexpresso-border mt-1 bg_pannel orders_table_mobile ">
-              <Footer
-                userFills={userFills}
-                userOrders={userOrders}
-                user={user}
-              />
+              <Footer userFills={userFills} userOrders={userOrders} user={user} />
             </div>
             <div className="footer-trade-tables d-flex flex-column flex-lg-row text-center justify-content-center justify-content-lg-around">
               <div className="mt-3 mt-lg-0 d-flex align-items-center justify-content-center">

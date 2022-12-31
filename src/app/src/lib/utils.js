@@ -88,6 +88,45 @@ export function switchRatio(side, ratio) {
   return { sell, buy };
 }
 
+export function getExplorerUserAddressDetails(network, userAddress) {
+  let userExplorerLink;
+  switch (network) {
+    case "zksyncv1_goerli":
+      userExplorerLink = `https://goerli.zkscan.io/explorer/accounts/ ${userAddress}`;
+      break;
+    case "ethereum_goerli":
+      userExplorerLink = `https://goerli.etherscan.io/address/ ${userAddress}`;
+      break;
+    case "ethereum":
+      userExplorerLink = `https://etherscan.io/address/ ${userAddress}`;
+      break;
+    case "zksyncv1":
+    default:
+      userExplorerLink = `https://zkscan.io/explorer/accounts/ ${userAddress}`;
+      break;
+  }
+  return userExplorerLink;
+}
+
+export function getExplorerLink(network) {
+  let baseExplorerUrl;
+  switch (network) {
+    case "ethereum_goerli":
+      baseExplorerUrl = `https://goerli.etherscan.io/tx/`;
+      break;
+    case "ethereum":
+      baseExplorerUrl = `https://etherscan.io/tx/`;
+      break;
+    case "zksyncv1_goerli":
+      baseExplorerUrl = "https://goerli.zkscan.io/explorer/transactions/";
+      break;
+    case "zksyncv1":
+    default:
+      baseExplorerUrl = "https://zkscan.io/explorer/transactions/";
+  }
+  return baseExplorerUrl;
+}
+
 export function hasOneDayPassed(time) {
   const date = new Date(time);
   const dateString = date.toLocaleDateString();
@@ -172,23 +211,25 @@ export function getOrderDetailsWithoutFee(order) {
 }
 
 export function getFillDetailsWithoutFee(fill) {
-  const time = fill.insertTimestamp;
   const price = new Decimal(parseFloat(fill.price));
-  let baseQuantity = fill.amount;
-  let quoteQuantity = price.mul(fill.amount);
+  const baseQuantity = fill.amount;
+  const quoteQuantity = price.mul(fill.amount);
+  const time = hasOneDayPassed(fill.insertTimestamp);
   const side = fill.side;
-  let fee = fill.feeAmount ? fill.feeAmount : 0;
+  const fee = fill.feeAmount ? fill.feeAmount : 0;
 
-  if (side === "s") {
-    baseQuantity -= fee;
-  } else if (side === "b") {
-    quoteQuantity -= fee;
+  switch (side) {
+    case "b":
+      quoteQuantity -= fee;
+    case "s":
+      baseQuantity -= fee;
+    default:
   }
-  const finalTime = hasOneDayPassed(time);
+
   return {
-    price: price,
-    quoteQuantity: quoteQuantity,
-    baseQuantity: baseQuantity,
-    time: finalTime
+    price,
+    quoteQuantity,
+    baseQuantity,
+    time
   };
 }
