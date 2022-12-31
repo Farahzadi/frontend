@@ -172,23 +172,25 @@ export function getOrderDetailsWithoutFee(order) {
 }
 
 export function getFillDetailsWithoutFee(fill) {
-  const time = fill.insertTimestamp;
   const price = new Decimal(parseFloat(fill.price));
-  let baseQuantity = fill.amount;
-  let quoteQuantity = price.mul(fill.amount);
+  const baseQuantity = fill.amount;
+  const quoteQuantity = price.mul(fill.amount);
+  const time = hasOneDayPassed(fill.insertTimestamp);
   const side = fill.side;
-  let fee = fill.feeAmount ? fill.feeAmount : 0;
+  const fee = fill.feeAmount ? fill.feeAmount : 0;
 
-  if (side === "s") {
-    baseQuantity -= fee;
-  } else if (side === "b") {
-    quoteQuantity -= fee;
+  switch (side) {
+    case "b":
+      quoteQuantity -= fee;
+    case "s":
+      baseQuantity -= fee;
+    default:
   }
-  const finalTime = hasOneDayPassed(time);
+
   return {
-    price: price,
-    quoteQuantity: quoteQuantity,
-    baseQuantity: baseQuantity,
-    time: finalTime
+    price,
+    quoteQuantity,
+    baseQuantity,
+    time
   };
 }

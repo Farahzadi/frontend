@@ -323,7 +323,7 @@ class Footer extends React.Component {
 
             if (["zksyncv1", "zksyncv1_goerli"].includes(this.props.network))
               feeText = "0 " + baseCurrency;
-            else feeText = fee.toPrecision(3) + " " + feeCurrency;
+            else feeText = fee.toFixed() + " " + feeCurrency;
 
             const fillWithoutFee = getFillDetailsWithoutFee(fill);
             if (["zksyncv1", "zksyncv1_goerli"].includes(this.props.network)) {
