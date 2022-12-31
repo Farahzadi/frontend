@@ -14,7 +14,9 @@ import { Modal } from "../../atoms/Modal";
 import {
   getFillDetailsWithoutFee,
   getOrderDetailsWithoutFee,
+  getExplorerLink,
   hasOneDayPassed,
+  getExplorerUserAddressDetails,
 } from "lib/utils";
 import Core from "lib/api/Core";
 
@@ -268,18 +270,6 @@ class Footer extends React.Component {
   }
 
   renderFillTable(fills) {
-    let baseExplorerUrl;
-    switch (this.props.network) {
-      // case 1001:
-      //   baseExplorerUrl = "https://goerli.voyager.online/tx/";
-      //   break;
-      case "zksyncv1_goerli":
-        baseExplorerUrl = "https://goerli.zkscan.io/explorer/transactions/";
-        break;
-      case "zksyncv1":
-      default:
-        baseExplorerUrl = "https://zkscan.io/explorer/transactions/";
-    }
     return (
       <table>
         <thead>
@@ -392,7 +382,7 @@ class Footer extends React.Component {
                 <td data-label="Action">
                   {txHash ? (
                     <a
-                      href={baseExplorerUrl + txHash}
+                      href={getExplorerLink(this.props.network) + txHash}
                       target="_blank"
                       rel="noreferrer"
                     >
@@ -560,18 +550,7 @@ class Footer extends React.Component {
   }
 
   render() {
-    let explorerLink;
-    switch (this.props.network) {
-      case "zksyncv1_goerli":
-        explorerLink =
-          "https://goerli.zkscan.io/explorer/accounts/" +
-          this.props.user.address;
-        break;
-      case "zksyncv1":
-      default:
-        explorerLink =
-          "https://zkscan.io/explorer/accounts/" + this.props.user.address;
-    }
+    let explorerLink = getExplorerUserAddressDetails(this.props.network, this.props.user.address);
     let footerContent,
       classNameOrders = "",
       classNameBalances = "",

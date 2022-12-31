@@ -88,6 +88,45 @@ export function switchRatio(side, ratio) {
   return { sell, buy };
 }
 
+export function getExplorerUserAddressDetails(network, userAddress) {
+  let userExplorerLink;
+  switch (network) {
+    case "zksyncv1_goerli":
+      userExplorerLink = `https://goerli.zkscan.io/explorer/accounts/ ${userAddress}`;
+      break;
+    case "ethereum_goerli":
+      userExplorerLink = `https://goerli.etherscan.io/address/ ${userAddress}`;
+      break;
+    case "ethereum":
+      userExplorerLink = `https://etherscan.io/address/ ${userAddress}`;
+      break;
+    case "zksyncv1":
+    default:
+      userExplorerLink = `https://zkscan.io/explorer/accounts/ ${userAddress}`;
+      break;
+  }
+  return userExplorerLink;
+}
+
+export function getExplorerLink(network) {
+  let baseExplorerUrl;
+  switch (network) {
+    case "ethereum_goerli":
+      baseExplorerUrl = `https://goerli.etherscan.io/tx/`;
+      break;
+    case "ethereum":
+      baseExplorerUrl = `https://etherscan.io/tx/`;
+      break;
+    case "zksyncv1_goerli":
+      baseExplorerUrl = "https://goerli.zkscan.io/explorer/transactions/";
+      break;
+    case "zksyncv1":
+    default:
+      baseExplorerUrl = "https://zkscan.io/explorer/transactions/";
+  }
+  return baseExplorerUrl;
+}
+
 export function hasOneDayPassed(time) {
   const date = new Date(time);
   const dateString = date.toLocaleDateString();
