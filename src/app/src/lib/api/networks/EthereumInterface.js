@@ -13,13 +13,14 @@ import { maxAllowance } from "../constants";
 import EthAPIProvider from "../providers/EthAPIProvider";
 import NetworkInterface from "./NetworkInterface";
 
+const ETHEREUM_DEX_CONTRACT = process.env.REACT_APP_ETHEREUM_DEX_CONTRACT
 export default class EthereumInterface extends NetworkInterface {
   static Actions = [...super.Actions, "approve"];
   static Provider = EthAPIProvider;
   NETWORK = "ethereum";
   CURRENCY = "ETH";
   CHAIN_ID = 1;
-  DEX_CONTRACT = "0xc38b66f48d86fce3802935d579f885c20aabe875";
+  DEX_CONTRACT = ETHEREUM_DEX_CONTRACT;
   SECURITY_TYPE = SecurityComp.Allowance;
 
   async fetchBalance(ticker, userAddress, isLayerTwo = false) {
