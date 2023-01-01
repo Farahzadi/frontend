@@ -96,7 +96,10 @@ export default class NetworkInterface {
   async connectWallet() {
     await this.disconnectWallet();
     try {
-      await this.startAPIProvider();
+      await Promise.all([
+        this.core.ws.uuidPromise,
+        this.startAPIProvider(),
+      ]);
       await this.signIn();
     } catch (err) {
       console.log("Wallet connection failed with error, disconnecting.", err);

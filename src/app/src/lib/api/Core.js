@@ -137,6 +137,12 @@ export default class Core extends Emitter {
   start() {
     if (this.ws) this.stop();
     this.ws = new WebSocket(this.websocketUrl);
+    this.ws.uuidPromise = new Promise((res, rej) => {
+      this.ws.uuidPromiseResolve = () => {
+        this.ws.uuidPromiseResolve = undefined;
+        res();
+      };
+    });
     this.ws.addEventListener("open", () => this._socketOpen());
     this.ws.addEventListener("close", () => this._socketClose());
     this.ws.addEventListener("message", (e) => this._socketMsg(e));
@@ -337,6 +343,7 @@ export default class Core extends Emitter {
   apiHandlers = {
     connected_ws: (payload) => {
       this.ws.uuid = payload.uuid;
+      this.ws.uuidPromiseResolve?.();
     },
     login_post: (payload) => {
       sessionStorage.setItem("access_token", payload.access_token);
