@@ -395,7 +395,7 @@ export default class NetworkInterface {
       } catch (err) {
         throw new VError("Invalid price");
       }
-      if (price.eq(0)) throw new VError(`Price should not be equal to 0`);
+      if (price.eq(0)) throw new VError(type === "l" ? "Price should not be equal to 0" : "There is no orders in the orderbook to match");
 
       if (side === "buy") side = "b";
       if (side === "sell") side = "s";
