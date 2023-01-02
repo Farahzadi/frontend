@@ -20,7 +20,6 @@ import darkPlugHead from "assets/icons/dark-plug-head.png";
 import zkLogo from "assets/images/zk.jpg";
 import BridgeSwapInput from "../BridgeSwapInput/BridgeSwapInput";
 import { networks } from "./utils";
-import { Modal } from "components/atoms/Modal";
 import Currencies from "config/Currencies";
 import Decimal from "decimal.js";
 import Core from "lib/api/Core";
@@ -49,7 +48,6 @@ const Bridge = () => {
   const [transfer, setTransfer] = useState(defaultTransfer);
   const [coinColor, setCoinColler] = useState(true);
   const [showBridge, setShowBridge] = useState(true);
-  const [showModal, setShowModal] = useState(false);
   const [windowSize, setWindowSize] = useState(getWindowSize());
   const [swapDetails, _setSwapDetails] = useState(() => ({
     amount: "",
@@ -220,16 +218,11 @@ const Bridge = () => {
     setApproving(true);
     Core.run("approveL1", swapDetails.currency)
       .then(() => {
-        setShowModal(false);
         setApproving(false);
       })
       .catch((err) => {
         console.log(err);
-        setShowModal(false);
         setApproving(false);
-      })
-      .finally(() => {
-        setShowModal(false);
       });
   };
 
@@ -251,207 +244,6 @@ const Bridge = () => {
 
   return (
     <>
-      <Modal show={showModal} onClose={() => setShowModal(false)}>
-        <div className="bridge_box_right_content container">
-          <div className="row">
-            <div className="col-6-border">
-              <p>
-                <small>Source Network :</small>
-              </p>
-              <p>
-                <b>
-                  {transfer.type !== "withdraw"
-                    ? ethLayer1HeaderDetails
-                    : zkSyncLayer2HeaderDetails}
-                </b>
-                <i class="fa-solid fa-arrow-right"></i>
-              </p>
-            </div>
-            <div className="col-5-border mb-2">
-              <p>
-                <small>Destination Network:</small>
-              </p>
-              <p>
-                <b>
-                  {transfer.type === "withdraw"
-                    ? ethLayer1HeaderDetails
-                    : zkSyncLayer2HeaderDetails}
-                </b>
-              </p>
-            </div>
-            <hr />
-            <div className="col-6-border">
-              <p>
-                <small>Source coin:</small>
-              </p>
-              <p>
-                <b>{swapDetails.currency}</b>
-                <i class="fa-solid fa-arrow-right" />
-              </p>
-            </div>
-            <div className="col-5-border mb-2">
-              <p>
-                <small> Destination coin:</small>
-              </p>
-              <p>
-                <b>{swapDetails.currency}</b>
-              </p>
-            </div>
-            <hr />
-            <div className="col-6-border-right-dark d-flex align-items-center my-2">
-              <p className="bridge_box_fee">
-                Fee:
-                <b className="mx-0">
-                  {transfer.type === "withdraw" ? null : "~"}
-                  {typeof bridgeFee !== "number" ? (
-                    <div style={{ display: "inline-flex", margin: "0 5px" }}>
-                      <Loader
-                        type="TailSpin"
-                        color="#444"
-                        height={16}
-                        width={16}
-                      />
-                    </div>
-                  ) : (
-                    <div className="fee_container">
-                      {transfer.type === "withdraw" ? bridgeFee : "0.000105"}
-                    </div>
-                  )}
-                  {transfer.type === "withdraw" ? swapDetails.currency : "ETH"}
-                </b>
-              </p>
-            </div>
-            <div className="col-5-border my-2 d-flex align-items-center justify-content-end">
-              <p>
-                Time: <b className="mx-0">2 to 10 min</b>
-              </p>
-            </div>
-          </div>
-          <div className="bridge_button">
-            {!userAddress && (
-              <Button
-                className="bg_btn bg_btn-transfer"
-                text="CONNECT WALLET"
-                img={darkPlugHead}
-                onClick={() => Core.run("connectWallet")}
-              />
-            )}
-            {userAddress && balances?.[swapDetails.currency] && !hasAllowance && (
-              <Button
-                loading={isApproving}
-                className={cx("bg_btn bg_btn-transfer", {
-                  zig_disabled:
-                    formErr.length > 0 || swapDetails.amount.length === 0,
-                })}
-                text="APPROVE"
-                style={{ marginBottom: 10 }}
-                onClick={approveSpend}
-              />
-            )}
-            {userAddress && hasError && (
-              <Button
-                className="bg_btn bg_btn-transfer zig_btn_disabled bg_err"
-                text={formErr}
-                icon={<BiError />}
-              />
-            )}
-            {userAddress && !hasError && (
-              <Button
-                loading={loading}
-                className={cx("bg_btn bg_btn-transfer", {
-                  zig_disabled:
-                    bridgeFee === null ||
-                    !hasAllowance ||
-                    swapDetails.amount.length === 0,
-                })}
-                text="TRANSFER"
-                icon={<MdSwapCalls />}
-                onClick={doTransfer}
-              />
-            )}
-          </div>
-          <div>
-            {userAddress ? (
-              <div className="bridge_connected_as">
-                {/* <span className="bridge_bubble_connected" />
-                <p className="small">
-                  Connected as
-                  {`${userAddress.substr(0, 6)}...${userAddress.substr(-5)}`}
-                </p> */}
-                <span onClick={disconnect} className="bridge_disconnect">
-                  {" • "}
-                  <a href="#disconnect">Disconnect</a>
-                </span>
-              </div>
-            ) : (
-              <div className="bridge_connected_as">
-                <span className="bridge_bubble_disconnected" />
-                Disconnected
-              </div>
-            )}
-          </div>
-          {transfer.type === "deposit" &&
-            userAddress &&
-            !userChainDetails?.userId && (
-              <div className="bridge_transfer_fee">
-                <div>
-                  One-Time Activation Fee: {activationFee}{" "}
-                  {swapDetails.currency} (~${usdFee})
-                </div>
-                You'll receive: ~{Number(swapDetails.amount).toPrecision(4)}
-                {" " + swapDetails.currency} on L2
-              </div>
-            )}
-
-          {userAddress ? (
-            userChainDetails?.userId && (
-              <div className="bridge_transfer_fee">
-                <div>
-                  {transfer.type === "withdraw" ? (
-                    <div>
-                      <div>
-                        You'll receive: ~
-                        {bridgeFee && swapDetails.amount > 0
-                          ? Number(swapDetails.amount - bridgeFee).toPrecision(
-                              4
-                            )
-                          : Number(swapDetails.amount).toPrecision(4)}
-                        {" " + swapDetails.currency} on L1
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      You'll receive: ~
-                      {Number(swapDetails.amount).toPrecision(4)}
-                      {" " + swapDetails.currency} on L2
-                    </div>
-                  )}
-                </div>
-                {/* {transfer.type === "withdraw" ? "Bridge Fee:" : "Bridge Fee: ~"} */}
-                {/* {typeof bridgeFee !== "number" ? (
-                  <div style={{ display: "inline-flex", margin: "0 5px" }}>
-                    <Loader
-                      type="TailSpin"
-                      color="#444"
-                      height={16}
-                      width={16}
-                    />
-                  </div>
-                ) : (
-                  <div className="fee_container">
-                    {transfer.type === "withdraw" ? bridgeFee : "0.000105"}
-                  </div>
-                )} */}
-                {/* {transfer.type === "withdraw" ? swapDetails.currency : "ETH"} */}
-              </div>
-            )
-          ) : (
-            <div className="bridge_transfer_fee">
-              🔗 &nbsp;Please connect your wallet
-            </div>
-          )}
-        </div>
-      </Modal>
       <div className="bridge_lables-btn">
         <button
           onClick={() => setShowBridge(true)}
@@ -552,10 +344,6 @@ const Bridge = () => {
                       {` ${swapDetails.currency}`}
                     </span>
                   </div>
-                </div>
-
-                <div className="accept-btn">
-                  <button onClick={() => setShowModal(true)}> ACCEPT</button>
                 </div>
               </div>
             </div>
