@@ -9,12 +9,12 @@
   flex-direction: column;
   align-items: center;
   min-height: calc(100vh - 50px);
-  height: 100%;
-  background-color: #100c22;
+  background-color: var(--dexpressoBackground);
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
-  padding-bottom: 2rem;
+  overflow: hidden;
+  justify-content: center;
 }
 
 .bridge_incompatible {
@@ -30,9 +30,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  top: 40%;
-  left: -7%;
+  top: -16%;
+  left: 44%;
   position: absolute;
+  padding: 5px;
+  background: var(--dexpressoBackground);
+  border-radius: 50%;
+  transform: rotate(90deg);
 }
 
 .bridge_box_swap_wrapper h5 {
@@ -46,19 +50,49 @@
   text-decoration: none;
 }
 
-.bridge_coin_stats {
+.bridge_coin_stat {
   display: flex;
-  flex-direction: row;
-  padding: 20px;
+  flex-direction: column;
   justify-content: space-between;
-  width: 100%;
 }
 
 .bridge_box_bottom .bridge_coin_stats {
   margin-top: -15px;
   align-items: flex-end;
 }
-
+.currencyName {
+  -ms-flex: 1 1 auto;
+  flex: 1 1 auto;
+  margin-left: 20px;
+  font-size: 20px;
+}
+.currencyName-selected {
+  padding: 0 0 0 3px;
+  color: #fff;
+  border-radius: 15px;
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  width: 100%;
+  height: 50px;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  border: 2px solid var(--dexpressoPrimery) !important;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  margin-right: 15px;
+}
+.currencyName-box {
+  margin-right: 15px;
+}
 .bridge_coin_stat:last-child {
   text-align: right;
 }
@@ -107,11 +141,10 @@
   width: 100% !important;
   max-width: 100% !important;
   display: flex;
-  background-color: #2f353a !important;
   flex-direction: column;
   color: #dadbdc !important;
   align-items: flex-start;
-  border: 1px solid var(--dexpressoPrimery);
+
   justify-content: flex-start;
 }
 
@@ -148,6 +181,17 @@
   padding: 15px 20px;
   cursor: pointer;
 }
+.bridge_bottom_form {
+  display: flex;
+  justify-content: space-between;
+  height: 100%;
+}
+.bridge_bottom_form__right {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+}
 
 .bridge_contain {
   display: flex;
@@ -158,6 +202,9 @@
 
 .bridge_contain > *:not(:last-child) {
   margin-right: 12px;
+}
+.bridge_coin_top {
+  width: 180px;
 }
 
 .bridge_box_transaction:hover {
@@ -266,42 +313,36 @@
   margin: 0 auto;
   position: relative;
   display: flex;
-  /* flex-direction: column; */
   flex-wrap: wrap;
-  justify-content: flex-start;
-  /* align-items: center; */
+  justify-content: center;
+  height: 770px;
 }
-.bridge_lables {
-  width: 80%;
+.receiptsBox {
+  max-width: 70%;
+  width: 647px;
+  margin: 0 auto;
+}
+.receiptsBox__header {
+  display: flex;
+  justify-content: space-between;
   color: #fff;
-  padding: 40px 30px 30px 10px;
+  border-bottom: 1px solid var(--dexpressoPrimery);
 }
-.bridge_lables h5 {
-  padding: 10px 70px;
-  display: inline;
-  border: 1px solid var(--dexpressoPrimery);
-  border-radius: 15px;
-  box-shadow: 0px 0px 15px 0px var(--dexpressoPrimery);
-}
-.center-form{
-  margin-top: 20px;
+
+.center-form {
+  height: 100%;
+  padding-bottom: 20px;
 }
 .bridge_box {
-  display: flex;
-  max-height: 430px;
-  background-color: #dadbdc;
-  border-radius: 40px;
   color: #2f353a;
   margin-bottom: 15px;
-  flex: 66%;
 }
 .bridge_box_parent {
-  max-width: 90%;
+  width: 100%;
   display: block;
   color: #2f353a;
-  flex: 66%;
 }
-.bridge_box_right_content .row{
+.bridge_box_right_content .row {
   height: 360px;
 }
 .bridge_box_right {
@@ -374,17 +415,24 @@
 }
 
 .bridge_box_bottom,
-.bridge_box_top {
-  padding: 50px;
-  width: 50%;
+.bridge_box_top,
+.bridg-btn-box {
+  max-width: 70%;
+  width: 674px;
+  padding: 30px 50px;
+  margin: 0 auto 10px;
+  height: 240px;
 }
 
+.bridge_box_top {
+  background-color: var(--dexpressoTableBackground);
+  border-radius: 40px;
+  color: #fff;
+}
 .bridge_box_bottom {
-  border-radius: 24px;
+  border-radius: 40px;
   position: relative;
-  border-bottom-left-radius: 0 !important;
-  border-top-left-radius: 0 !important;
-  background: #2f353a;
+  background: var(--dexpressoTableBackground);
   color: #fff;
 }
 
@@ -404,9 +452,14 @@
 }
 
 .bridge_coin_title {
-  margin-bottom: 24px;
+  margin: 10px 15px 10px 0;
+  justify-content: space-between;
+  display: flex;
+  max-width: 300px;
 }
-
+.bridge_bottom_form__right-title {
+  margin-right: 2.5rem;
+}
 .bridge_button {
   margin-top: 15px;
 }
@@ -420,16 +473,13 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  width: 100%;
 }
 .mt-90 {
   margin-top: 90px;
 }
 .bridge_coin_details_border {
-  border: 2px solid var(--dexpressoPrimery);
-  padding: 10px 20px;
-  border-radius: 24px;
-  background: #fff;
+  border-bottom: 2px solid var(--dexpressoPrimery);
+  padding: 10px 35px;
 }
 
 .bridge_coin_details .bridge_coin_image {
@@ -443,8 +493,10 @@
 }
 
 .bridge_coin_image {
-  width: 30px;
-  height: 30px;
+  width: 35px;
+  height: 35px;
+  padding: 5px;
+  margin-left: 10px;
   text-align: center;
   overflow: hidden;
   border-radius: 32px;
@@ -457,15 +509,50 @@
 .bridge_lables-btn {
   display: none;
 }
+.bridg-btn-box {
+  padding: 0;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+}
 .accept-btn {
-  display: none;
+  display: block;
+  margin-bottom: 2rem;
+  width: 65%;
+  margin-left: auto;
+}
+.transfer-data {
+  height: 50px;
+  margin: 10px 5px 0 5px;
+  width: 40%;
+  padding: 0 10px;
+  border-radius: 30px;
+  color: #fff;
+  background: var(--dexpressoTableBackground);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.transfer-data img {
+  width: 28px;
+  margin: 0 10px;
+}
+.accept-btn button {
+  width: 100%;
+  margin-top: 10px;
+  height: 50px;
+  border-radius: 24px;
+  border: none;
+  background-color: var(--dexpressoPrimery);
+  color: #fff;
 }
 .select-currency-width {
   top: -528% !important;
   left: -8% !important;
 }
 @media only screen and (max-width: 1290px) {
-  .bridge_container{
+  .bridge_container {
     max-width: 90%;
   }
 }
@@ -475,7 +562,7 @@
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
   }
-  .bridge_coin_title{
+  .bridge_coin_title {
     margin-top: 18px;
   }
   .bridge_box_bottom {
@@ -516,13 +603,10 @@
     flex-direction: column;
   }
   .bridge_box_bottom,
-  .bridge_box_top {
+  .bridge_box_top,
+  .bridg-btn-box {
     width: 100%;
     padding: 5px;
-  }
-  .bridge_box_right,
-  .bridge_lables {
-    display: none;
   }
   .bridge_box_top {
     padding-bottom: 0;
@@ -534,7 +618,10 @@
   .bridge_box_receipts {
     border-bottom-right-radius: 24px !important;
     border-bottom-left-radius: 24px !important;
+    background-color: #2f353a !important;
+    border: 1px solid var(--dexpressoPrimery);
   }
+
   .ReceiptsHeight {
     min-height: 700px;
     width: 90vw !important;
@@ -542,28 +629,17 @@
   .bridge_section {
     height: 900px;
     justify-content: start;
+    overflow: auto;
   }
-  .accept-btn {
-    display: block;
-    margin-bottom: 2rem;
-  }
-  .accept-btn button {
-    width: 100%;
-    margin-top: 10px;
-    height: 50px;
-    border-radius: 24px;
-    border: none;
-    background-color: var(--dexpressoPrimery);
-    color: #fff;
-  }
+
   .input-box,
   .currencyOption {
     width: 80% !important ;
   }
-  .bridge_container{
+  .bridge_container {
     max-width: 90%;
   }
-  .bridge_box_parent{
+  .bridge_box_parent {
     max-width: 100%;
   }
   .bridge_box_swap_wrapper {
