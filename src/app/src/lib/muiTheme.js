@@ -36,7 +36,10 @@ const theme = createTheme({
     error: {
       main: "#8C2920",
       light: "#D95436"
-    }
+    },
+    success: {
+      main: "#3fe199"
+    },
   },
   components: {
     MuiPaper: {
