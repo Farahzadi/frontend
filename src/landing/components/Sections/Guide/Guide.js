@@ -6,25 +6,25 @@ const GuideSection = () => {
   const steps = [
     {
       id: 1,
-      title: 'FIRST STEP',
-      description: 'First step goes here, first step goes here',
+      title: 'Connect Wallet',
+      description: 'Use any non-custodial wallet to interact with Dexpresso.',
     },
     {
       id: 2,
-      title: 'SECOND STEP',
-      description: 'Second step goes here, second step goes here',
+      title: 'Submit Order',
+      description: 'Sign the off-chain order with your wallet.',
     },
     {
       id: 3,
-      title: 'THIRD STEP',
-      description: 'Third step goes here, Third step goes here',
+      title: 'Drink Coffee',
+      description: 'Enjoy your coffee and whatch the orderbook.',
     },
   ];
   return (
     <section className={styles.container}>
       <div className={styles.title}>
-        <h1 className='title'>HOW TO USE DEXPRESSO?</h1>
-        <p className='subtitle'>So simple to use</p>
+        <h1 className='title'>How to Use Dexpresso?</h1>
+        <p className='subtitle'>As easy and making a coffee and enjoying it . . .</p>
       </div>
       <div className={styles.cardsContainer}>
         {steps.map((val) => (
