@@ -12,7 +12,7 @@ import { Discord, Github, Telegram, Twitter, Youtube } from '../Icons/Icons';
 const ContactBar = () => {
   const socialMedias = [
     {Comp: Twitter, alt: 'twitter', href:''},
-    {Comp: Github, alt: 'github', href:'' },
+    {Comp: Github, alt: 'github', href:'https://github.com/orgs/dexpresso-protocol/' },
     {Comp: Youtube, alt: 'youtube', href:''},
     {Comp: Telegram, alt: 'telegram', href:''},
     {Comp: Discord, alt: 'discord', href:''},
