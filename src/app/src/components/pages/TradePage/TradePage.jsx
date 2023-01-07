@@ -14,7 +14,6 @@ import SpotBox from "components/pages/TradePage/SpotBox/SpotBox";
 import {
   networkSelector,
   userOrdersSelector,
-  userFillsSelector,
   allOrdersSelector,
   marketFillsSelector,
   lastPricesSelector,
@@ -39,7 +38,6 @@ const TradePage = () => {
   const network = useSelector(networkSelector);
   const currentMarket = useSelector(currentMarketSelector);
   const userOrders = useSelector(userOrdersSelector);
-  const userFills = useSelector(userFillsSelector);
   const allOrders = useSelector(allOrdersSelector);
   const marketFills = useSelector(marketFillsSelector);
   const lastPrices = useSelector(lastPricesSelector);
@@ -296,14 +294,14 @@ const TradePage = () => {
                 </div>
                 {/* order table  */}
                 <div className="m-auto user-info-container order dexpresso-border mt-1 bg_pannel  orders_table_lg">
-                  <Footer userFills={userFills} userOrders={userOrders} user={user} />
+                  <Footer />
                 </div>
                 {/* order table  */}
               </div>
             </div>
 
             <div className="m-auto user-info-container order dexpresso-border mt-1 bg_pannel orders_table_mobile ">
-              <Footer userFills={userFills} userOrders={userOrders} user={user} />
+              <Footer />
             </div>
             <div className="footer-trade-tables d-flex flex-column flex-lg-row text-center justify-content-center justify-content-lg-around">
               <div className="mt-3 mt-lg-0 d-flex align-items-center justify-content-center">

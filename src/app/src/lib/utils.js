@@ -127,7 +127,7 @@ export function getExplorerLink(network) {
   return baseExplorerUrl;
 }
 
-export function hasOneDayPassed(time) {
+export function hasOneDayPassed(time) { // correct function naming
   const date = new Date(time);
   const dateString = date.toLocaleDateString();
   let finalDate;
@@ -157,7 +157,7 @@ export function hasOneDayPassed(time) {
   }
   return finalDate;
 }
-
+export const isZKSYNCNet = (network) => ["zksyncv1", "zksyncv1_goerli"].includes(network);
 export function getOrderDetailsWithoutFee(order) {
   const side = order.side;
   const baseQuantity = new Decimal(order.baseQuantity);
@@ -214,7 +214,7 @@ export function getFillDetailsWithoutFee(fill) {
   const price = new Decimal(parseFloat(fill.price));
   const baseQuantity = fill.amount;
   const quoteQuantity = price.mul(fill.amount);
-  const time = hasOneDayPassed(fill.insertTimestamp);
+  const time = hasOneDayPassed(fill.createdAt);
   const side = fill.side;
   const fee = fill.feeAmount ? fill.feeAmount : 0;
 

@@ -2,6 +2,7 @@ import { createSlice, createAction } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import networkManager from "config/NetworkManager";
 import { getOrderDetailsWithoutFee } from "lib/utils";
+import { activeFillStatusList, openOrderStatusList } from "lib/interface";
 
 const translators = {
   // used for both initial orders and order updates
@@ -18,7 +19,7 @@ const translators = {
     status: o.status,
     remaining: +o.unfilled,
     type: o.type,
-    insertTimestamp: o.created_at,
+    createdAt: o.created_at,
     unbroadcasted: o.unbroadcasted,
     makerFee: +o.maker_fee,
     takerFee: +o.taker_fee,
@@ -46,7 +47,7 @@ const translators = {
     type: f.type,
     takerOrderAddress: f.taker_order_address,
     makerOrderAddress: f.maker_order_address,
-    insertTimestamp: f.created_at,
+    createdAt: f.created_at,
     makerFee: +f.maker_fee,
     takerFee: +f.taker_fee,
     error: f.error, // tx rejection error message
@@ -542,7 +543,20 @@ export const networkSelector = (state) => state.api.network.name;
 export const networkConfigSelector = (state) => state.api.network;
 export const providerStateSelector = (state) => state.api.providerState;
 export const userOrdersSelector = (state) => state.api.userOrders;
-export const userFillsSelector = (state) => state.api.userFills;
+
+export const userOpenOrdersSelector = (state) =>
+  Object.values(state.api.userOrders)
+    .sort((a, b) => b.id - a.id)
+    .filter((order) => order.status === "o" && order.market === state.api.currentMarket);
+export const userFillOrdersSelector = (state) =>
+  Object.values(state.api.userFills)
+    .sort((a, b) => b.id - a.id)
+    .filter((fill) => activeFillStatusList.includes(fill.status));
+export const getLastOrdersSelector = (state) =>
+  Object.values(state.api.userOrders)
+    .slice(-25)
+    .sort((a, b) => b.id - a.id)
+    .filter((order) => order.status !== "o");
 export const allOrdersSelector = (state) => state.api.orders;
 export const marketFillsSelector = (state) => state.api.marketFills;
 export const lastPricesSelector = (state) => state.api.lastPrices;
@@ -571,6 +585,10 @@ export const userAvailableBalancesSelector = (state) =>
   state.api.user.availableBalances;
 export const userChainDetailsSelector = (state) => state.api.user.chainDetails;
 export const userSelector = (state) => state.api.user;
+export const userBalanceByTokenSelector = (state) =>
+  Object.keys(state.api.user.balances).map((val) => {
+    val: state.api.user.balances[val].valueReadable;
+  });
 
 export const handleMessage = createAction("api/handleMessage");
 
