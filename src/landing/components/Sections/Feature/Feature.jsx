@@ -11,33 +11,44 @@ const FeatureSection = () => {
     {
       id: '1',
       title: 'Fast',
-      description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-        sed do eiusmod tempor incididunt ut labore et dolore magna
-        aliqua.`,
+      description: `Dexpresso orderbooks are managed completely off-chain, while keeping the process trustless.
+        This provides users with an instant order-matching in a blink of an eye.`,
       img: fast,
     },
     {
       id: '2',
       title: 'Secure',
-      description: `Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-        sed do eiusmod tempor incididunt ut labore et dolore magna
-        aliqua.`,
+      description: `Users do not need to transfer their assets to any entity on-chain for order submission. 
+        Therefore, the security of user assets are not compromised, while using Dexpresso.`,
       img: secure,
     },
     {
       id: '3',
-      title: 'Layer 2',
-      description: ` Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-        sed do eiusmod tempor incididunt ut labore et dolore magna
-        aliqua.`,
+      title: 'Layer 2 Support',
+      description: `Dexpresso supports multiple Ethereum layer 2 blockchains, including zkSync v1 & v2, Arbitrum, Optimism, etc.
+        Such blockchains offer users with lower fees and ultr-fast transactions.`,
+      img: layer2,
+    },
+    {
+      id: '4',
+      title: 'Multi-chain',
+      description: `Dexpresso supports a wide range of blockchains with different pairs to provide users with more options for
+        interactions with their platforms of interest.`,
+      img: layer2,
+    },
+    {
+      id: '5',
+      title: 'Based on Zero-knowledge',
+      description: `Dexpresso v2 contracts are developed based on zero-knowledge proofs (ZKPs) to further decrease user-side fees
+        and improve users privacy.`,
       img: layer2,
     },
   ];
   return (
     <section>
       <div className={styles.title}>
-        <h1 className='title'>WHY DEXPRESSO?</h1>
-        <p className='subtitle'>we offer...</p>
+        <h1 className='title'>Why Dexpresso?</h1>
+        <p className='subtitle'>Dexpresso offers ...</p>
       </div>
       <div className={styles.cardsContainer}>
         {features.map((val) => (
