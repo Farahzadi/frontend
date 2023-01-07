@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0] - 2023-01-07
+
+✨ implement new design of bridge desktop size
+
+🚀 add new token icons
+
+🐛 fix range slider functionality
+
+🐛 fix amount calculation for ge proper approve
+
+🐛 remove insignificant trailing zeros and fix time property in trade history
+
+🐛 get propder base explorer url and fix evm based tx explorer details
+
 ## [1.0.0] - 2022-12-26
 
 ✨ support zksync mainnet, ethereum mainnet, ethereum goerli
