@@ -4,7 +4,7 @@ import React from 'react';
 const CustomizedHead = ({
   title = 'Dexpresso',
   type = 'website',
-  description = 'Dexpresso is a decentralized exchange',
+  description = 'Dexpresso, one DEX to exchange them all.',
   relativePath = '',
   imgUrl = '/images/logo/Dexpresso_logo.png',
   children,
