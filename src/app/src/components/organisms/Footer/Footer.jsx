@@ -25,12 +25,9 @@ class Footer extends React.Component {
     super(props);
     this.state = {
       tab: "orders",
-      openModal: false,
     };
   }
 
-  handleOpen = () => this.setState({ openModal: true });
-  handleClose = () => this.setState({ openModal: false });
   static activeFillStatus = ["m", "b", "f", "r", "e"];
   static activeOrderStatus = ["c", "r", "e", "f"];
 
@@ -616,17 +613,6 @@ class Footer extends React.Component {
 
     return (
       <>
-        <Modal
-          show={this.state.openModal}
-          actionText="Yes"
-          closeText="No"
-          alert={"Are you sure you want to delete all orders?"}
-          onClose={this.handleClose}
-          onSubmit={() => {
-            this.handleClose();
-            Core.run("cancelAllOrders");
-          }}
-        ></Modal>
         <div className="user-info">
           <div className="user-info-container ">
             <div>
@@ -658,8 +644,13 @@ class Footer extends React.Component {
                 {this.getOpenOrders().length > 1 ? (
                   <button
                     className="cancel-all-order"
-                    onClick={() => {
-                      this.handleOpen();
+                    onClick={async () => {
+                      const accept = await Modal.accept({
+                        proceedText: "Yes",
+                        cancelText: "No",
+                        alert: "Are you sure you want to delete all orders?",
+                      });
+                      if(accept) Core.run("cancelAllOrders");
                     }}
                   >
                     cancel all order

@@ -1,5 +1,4 @@
 import React from "react";
-import { ToastContainer } from "react-toastify";
 import { PersistGate } from "redux-persist/integration/react";
 import { Provider as ReduxProvider } from "react-redux";
 import { ThemeProvider } from "@mui/material";
@@ -13,7 +12,6 @@ function Provider({ children, store, persistor }) {
       <PersistGate loading={null} persistor={persistor}>
         <ReduxProvider store={store}>
           {children}
-          <ToastContainer position="bottom-right" theme="colored" />
         </ReduxProvider>
       </PersistGate>
     </ThemeProvider>

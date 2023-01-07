@@ -14,9 +14,6 @@ const NonceIncreasement = () => {
   const [cancelCheck, setCancelCheck] = useState(false);
   const [oldNonce, setOldNonce] = useState(null);
   const [connecting, setConnecting] = useState(false);
-  const [open, setOpen] = React.useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
 
   const network = useSelector(networkSelector);
   const user = useSelector(userSelector);
@@ -28,10 +25,15 @@ const NonceIncreasement = () => {
     Core.run("connectWallet").finally(() => setConnecting(false));
   };
 
-  const acceptNonce = () => {
-    handleOpen();
+  const acceptNonce = async () => {
     setCancelCheck(!cancelCheck);
     setTersmsCheck(!termsCheck);
+    const accept = await Modal.accept({
+      cancelText: "No",
+      proceedText: "Yes",
+      alert: "Do you agree with all the changes?",
+    });
+    if(accept) increaseWalletNonce();
   };
 
   const getOldNonce = () => {
@@ -61,17 +63,6 @@ const NonceIncreasement = () => {
   return (
     <>
       <DefaultTemplate>
-        <Modal
-          show={open}
-          closeText="No"
-          actionText="Yes"
-          alert="Do you agree with all the changes?"
-          onSubmit={() => {
-            handleClose();
-            increaseWalletNonce();
-          }}
-          onClose={handleClose}
-        ></Modal>
         <div className="nonce-bg">
           <h2 className="mt-2">change nonce setting</h2>
           <div className="nonce-text text-white">
