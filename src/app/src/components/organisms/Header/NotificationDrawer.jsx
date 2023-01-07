@@ -35,7 +35,6 @@ export const NotificationDrawer = () => {
     minHeight: "70px",
     borderRadius: "14px",
     color: "#000",
-    // backgroundColor:"#fff",
     border: 0
   };
 
@@ -43,7 +42,7 @@ export const NotificationDrawer = () => {
     <Box sx={{ width: 350 }} role="presentation">
       <List sx={{ borderColor: "red" }}>
         <h5>Notifications</h5>
-        <i onClick={toggleDrawer(false)} class="icon-remove icon-2x"></i>
+        <i role="button" onClick={toggleDrawer(false)} class="icon-remove icon-2x"></i>
         <Divider />
         {notifData.map((notifType, i) => (
           <ListItem key={i} disablePadding>

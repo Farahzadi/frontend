@@ -1,5 +1,4 @@
 import { styled } from "@mui/material";
-import { display, justifyContent } from "@xstyled/styled-components";
 
 const DexHeader = styled("header")(({ theme }) => ({
   display: "flex",
@@ -111,6 +110,14 @@ const ResponsiveItems = styled("div")(() => ({
   width: "90px",
   justifyContent: "space-between"
 }));
+const CurrencySelector = styled("div")(() => ({
+  width: "37%",
+  height: "52px",
+  display: "flex",
+  alignItems: "center",
+  marginLeft: "15px",
+  borderRight: "2px solid var(--dexpressoPrimery)"
+}));
 
 export {
   DexHeader,
@@ -120,5 +127,6 @@ export {
   XSLogoContainer,
   ActionBtnContainer,
   NotifictionSidebar,
-  ResponsiveItems
+  ResponsiveItems,
+  CurrencySelector
 };

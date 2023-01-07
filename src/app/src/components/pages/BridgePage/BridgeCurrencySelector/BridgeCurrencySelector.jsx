@@ -9,12 +9,14 @@ import Currencies from "config/Currencies";
 
 const StyledBridgeCurrencySelector = styled.div`
   padding: 0 0 0 3px;
-  background-color: #fff;
+  color: #fff;
   border-radius: 15px;
   display: inline-flex;
+  width: 100%;
+  height: 50px;
   flex-direction: row;
   align-items: center;
-  border: 1px solid #fff;
+  border: 2px solid var(--dexpressoPrimery)!important;
   cursor: pointer;
   user-select: none;
 
@@ -27,8 +29,13 @@ const StyledBridgeCurrencySelector = styled.div`
 `;
 
 const BridgeCurrencyWrapper = styled.div`
-  // position: relative;
-
+  width: 100%;
+  .currencyIcon  {
+    margin-left: 10px;
+    background: #fff;
+    padding: 3px;
+    border-radius: 30px;
+  }
   .currencyIcon > img {
     width: 28px;
     height: 28px;
@@ -37,9 +44,8 @@ const BridgeCurrencyWrapper = styled.div`
 
   .currencyName {
     flex: 1 1 auto;
-    margin-left: 8px;
-    font-size: 15px;
-    color: #fff;
+    margin-left: 20px;
+    font-size: 20px;
 
     svg {
       position: relative;
@@ -51,8 +57,8 @@ const BridgeCurrencyWrapper = styled.div`
 
 const BridgeCurrencyOptions = styled.ul`
   position: absolute;
-  top: -619%;
-  left: -65%;
+  top: -20%;
+  left: -17%;
   z-index: 20;
   backdrop-filter: blur(10px);
   width: 90vw;
@@ -71,7 +77,7 @@ const BridgeCurrencyOptions = styled.ul`
     border-right: 1px solid var(--dexpressoPrimery);
   }
   .border-top {
-    border-top: 1px solid var(--dexpressoPrimery)!important;
+    border-top: 1px solid var(--dexpressoPrimery) !important;
   }
   .border-bottom {
     border-bottom: 1px solid var(--dexpressoPrimery) !important;
@@ -135,8 +141,8 @@ const BridgeCurrencyOptions = styled.ul`
     background: #100c22;
     flex-direction: row;
     align-items: center;
-    border-left: 1px solid #0A82B6 ;
-    border-right: 1px solid #0A82B6 ;
+    border-left: 1px solid #0a82b6;
+    border-right: 1px solid #0a82b6;
 
     &:first-child {
       border-top-left-radius: 15px;
@@ -160,12 +166,7 @@ const BridgeCurrencyOptions = styled.ul`
   }
 `;
 
-const BridgeCurrencySelector = ({
-  onChange,
-  currencies,
-  balances = {},
-  value,
-}) => {
+const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) => {
   const [tickers, setTickers] = useState([]);
   const [windowSize, setWindowSize] = useState(getWindowSize());
   const [showingOptions, setShowingOptions] = useState(false);
@@ -193,9 +194,7 @@ const BridgeCurrencySelector = ({
         .sort();
       return setTickers(tickers);
     }
-    const arr = tickers.filter((i) =>
-      i.includes(val.target.value.toUpperCase())
-    );
+    const arr = tickers.filter((i) => i.includes(val.target.value.toUpperCase()));
     setTickers(arr);
   };
   // const inputTest = (val) => {
@@ -245,8 +244,8 @@ const BridgeCurrencySelector = ({
     onChange(ticker);
   };
   function getWindowSize() {
-    const {innerWidth, innerHeight} = window;
-    return {innerWidth, innerHeight};
+    const { innerWidth, innerHeight } = window;
+    return { innerWidth, innerHeight };
   }
 
   return (
@@ -255,25 +254,19 @@ const BridgeCurrencySelector = ({
         <div className="currencyIcon">
           <img src={currency.image.default} alt={currency.name} />
         </div>
-        <div className="currencyName text-dark">
+        <div className="currencyName">
           {value}
           <FiChevronDown />
         </div>
       </StyledBridgeCurrencySelector>
-      <BridgeCurrencyOptions className={`${windowSize.innerWidth  <="960" ? "select-currency-width" : ""} `} show={showingOptions}>
+      <BridgeCurrencyOptions
+        className={`${windowSize.innerWidth <= "960" ? "select-currency-width" : ""} `}
+        show={showingOptions}>
         <li className="currencyOption w-md-100 text-white border-top border-bottom">
           SELECT A TOKEN
         </li>
-        <div
-          className="border-side input-box"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <input
-            type="text"
-            className="input-search"
-            onChange={inputTest}
-            placeholder="search"
-          />
+        <div className="border-side input-box" onClick={(e) => e.stopPropagation()}>
+          <input type="text" className="input-search" onChange={inputTest} placeholder="search" />
         </div>
         {tickers.map((ticker, key, tickers) =>
           ticker === value ? null : (
@@ -281,25 +274,16 @@ const BridgeCurrencySelector = ({
               key={key}
               onClick={selectOption(ticker)}
               tabIndex="0"
-              className={`currencyOption ${
-                key + 1 === tickers.length ? "border-bottom" : ""
-              }`}
-            >
+              className={`currencyOption ${key + 1 === tickers.length ? "border-bottom" : ""}`}>
               <div className="currencyIcon">
-                <img
-                  src={Currencies[ticker].image.default}
-                  alt={currency.name}
-                />
+                <img src={Currencies[ticker].image.default} alt={currency.name} />
               </div>
               <div className="currencyName">{ticker}</div>
               {balances?.[ticker] && (
                 <div className="currencyBalance">
                   <strong>{balances[ticker]?.valueReadable ?? 0}</strong>
                   <small>
-                    $
-                    {formatUSD(
-                      coinEstimator(ticker) * (balances[ticker]?.valueReadable ?? 0)
-                    )}
+                    ${formatUSD(coinEstimator(ticker) * (balances[ticker]?.valueReadable ?? 0))}
                   </small>
                 </div>
               )}
@@ -309,8 +293,7 @@ const BridgeCurrencySelector = ({
         {!tickers.length && (
           <li
             className="currencyOption border-bottom text-white
-              "
-          >
+              ">
             No matches found
           </li>
         )}
