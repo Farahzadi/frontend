@@ -58,7 +58,6 @@ const translators = {
     swapEnabled: c.swap_nabled,
     takerFee: c.taker_fee,
     makerFee: c.maker_fee,
-    swapFee: c.swapFee,
     minMatchAmount: c.min_match_amount,
     minOrderSize: c.min_order_size,
   }),
