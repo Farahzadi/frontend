@@ -13,13 +13,12 @@ const IntroSection = () => {
           <Image src={logo} height={150} width={320} alt='Logo' />
         </div>
         <h1 className={styles.title}>
-          Decentralized & Secure,
+          Dexpresso,
           <br />
-          On Layer Two Networks
+          Exhcange it hot!
         </h1>
         <p className={styles.description}>
-          Enjoy Centralized-level speed in a Decentralized Exchange, with Lower
-          fees.
+          Enjoy Centralized-level fast multichain orderbook in a trustless decentralized exchange.
         </p>
       </div>
       <div className={styles.background}>
