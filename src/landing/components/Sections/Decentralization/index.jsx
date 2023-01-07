@@ -19,15 +19,13 @@ const Decentralization = () => {
               </div> */}
               <div className={styles.txtBody}>
 
-                <h1>Decentralization, matters! </h1>
+                <h1>Best of Both Worlds! </h1>
                 <p>
-                  Dexpresso is a decentralized non-custodial order book exchange,
-                  powered by zk-rollups. This allows our users to seamlessly and
-                  securely trade with near-zero fees all while providing
-                  centralized exchange like quotes on all size trades. We also
-                  aim to provide the flawless functionality, experience and
-                  optimal liquidity centralized exchanges do all while being
-                  fully decentralized.
+                  Trustless off-chain orderbooks offer users with a centralized-level order matching speed, 
+                  while their assets are kept freely in user wallets. Users do not need to complete any KYC
+                  process to enjoy seamless trading in multi-chain markets of Dexpresso. On the other hand, 
+                  unlike most DEX platforms, the off-chain orderbook method allows users to place unlimitted/simultaneous 
+                  and free-of-charge orders in multiple markets and blockchains.
                 </p>
               </div>
           </div>
