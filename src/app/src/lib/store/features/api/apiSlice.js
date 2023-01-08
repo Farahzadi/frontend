@@ -2,7 +2,7 @@ import { createSlice, createAction } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import networkManager from "config/NetworkManager";
 import { getOrderDetailsWithoutFee } from "lib/utils";
-import { activeFillStatusList, openOrderStatusList } from "lib/interface";
+import { fillStatusList, openOrderStatusList } from "lib/interface";
 
 const translators = {
   // used for both initial orders and order updates
@@ -545,14 +545,17 @@ export const providerStateSelector = (state) => state.api.providerState;
 export const userOrdersSelector = (state) => state.api.userOrders;
 
 export const userOpenOrdersSelector = (state) =>
+  !!state.api.userOrders &&
   Object.values(state.api.userOrders)
     .sort((a, b) => b.id - a.id)
     .filter((order) => order.status === "o" && order.market === state.api.currentMarket);
 export const userFillOrdersSelector = (state) =>
+  !!state.api.userFills &&
   Object.values(state.api.userFills)
     .sort((a, b) => b.id - a.id)
-    .filter((fill) => activeFillStatusList.includes(fill.status));
+    .filter((fill) => fillStatusList.includes(fill.status));
 export const getLastOrdersSelector = (state) =>
+  !!state.api.userOrders &&
   Object.values(state.api.userOrders)
     .slice(-25)
     .sort((a, b) => b.id - a.id)
@@ -586,6 +589,7 @@ export const userAvailableBalancesSelector = (state) =>
 export const userChainDetailsSelector = (state) => state.api.user.chainDetails;
 export const userSelector = (state) => state.api.user;
 export const userBalanceByTokenSelector = (state) =>
+  !!state.api.user.balances &&
   Object.keys(state.api.user.balances).map((val) => {
     val: state.api.user.balances[val].valueReadable;
   });

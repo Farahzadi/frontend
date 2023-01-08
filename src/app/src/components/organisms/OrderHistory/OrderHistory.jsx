@@ -1,4 +1,8 @@
-import Core from 'lib/api/Core';
+import {
+  TxExplorerLink,
+  UserAddressExplorerLink
+} from "components/molecules/ExplorerLinks/ExplorerLinks";
+import Core from "lib/api/Core";
 import {
   getLastOrdersSelector,
   networkSelector,
@@ -9,10 +13,19 @@ import {
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { OrderPropMap } from "../Order/OrderItem";
+import Tabs from "../Tabs/Tabs";
+import { CancelOrderBtn, Header, MainContainer, Table, TableContainer, Td, Th, Thead, Tr } from "./OrderHistory.style.module";
 
 const OrderHistory = () => {
   const [selectedTab, setSelectedTab] = useState("orders");
   const [orders, setOrders] = useState([]);
+  const [orderNum, setOrderNum] = useState({
+    open: 0,
+    fill: 0,
+    history: 0
+  });
+  const [openModal, setOpenModal] = useState(false);
+
   const tabs = {
     orders: {
       name: "open orders",
@@ -29,26 +42,28 @@ const OrderHistory = () => {
       id: "history",
       cols: ["market", "type", "time", "price", "side", "volume", "size", "status"]
     },
-    balances: { name: "assets", id: "balances", cols: ["token", "balance"] }
+    balances: { name: "assets", id: "balances", cols: ["token", "balances"] }
   };
+  const props = Object.keys(OrderPropMap);
+
   const openOrders = useSelector(userOpenOrdersSelector);
   const userFillOrders = useSelector(userFillOrdersSelector);
   const lastUserOrders = useSelector(getLastOrdersSelector);
   const balances = useSelector(userBalanceByTokenSelector);
   const network = useSelector(networkSelector);
+  const handleOpen = () => setOpenModal(true);
+  const handleClose = () => setOpenModal(false);
   useEffect(() => {
-    switch (selectedTab) {
-      case "fills":
-        setOrders(userFillOrders);
-      case "history":
-        setOrders(lastUserOrders);
-      case "balances":
-        setOrders(balances);
-      default:
-        setOrders(openOrders);
-        break;
-    }
-  }, [selectedTab]);
+    setOrders(openOrders);
+  }, [])
+  useEffect(() => {
+    handleChangeTab(selectedTab);
+    setOrderNum({
+      open: openOrders?.length,
+      fill: userFillOrders?.length,
+      history: lastUserOrders?.length
+    })
+  }, [openOrders, userFillOrders, lastUserOrders, balances]);
   const getOrderDetails = (order) => {
     if (selectedTab === "fills") {
       return OrderPropMap["fillDetail"](order, network);
@@ -56,11 +71,7 @@ const OrderHistory = () => {
       return OrderPropMap["orderDetail"](order, network);
     }
   };
-  const renderExplorerLink = () => (
-    <a href={getExplorerUserAddressDetails(network, user.address)} target="_blank" rel="noreferrer">
-      View Account on Explorer
-    </a>
-  );
+
   const renderActionCell = (status, id, txHash) => {
     if (selectedTab === "orders") {
       return (
@@ -75,44 +86,83 @@ const OrderHistory = () => {
       );
     } else if (selectedTab === "fills" && txHash) {
       return (
-        <a href={getExplorerLink(network) + txHash} target="_blank" rel="noreferrer">
-          View Tx
-        </a>
+        <td data-label="Action">
+          <TxExplorerLink txHash={txHash} />
+        </td>
       );
     }
   };
+  const handleChangeTab = (val) => {
+    setSelectedTab(val);
+    switch (val) {
+      case "orders":
+        setOrders(openOrders);
+        break;
+      case "fills":
+        setOrders(userFillOrders);
+        break;
+      case "history":
+        setOrders(lastUserOrders);
+        break;
+      case "balances":
+        setOrders(balances);
+        break;
+      default:
+        setOrders(openOrders);
+        break;
+    }
+  }
   return (
-    <div>
-      <Tabs items={tabs} handleSelect={(val) => setSelectedTab(val)} active={selectedTab}></Tabs>
-      <table>
-        <thead>
+    <MainContainer>
+      {!!orders.length && selectedTab !== "balances" && (
+        <CancelOrderBtn  onClick={handleOpen}>
+          cancel all order
+        </CancelOrderBtn>
+      )}
+      <Header>
+        <Tabs items={tabs}
+          ordersNum={orderNum}
+         handleSelect={(val) => setSelectedTab(val)} active={selectedTab}></Tabs>
+      </Header>
+      <TableContainer>
+
+      <Table>
+        <Thead>
           <tr>
             {tabs[selectedTab].cols.map((col) => (
-              <th scope="col">{col}</th>
+              <Th key={col} scope="col">
+                {col}
+              </Th>
             ))}
           </tr>
-        </thead>
+        </Thead>
         <tbody>
           {orders.map((order) => {
-            const detail = getOrderDetails(order);
+            if (!order) return null;
+            const detail = selectedTab === "fills" || selectedTab === "orders" && getOrderDetails(order);
 
             return (
-              <tr key={order.id}>
+              <Tr key={order.id}>
                 {tabs[selectedTab].cols.map((col) => {
-                  const props = Object.keys(OrderPropMap);
                   if (props.includes(col)) {
-                    return <td data-label={col}>{OrderPropMap[col](order[col])}</td>;
+                    return <Td key={col} data-label={col}>{OrderPropMap[col](order?.[col])}</Td>;
+                  } else if (col === "expires") {
+                    return (
+                      <Td key={col} data-label={col}>{OrderPropMap[col](order.status, order.expires)}</Td>
+                    );
                   } else {
-                    return <td data-label={col}>{detail[col]}</td>;
+                    return <Td key={col} data-label={col}>{detail?.[col]}</Td>;
                   }
                 })}
-                {renderActionCell(order.status, order.id, order.txHash)}
-              </tr>
+                {selectedTab !== "balances" &&renderActionCell(order.status, order.id, order.txHash)}
+              </Tr>
             );
           })}
         </tbody>
-      </table>
-      {selectedTab === "balance" && renderExplorerLink()}
-    </div>
+      </Table>
+      </TableContainer>
+      {selectedTab === "balances" && <UserAddressExplorerLink />}
+    </MainContainer>
   );
 };
+export default OrderHistory;

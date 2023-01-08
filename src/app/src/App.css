@@ -38,7 +38,19 @@ body {
 html {
   font-size: 16px;
 }
+*::-webkit-scrollbar {
+  width: 6px;
+}
 
+*::-webkit-scrollbar-track {
+  background-color: #383b47;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #898b91;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+}
 .up_value {
   color: #3fe199 !important;
 }

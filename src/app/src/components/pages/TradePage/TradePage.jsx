@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { DefaultTemplate, TradeChart } from "components";
-import Footer from "components/organisms/Footer/Footer";
+// import Footer from "components/organisms/Footer/Footer";
 import { FaDiscord, FaTelegramPlane, FaTwitter } from "react-icons/fa";
 import { useHistory, useLocation } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
@@ -29,6 +29,7 @@ import "./style.css";
 import { getFillDetailsWithoutFee } from "lib/utils";
 import Core from "lib/api/Core";
 import networkManager from "../../../config/NetworkManager";
+import OrderHistory from 'components/organisms/OrderHistory/OrderHistory';
 
 const TradePage = () => {
   const [marketDataTab, updateMarketDataTab] = useState("pairs");
@@ -294,14 +295,14 @@ const TradePage = () => {
                 </div>
                 {/* order table  */}
                 <div className="m-auto user-info-container order dexpresso-border mt-1 bg_pannel  orders_table_lg">
-                  <Footer />
+                  <OrderHistory />
                 </div>
                 {/* order table  */}
               </div>
             </div>
 
             <div className="m-auto user-info-container order dexpresso-border mt-1 bg_pannel orders_table_mobile ">
-              <Footer />
+              <OrderHistory />
             </div>
             <div className="footer-trade-tables d-flex flex-column flex-lg-row text-center justify-content-center justify-content-lg-around">
               <div className="mt-3 mt-lg-0 d-flex align-items-center justify-content-center">

@@ -1,19 +1,25 @@
 import { styled } from "@mui/system";
+import Decimal from "decimal.js";
 import { OrderSide, OrderStatus, OrderType } from "lib/interface";
-import { hasOneDayPassed, isZKSYNCNet } from "lib/utils";
+import {
+  getFillDetailsWithoutFee,
+  getOrderDetailsWithoutFee,
+  hasOneDayPassed,
+  isZKSYNCNet
+} from "lib/utils";
 import React from "react";
 
 const OrderItem = () => {};
 export const OrderStatusColors = {
-    r: "#c4384e",
-    m: "rgb(240, 185, 11)",
-    f: "#3fe199"
-  };
+  r: "#c4384e",
+  m: "rgb(240, 185, 11)",
+  f: "#3fe199"
+};
 const OrderStatusItem = styled("span")(({ theme, orderStatus }) => ({
   color: OrderStatusColors[orderStatus]
 }));
 const OrderSideItem = styled("span")(({ side, theme }) => ({
-  color: side === "b" ? theme.palette.success : theme.palette.error
+  color: side === "b" ? theme.palette.success.main : theme.palette.error.main
 }));
 const renderLoading = ({ orderStatus }) => {
   const pendingStats = ["b", "m", "pm"];
@@ -23,27 +29,29 @@ const renderLoading = ({ orderStatus }) => {
   return null;
 };
 const formatTimeInSec = (time) => {
-    const now = (Date.now() / 1000) | 0;
-    const offset = time - now;
-    const timeInSec = {
-      d: 24 * 60 * 60,
-      h: 60 * 60,
-      m: 60,
-      s: 0
-    };
-    const { day, hour, minute } = timeInSec;
-    let rounded = null;
-    for (const prop in timeInSec) {
-      if (offset > timeInSec[prop]) {
-        rounded = Math.floor(offset / timeInSec[prop]) + prop;
-        break;
-      }
-    }
-    if (rounded === null) {
-      rounded = "--";
-    }
-    return rounded;
+  const now = (Date.now() / 1000) | 0;
+  const offset = time - now;
+  const timeInSec = {
+    d: 24 * 60 * 60,
+    h: 60 * 60,
+    m: 60,
+    s: 0
   };
+  const { day, hour, minute } = timeInSec;
+  let rounded = null;
+  for (const prop in timeInSec) {
+    if (offset > timeInSec[prop]) {
+      rounded = Math.floor(offset / timeInSec[prop]) + prop;
+      console.log("rounded ", rounded);
+      break;
+    }
+  }
+  if (rounded === null) {
+    rounded = "--";
+  }
+  console.log(rounded);
+  return rounded;
+};
 export const OrderPropMap = {
   market: (val) => val,
   type: (val) => OrderType[val],
@@ -51,13 +59,14 @@ export const OrderPropMap = {
   status: (val) => (
     <>
       <OrderStatusItem status={val}>{OrderStatus[val]}</OrderStatusItem>
-      {renderLoading()}
+      {renderLoading(val)}
     </>
   ),
   time: (val) => hasOneDayPassed(val),
   expires: (status, expires) =>
     status !== "f" && status !== "c" ? formatTimeInSec(expires) : "--",
   orderDetail: (order, network) => {
+    if (!order) return;
     let { price, baseQuantity, remaining } = order;
     const baseCurrency = order.market.split("-")[0];
     if (isZKSYNCNet(network)) {
@@ -72,13 +81,15 @@ export const OrderPropMap = {
 
     return {
       price,
-      baseQuantity: baseQuantity + " " + baseCurrency,
+      volume: baseQuantity + " " + baseCurrency,
       remaining: remaining + " " + baseCurrency
     };
   },
   fillDetail: (fill, network) => {
-    const { isTaker } = fill;
-    let amount = new Decimal(fill.amount);
+    console.log(fill);
+    if (!fill) return;
+    const { isTaker, side } = fill;
+    let amount = new Decimal(fill.amount || 0);
     let baseQuantity = fill.baseQuantity;
     let price = fill.price;
     const baseCurrency = fill.market.split("-")[0];
@@ -103,7 +114,7 @@ export const OrderPropMap = {
 
     return {
       price,
-      baseQuantity: baseQuantity + " " + baseCurrency,
+      volume: baseQuantity + " " + baseCurrency,
       fee: feeText
     };
   },
@@ -113,7 +124,7 @@ export const OrderPropMap = {
         View Tx
       </a>
     ),
-  action: (val) => {},
-  token: (val) => Object.keys(val)[0],
-  balance: (val) => Object.values(val)[0]
+  token: (val) => val && Object.keys(val)[0],
+  balances: (val) => val && Object.values(val)[0],
+  action: (val) => {}
 };

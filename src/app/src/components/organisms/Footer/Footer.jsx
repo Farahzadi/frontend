@@ -14,10 +14,6 @@ import { Modal } from "../../atoms/Modal";
 import Core from "lib/api/Core";
 import Tabs from "../Tabs/Tabs";
 import { activeFillStatus, activeOrderStatus } from "lib/interface";
-import OpenOrders from "../OpenOrders/OpenOrders";
-import FillOrders from "../FillOrders/FillOrders";
-import HistoryOrders from "../History/HistoryOrder";
-import Balances from "../Balances/Balances";
 
 const Footer = () => {
   const [selectedTab, setSelectedTab] = useState("orders");
@@ -59,7 +55,7 @@ const Footer = () => {
         }}></Modal>
       <div className="user-info">
         <div className="user-info-container ">
-          <div>
+          {/* <div> */}
             <Tabs
               items={tabs}
               handleSelect={(val) => setSelectedTab(val)}
@@ -75,7 +71,7 @@ const Footer = () => {
           </div>
           <div className="user-info-orders">{renderTableBody()}</div>
         </div>
-      </div>
+      {/* </div> */}
     </>
   );
 };

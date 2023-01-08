@@ -34,7 +34,7 @@ const theme = createTheme({
       secondary: "#ffddc9"
     },
     error: {
-      main: "#8C2920",
+      main: "#c4384e",
       light: "#D95436"
     },
     success: {

@@ -9,7 +9,7 @@ export const OrderStatus = {
     c: "canceled",
     e: "expired",
 }
-export const activeFillStatusList = ["m", "b", "f", "r", "e"];
+export const fillStatusList = ["m", "b", "f", "r", "e"];
 export const openOrderStatusList = ["c", "r", "e", "f"];
 export const OrderType = {
     l: "limit",
