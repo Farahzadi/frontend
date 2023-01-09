@@ -1,10 +1,104 @@
 {
   "parser": "babel-eslint",
   "rules": {
-    // temporary rules to disable eslint error ==> should be fixed
-    "no-unused-vars": 0,
-    "no-useless-catch": 0,
-    "no-case-declarations": 0,
-    "no-extra-semi": 0
+    "no-unused-vars": [
+      "off",
+      {
+        "args": "none",
+        "caughtErrors": "none",
+        "ignoreRestSiblings": true,
+        "vars": "all"
+      }
+    ],
+
+    "no-var": "error",
+    "no-dupe-keys": "error",
+    "no-const-assign": "error",
+    "no-dupe-args": "error",
+    "no-dupe-class-members": "error",
+    "no-duplicate-case": "error",
+    "no-eval": "error",
+    "no-mixed-operators": [
+      "error",
+      {
+        "groups": [
+          ["==", "!=", "===", "!==", ">", ">=", "<", "<="],
+          ["&&", "||"],
+          ["in", "instanceof"]
+        ],
+        "allowSamePrecedence": true
+      }
+    ],
+    "no-redeclare": ["error", { "builtinGlobals": false }],
+    "no-use-before-define": ["error", { "functions": false, "classes": false, "variables": true }],
+    "block-scoped-var": "error",
+    "eqeqeq": ["error", "smart"],
+    // "no-case-declarations": "error",
+
+    "no-duplicate-imports": "warn",
+    "no-unreachable": "warn",
+    "no-useless-catch": "warn",
+    "no-loss-of-precision": "warn",
+
+    // ---------------------------------------- Prettifing ----------------------------------------
+    // * Commented rules tend to raise problems with prettier
+
+    // "arrow-body-style": ["warn", "as-needed"],
+    "arrow-parens": ["warn", "as-needed"],
+    "arrow-spacing": "warn",
+
+    "comma-dangle": ["warn", "always-multiline"],
+    "comma-spacing": ["warn", { "before": false, "after": true }],
+    "comma-style": ["warn", "last"],
+
+    "semi": "warn",
+    "semi-spacing": "warn",
+    "semi-style": ["error", "last"],
+    "no-extra-semi": "warn",
+
+    "quotes": ["warn", "double"],
+
+    "indent": ["warn", 2],
+    "max-len": [
+      "warn",
+      {
+        "code": 120,
+        "tabWidth": 2,
+        "ignoreComments": true,
+        "ignoreTrailingComments": true,
+        "ignoreUrls": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true,
+        "ignoreRegExpLiterals": true
+      }
+    ],
+    "no-tabs": "warn",
+
+    "brace-style": ["warn", "1tbs", { "allowSingleLine": true }],
+    "block-spacing": "warn",
+
+    "no-irregular-whitespace": "error",
+    "no-multi-spaces": ["warn", { "ignoreEOLComments": false }],
+    "keyword-spacing": "warn",
+    "rest-spread-spacing": "warn",
+    "template-curly-spacing": "warn",
+    "space-in-parens": "warn",
+    "no-trailing-spaces": "warn",
+    "padded-blocks": ["warn", { "blocks": "never", "classes": "always", "switches": "never" }],
+    "lines-between-class-members": ["warn", "always", { "exceptAfterSingleLine": true }],
+
+    // "array-bracket-newline": ["warn", { "multiline": true, "minItems": 3 }],
+    // "array-element-newline": ["warn", { "multiline": true, "minItems": 3 }],
+    // "array-bracket-spacing": ["warn", "never"],
+
+    // "object-curly-newline": ["warn", { "multiline": true }],
+    // "object-property-newline": ["warn", { "allowAllPropertiesOnSameLine": true }],
+    // "object-curly-spacing": ["warn", "always"],
+    "key-spacing": "warn",
+    "quote-props": ["warn", "as-needed"]
+
+    // "function-paren-newline": ["warn", "consistent"],
+    // "function-call-argument-newline": ["warn", "consistent"],
+    // "func-call-spacing": ["error", "never"]
   }
 }
