@@ -61,10 +61,9 @@
   align-items: flex-end;
 }
 .currencyName {
-  -ms-flex: 1 1 auto;
-  flex: 1 1 auto;
   margin-left: 20px;
   font-size: 20px;
+  justify-content: space-around;
 }
 .currencyName-selected {
   padding: 0 0 0 3px;
@@ -92,6 +91,7 @@
 }
 .currencyName-box {
   margin-right: 15px;
+  width: 230px;
 }
 .bridge_coin_stat:last-child {
   text-align: right;
@@ -184,11 +184,11 @@
 .bridge_bottom_form {
   display: flex;
   justify-content: space-between;
+  flex-direction: column;
   height: 100%;
 }
 .bridge_bottom_form__right {
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
   width: 100%;
 }
@@ -204,7 +204,9 @@
   margin-right: 12px;
 }
 .bridge_coin_top {
-  width: 180px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
 }
 
 .bridge_box_transaction:hover {
@@ -452,9 +454,9 @@
 }
 
 .bridge_coin_title {
-  margin: 10px 15px 10px 0;
   justify-content: space-between;
   display: flex;
+  min-width: 200px;
   max-width: 300px;
 }
 .bridge_bottom_form__right-title {
@@ -480,6 +482,7 @@
 .bridge_coin_details_border {
   border-bottom: 2px solid var(--dexpressoPrimery);
   padding: 10px 35px;
+  width: 100%;
 }
 
 .bridge_coin_details .bridge_coin_image {
@@ -525,7 +528,7 @@
 .transfer-data {
   height: 50px;
   margin: 10px 5px 0 5px;
-  width: 40%;
+  width: 48%;
   padding: 0 10px;
   border-radius: 30px;
   color: #fff;
@@ -548,8 +551,8 @@
   color: #fff;
 }
 .select-currency-width {
-  top: -528% !important;
-  left: -8% !important;
+  top: 0% !important;
+  left: 0% !important;
 }
 @media only screen and (max-width: 1290px) {
   .bridge_container {
@@ -563,18 +566,13 @@
     border-bottom-right-radius: 0;
   }
   .bridge_coin_title {
+    margin: 00;
     margin-top: 18px;
   }
   .bridge_box_bottom {
     padding-bottom: 10px !important;
-    border-bottom-left-radius: 24px !important;
-    border-top-right-radius: 0 !important;
-    border-top-left-radius: 0 !important;
-  }
-  .bridge_box_swap_wrapper {
-    left: unset;
-    top: -10%;
-    right: 41%;
+    margin-top: 10px;
+    border-radius: 30px;
   }
   .bridge_lables-btn {
     display: block;
@@ -605,8 +603,11 @@
   .bridge_box_bottom,
   .bridge_box_top,
   .bridg-btn-box {
-    width: 100%;
+    max-width: 100%;
     padding: 5px;
+  }
+  .bridg-btn-box {
+    flex-direction: column;
   }
   .bridge_box_top {
     padding-bottom: 0;
@@ -618,18 +619,16 @@
   .bridge_box_receipts {
     border-bottom-right-radius: 24px !important;
     border-bottom-left-radius: 24px !important;
-    background-color: #2f353a !important;
     border: 1px solid var(--dexpressoPrimery);
   }
 
   .ReceiptsHeight {
-    min-height: 700px;
+    min-height: 650px;
     width: 90vw !important;
   }
   .bridge_section {
     height: 900px;
     justify-content: start;
-    overflow: auto;
   }
 
   .input-box,
@@ -646,9 +645,26 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    top: -10%;
-    left: 40%;
     position: absolute;
     transform: rotate(90deg);
+    background: none;
+    top: -12%;
+    right: 45%;
   }
+  .transfer-data,
+  .accept-btn {
+    width: 100%;
+    margin: 0;
+  }
+  .bridge_coin_top{
+    flex-direction: column;
+  }
+  .bridge_bottom_form__right {
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .currencyName-box{
+    width: 100%;
+  }
+  
 }

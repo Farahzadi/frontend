@@ -6,54 +6,148 @@ import { FiChevronDown } from "react-icons/fi";
 import { useCoinEstimator } from "components";
 import { formatUSD } from "lib/utils";
 import Currencies from "config/Currencies";
+import { styled as Newstyled } from "@mui/material";
 
-const StyledBridgeCurrencySelector = styled.div`
-  padding: 0 0 0 3px;
-  color: #fff;
-  border-radius: 15px;
-  display: inline-flex;
-  width: 100%;
-  height: 50px;
-  flex-direction: row;
-  align-items: center;
-  border: 2px solid var(--dexpressoPrimery)!important;
-  cursor: pointer;
-  user-select: none;
-
-  select {
-    width: 100%;
-    height: 100%;
-    border: none;
-    background: transparent;
+const StyledBridgeCurrencySelector = Newstyled("div")(() => ({
+  padding: "0 0 0 3px",
+  color: "#fff",
+  borderRadius: "15px",
+  display: "flex",
+  width: "100%",
+  height: "50px",
+  alignItems: "center",
+  border: "2px solid var(--dexpressoPrimery)!important",
+  cursor: "pointer",
+  userSelect: "none",
+  "& select": {
+    width: "100%",
+    height: "100%",
+    border: "none",
+    background: "transparent"
   }
-`;
+}));
 
-const BridgeCurrencyWrapper = styled.div`
-  width: 100%;
-  .currencyIcon  {
-    margin-left: 10px;
-    background: #fff;
-    padding: 3px;
-    border-radius: 30px;
-  }
-  .currencyIcon > img {
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
-  }
+const BridgeCurrencyWrapper = Newstyled("div")(() => ({
+  width: "100%",
+  "& .currencyIcon": {
+    marginLeft: "10px",
+    background: "#fff",
+    padding: "3px",
+    borderRadius: "30px"
+  },
+  "& .currencyIcon > img": {
+    width: "28px",
+    height: "28px",
+    objectFit: "contain"
+  },
+  "& .currencyName": {
+    marginLeft: " 20px",
+    fontSize: "20px",
 
-  .currencyName {
-    flex: 1 1 auto;
-    margin-left: 20px;
-    font-size: 20px;
-
-    svg {
-      position: relative;
-      top: -1px;
-      margin-left: 5px;
+    "& svg": {
+      position: "relative",
+      top: "-1px",
+      marginLeft: " 5px"
     }
   }
-`;
+}));
+// const BridgeCurrencyOptions = Newstyled("ul")(({ show }) => ({
+//   position: "absolute",
+//   top: "-20%",
+//   left: "-17%",
+//   zIndex: "20",
+//   backdropFilter: "blur(10px)",
+//   width: "90vw",
+//   height: "90vh",
+//   boxShadow: "0 2px 7px 3px rgba(0, 0, 0, 0.2)",
+//   padding: "0",
+//   listStyleType: "none",
+//   borderRadius: "15px",
+//   opacity: show ? "1" : "0",
+//   pointerEvents: "none",
+//   // transform: "rotate(180deg) translateY(20px)",
+//   cursor: "pointer",
+//   "& .border-side": {
+//     borderLeft: "1px solid var(--dexpressoPrimery)",
+//     borderRight: "1px solid var(--dexpressoPrimery)"
+//   },
+//   "&.border-top": {
+//     borderTop: "1px solid var(--dexpressoPrimery) !important"
+//   },
+//   "& .border-bottom": {
+//     borderBottom: "1px solid var(--dexpressoPrimery) !important"
+//   },
+//   "& .input-box": {
+//     background: "#100c22",
+//     width: "25%",
+//     margin: "0 auto",
+//     paddingTop: "1px",
+//     paddingBottom: "1px",
+
+//     "& .input-search": {
+//       margin: "10px auto",
+//       display: "block",
+//       height: "40px",
+//       color: "#fff",
+//       background: "#1d1d2c",
+//       borderRadius: "15px",
+//       textAlign: "left",
+//       fontSize: "20px",
+//       width: "100%"
+//     },
+//     "& .input-search:focus": {
+//       height: "40px",
+//       background: "#1d1d2c"
+//     }
+//   },
+//   // "& p": {
+//   //   opacity: show ? "1" : "0",
+//   //   pointerEvents: " all",
+//   //   transform: "rotate(0deg) translateY(0)"
+//   // },
+//   "& .currencyBalance ": {
+//     lineHeight: "1.1",
+//     textAlign: "right",
+//     marginLeft: "auto",
+//     color: "#fff",
+
+//     "& strong": {
+//       display: "block",
+//       fontWeight: "600",
+//       fontSize: "18px",
+//       color: "#fff"
+//     },
+
+//     "&small": {
+//       fontSize: "12px"
+//     }
+//   },
+//   "& .currencyOption": {
+//     display: "flex",
+//     padding: "13px",
+//     width: "25%",
+//     margin: "auto",
+//     background: "#100c22",
+//     flexDirection: "row",
+//     alignItems: "center",
+//     borderLeft: "1px solid #0a82b6",
+//     borderRight: "1px solid #0a82b6",
+
+//     "&:first-child": {
+//       borderTopLeftRadius: "15px",
+//       borderTopRightRadius: "15px",
+//       marginTop: "10%"
+//     },
+
+//     "&:last-child": {
+//       borderBottomLeftRadius: "15px",
+//       borderBottomRightRadius: "15px"
+//     },
+//     "&:active , :focus": {
+//       background: "#423a66"
+//     }
+//   }
+// }));
 
 const BridgeCurrencyOptions = styled.ul`
   position: absolute;
@@ -64,7 +158,6 @@ const BridgeCurrencyOptions = styled.ul`
   width: 90vw;
   height: 90vh;
   box-shadow: 0 2px 7px 3px rgba(0, 0, 0, 0.2);
-  // background: #fff;
   padding: 0;
   list-style-type: none;
   border-radius: 15px;
@@ -99,6 +192,7 @@ const BridgeCurrencyOptions = styled.ul`
       border-radius: 15px;
       text-align: left;
       font-size: 20px;
+      width: 100%;
     }
     .input-search:focus {
       height: 40px;

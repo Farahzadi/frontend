@@ -7,22 +7,26 @@ import {
 } from "lib/store/features/api/apiSlice";
 import { formatDistance } from "date-fns";
 import Collapse from "@mui/material/Collapse";
-import FormControlLabel from "@mui/material/FormControlLabel";
+import { styled, useMediaQuery } from "@mui/material";
+import { useTheme } from "@mui/styles";
 
 const BridgeReceipts = (props) => {
   const [finalReceipts, setFinalReceipts] = useState([]);
   const [checked, setChecked] = useState(false);
 
+  const theme = useTheme();
+  const matches = useMediaQuery(theme.breakpoints.down("md"));
+
   const receipts = useSelector(bridgeReceiptsSelector);
   const userAddress = useSelector(userAddressSelector);
   const dispatch = useDispatch();
-  const handleChange = () => {
-    setChecked((prev) => !prev);
-  };
-
   useEffect(() => {
     filterReceipts();
   }, [userAddress, receipts]);
+
+  useEffect(() => {
+    setChecked(matches);
+  }, [matches]);
 
   const filterReceipts = () => {
     if (receipts) {
@@ -37,10 +41,12 @@ const BridgeReceipts = (props) => {
 
   return (
     <>
-      <div role="button" className="receiptsBox__header" onClick={() => setChecked(!checked)}>
-        <p>receipts</p>
-        <p>{checked ? "show less" : "show more"}</p>
-      </div>
+      {!matches && (
+        <div role="button" className="receiptsBox__header" onClick={() => setChecked(!checked)}>
+          <p>receipts</p>
+          <p>{checked ? "show less" : "show more"}</p>
+        </div>
+      )}
       <Collapse in={checked}>
         <div
           className={`bridge_box bridge_box_receipts ${
