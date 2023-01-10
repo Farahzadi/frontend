@@ -229,7 +229,7 @@ const Bridge = () => {
   }
   const availableBalanceOnSelectedSide = (
     <>
-      <div className=" bridge_coin_title align-self-end">
+      <div className=" bridge_coin_title align-self-lg-end align-self-auto">
         <p className="bridge_bottom_form__right-title">Available balance</p>
         <p>
           {balances?.[swapDetails.currency]?.valueReadable}
@@ -288,7 +288,16 @@ const Bridge = () => {
                         <p>TO</p>
                         {transfer.type !== "withdraw" ? zkSyncLayer2Header : ethLayer1Header}
                       </div>
+                      <div className=" bridge_coin_title align-self-lg-end align-self-auto">
+                        <p className="bridge_bottom_form__right-title">Available balance</p>
+                        <p>
+                          {altBalances?.[swapDetails.currency]?.valueReadable.toString()}
+                          {` ${swapDetails.currency}`}
+                        </p>
+                      </div>
                     </div>
+                  </div>
+                  <div className="bridge_bottom_form__right">
                     <div className="currencyName-box">
                       <div className="currencyName-selected">
                         <div className="bridge_coin_image" style={{ background: "#fff" }}>
@@ -300,21 +309,8 @@ const Bridge = () => {
                         <div className="currencyName">{swapDetails.currency}</div>
                       </div>
                     </div>
-                  </div>
-                  <div className="bridge_bottom_form__right">
-                    <div className=" bridge_coin_title align-self-end">
-                      <p className="bridge_bottom_form__right-title">Available balance</p>
-                      <p>
-                        {altBalances?.[swapDetails.currency]?.valueReadable.toString()}
-                        {` ${swapDetails.currency}`}
-                      </p>
-                    </div>
                     <div className="bridge_coin_details bridge_coin_details_border ">
-                      {/* <div className={` ${coinColor ? "" : "zkS-name"}`}> */}
-                      <h4>
-                        {/* You'll receive:                          */}~
-                        {Number(swapDetails.amount).toPrecision(4)}
-                      </h4>
+                      <h4>{Number(swapDetails.amount).toPrecision(4)}</h4>
                     </div>
                   </div>
                 </div>
@@ -324,7 +320,7 @@ const Bridge = () => {
               <div className="transfer-data">
                 <div>
                   <img src={TimeIcon} />
-                  0:0
+                  10:00 m
                 </div>
                 <div>
                   <img src={FeeIcon} alt="" />
