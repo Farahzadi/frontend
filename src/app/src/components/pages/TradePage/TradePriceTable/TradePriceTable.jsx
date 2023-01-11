@@ -16,6 +16,7 @@ import {
 import Core from "lib/api/Core";
 
 class TradePriceTable extends React.Component {
+
   constructor(props) {
     super(props);
     this.state = {
@@ -25,11 +26,13 @@ class TradePriceTable extends React.Component {
       isScrolled: false,
     };
   }
+
   scrollToBottom = () => {
     if (this.props.scrollToBottom) {
       this.tableDiv.scrollTop = this.tableDiv.scrollHeight;
     }
   };
+
   tooltipStyle = {
     background: "#5e35b1b5",
     color: "white",
@@ -64,14 +67,12 @@ class TradePriceTable extends React.Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (
-      this.props.priceTableData.length !== prevProps.priceTableData.length ||
-      this.state.isScrolled === false
-    ) {
+    if (this.props.priceTableData.length !== prevProps.priceTableData.length || this.state.isScrolled === false) {
       this.scrollToBottom();
       this.setState({ isScrolled: true });
     }
   }
+
   setRangedPrice() {
     if (!this.props.latestTrades) {
       Core.run("emit", "rangePrice", this.state.rangedData);
@@ -85,6 +86,7 @@ class TradePriceTable extends React.Component {
       }
     }
   }
+
   updateOrderType(orderType) {
     const { setOrderType } = this.props;
     setOrderType(orderType);
@@ -93,35 +95,20 @@ class TradePriceTable extends React.Component {
   render() {
     const quoteCurrency = this.props.currentMarket?.split("-")[1] ?? "";
 
-    const maxQuantity = Math.max(
-      ...this.props.priceTableData.map((data) => data.remaining)
-    );
+    const maxQuantity = Math.max(...this.props.priceTableData.map(data => data.remaining));
     let onClickRow;
     if (this.props.onClickRow) onClickRow = this.props.onClickRow;
     else onClickRow = () => null;
 
     return (
       <>
-        <div
-          className={`trade-price-table ${this.props.className}`}
-          ref={(el) => (this.tableDiv = el)}
-        >
+        <div className={`trade-price-table ${this.props.className}`} ref={el => (this.tableDiv = el)}>
           <div className="mb-4 trade_table_asks_head">
             {!this.props.isBuy ? (
               <div className="d-flex flex-wrap text-white ">
-                <div className="table-head">
-                  {this.props.marketDataTab === "fills" ? (
-                    <p>Time</p>
-                  ) : (
-                    <p>Price</p>
-                  )}
-                </div>
+                <div className="table-head">{this.props.marketDataTab === "fills" ? <p>Time</p> : <p>Price</p>}</div>
                 <div className="table-head align-center">
-                  {this.props.marketDataTab === "fills" ? (
-                    <p>Price</p>
-                  ) : (
-                    <p>Amount</p>
-                  )}
+                  {this.props.marketDataTab === "fills" ? <p>Price</p> : <p>Amount</p>}
                 </div>
                 <div className="table-head align-right">
                   <p>Total ({quoteCurrency})</p>
@@ -132,17 +119,11 @@ class TradePriceTable extends React.Component {
             )}
           </div>
 
-          <div
-            className={
-              this.props.isSell === "isSell" ? "flex-column-reverse d-flex" : ""
-            }
-          >
+          <div className={this.props.isSell === "isSell" ? "flex-column-reverse d-flex" : ""}>
             {this.props.latestTrades &&
               this.props.priceTableData.map((data, i) => {
                 const color = data.side === "b" ? "#27302F" : "#2C232D";
-                const breakpoint = Math.round(
-                  (data.remaining / maxQuantity) * 100
-                );
+                const breakpoint = Math.round((data.remaining / maxQuantity) * 100);
                 let rowStyle;
                 if (this.props.useGradient) {
                   rowStyle = {
@@ -152,12 +133,8 @@ class TradePriceTable extends React.Component {
                   rowStyle = {};
                 }
                 const price =
-                  typeof data.price === "number"
-                    ? data.price.toPrecision(6)
-                    : Number(data.price).toPrecision(6);
-                const total = (
-                  Number(data.price) * Number(data.remaining)
-                ).toFixed(5);
+                  typeof data.price === "number" ? data.price.toPrecision(6) : Number(data.price).toPrecision(6);
+                const total = (Number(data.price) * Number(data.remaining)).toFixed(5);
                 const time = data.time;
                 return (
                   <div
@@ -170,14 +147,9 @@ class TradePriceTable extends React.Component {
                       this.setRangedPrice();
                     }}
                     onMouseEnter={() => this.rangeUi(i)}
-                    onMouseLeave={() => this.rangeUi(-1)}
-                  >
+                    onMouseLeave={() => this.rangeUi(-1)}>
                     <div>{time}</div>
-                    <div
-                      className={data.side === "b" ? "up_value" : "down_value"}
-                    >
-                      {price}
-                    </div>
+                    <div className={data.side === "b" ? "up_value" : "down_value"}>{price}</div>
                     <div>{numStringToSymbol(total, 2)}</div>
                   </div>
                 );
@@ -185,9 +157,7 @@ class TradePriceTable extends React.Component {
             {!this.props.latestTrades &&
               this.props.priceTableData.map((data, i) => {
                 const color = data.side === "b" ? "#27302F" : "#2C232D";
-                const breakpoint = Math.round(
-                  (data.remaining / maxQuantity) * 100
-                );
+                const breakpoint = Math.round((data.remaining / maxQuantity) * 100);
                 let rowStyle;
                 if (this.props.useGradient) {
                   rowStyle = {
@@ -197,16 +167,10 @@ class TradePriceTable extends React.Component {
                   rowStyle = {};
                 }
                 const price =
-                  typeof data.price === "number"
-                    ? data.price.toPrecision(6)
-                    : Number(data.price).toPrecision(6);
+                  typeof data.price === "number" ? data.price.toPrecision(6) : Number(data.price).toPrecision(6);
                 const amount =
-                  typeof data.remaining === "number"
-                    ? data.remaining.toFixed(5)
-                    : Number(data.remaining).toFixed(5);
-                const total = (
-                  Number(data.price) * Number(data.remaining)
-                ).toFixed(5);
+                  typeof data.remaining === "number" ? data.remaining.toFixed(5) : Number(data.remaining).toFixed(5);
+                const total = (Number(data.price) * Number(data.remaining)).toFixed(5);
                 return (
                   <Tooltip
                     arrow
@@ -218,14 +182,11 @@ class TradePriceTable extends React.Component {
                     title={
                       <div className={this.props.latestTrades ? "d-none" : ""}>
                         <h6>
-                          <strong>
-                            ◄ Total Amount ≈ {this.state.rangedData}
-                          </strong>
+                          <strong>◄ Total Amount ≈ {this.state.rangedData}</strong>
                         </h6>
                       </div>
                     }
-                    placement="right"
-                  >
+                    placement="right">
                     <div
                       key={i}
                       style={rowStyle}
@@ -236,15 +197,8 @@ class TradePriceTable extends React.Component {
                         this.setRangedPrice();
                       }}
                       onMouseEnter={() => this.rangeUi(i)}
-                      onMouseLeave={() => this.rangeUi(-1)}
-                    >
-                      <div
-                        className={
-                          data.side === "b" ? "up_value" : "down_value"
-                        }
-                      >
-                        {price}
-                      </div>
+                      onMouseLeave={() => this.rangeUi(-1)}>
+                      <div className={data.side === "b" ? "up_value" : "down_value"}>{price}</div>
                       <div>{numStringToSymbol(amount, 2)}</div>
                       <div>{numStringToSymbol(total, 2)}</div>
                     </div>
@@ -256,8 +210,9 @@ class TradePriceTable extends React.Component {
       </>
     );
   }
+
 }
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   orderType: orderTypeSelector(state),
   allOrders: allOrdersSelector(state),
   userAddress: userAddressSelector(state),

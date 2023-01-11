@@ -9,8 +9,8 @@ const ContainerLink = styled(NavLink)(() => ({
   color: "inherit",
   "&:hover": {
     textDecoration: "none",
-    color: "inherit"
-  }
+    color: "inherit",
+  },
 }));
 const BrandName = styled("span")(() => ({
   display: "inlineBlock",
@@ -20,7 +20,7 @@ const BrandName = styled("span")(() => ({
   "-webkit-margin-start": "5px",
   marginInlineStart: "5px",
   fontFamily: "Ostrich Sans",
-  lineHeight: "30px"
+  lineHeight: "30px",
 }));
 export const BrandLogo = () => {
   return (

@@ -21,6 +21,7 @@ import {
 import Core from "lib/api/Core";
 
 class Footer extends React.Component {
+
   constructor(props) {
     super(props);
     this.state = {
@@ -37,20 +38,15 @@ class Footer extends React.Component {
 
   getFills() {
     let fills = Object.values(this.props.userFills).sort((a, b) => b.id - a.id);
-    return fills.filter((fill) => {
+    return fills.filter(fill => {
       return Footer.activeFillStatus.includes(fill.status);
     });
   }
 
   getUserOrders() {
-    let orders = Object.values(this.props.userOrders).sort(
-      (a, b) => b.id - a.id
-    );
-    return orders.filter((order) => {
-      return (
-        !Footer.activeOrderStatus.includes(order.status) &&
-        order.market === this.props.currentMarket
-      );
+    let orders = Object.values(this.props.userOrders).sort((a, b) => b.id - a.id);
+    return orders.filter(order => {
+      return !Footer.activeOrderStatus.includes(order.status) && order.market === this.props.currentMarket;
     });
   }
 
@@ -58,22 +54,24 @@ class Footer extends React.Component {
     let orders = Object.values(this.props.userOrders)
       .slice(-25)
       .sort((a, b) => b.id - a.id);
-    return orders.filter((order) => {
+    return orders.filter(order => {
       return order.status !== "o";
     });
   }
 
   getOpenOrders() {
     let orders = this.getUserOrders();
-    return orders.filter((order) => {
+    return orders.filter(order => {
       return order.status === "o";
     });
   }
+
   setShowModal = () => {
     const newState = { ...this.state };
     newState.showModal = !newState.showModal;
     this.setState(newState);
   };
+
   renderOrderTable(orders) {
     return (
       <table>
@@ -96,14 +94,11 @@ class Footer extends React.Component {
             const market = order.market;
             let price = order.price;
             let baseQuantity = order.baseQuantity;
-            let remaining = isNaN(Number(order.remaining))
-              ? order.baseQuantity
-              : order.remaining;
+            let remaining = isNaN(Number(order.remaining)) ? order.baseQuantity : order.remaining;
             const orderStatus = order.status;
             const baseCurrency = order.market.split("-")[0];
             const side = order.side === "b" ? "buy" : "sell";
-            const sideClassName =
-              order.side === "b" ? "up_value" : "down_value";
+            const sideClassName = order.side === "b" ? "up_value" : "down_value";
             const expiration = order.expires;
             const orderType = order.type;
             const now = (Date.now() / 1000) | 0;
@@ -130,83 +125,63 @@ class Footer extends React.Component {
             }
             let statusText, statusClass;
             switch (orderStatus) {
-              case "r":
-                statusText = "rejected";
-                statusClass = "rejected";
-                break;
-              case "pf":
-                statusText = "partial fill";
-                statusClass = "filled";
-                break;
-              case "f":
-                statusText = "filled";
-                statusClass = "filled";
-                break;
-              case "pm":
-                statusText = (
-                  <span>
+            case "r":
+              statusText = "rejected";
+              statusClass = "rejected";
+              break;
+            case "pf":
+              statusText = "partial fill";
+              statusClass = "filled";
+              break;
+            case "f":
+              statusText = "filled";
+              statusClass = "filled";
+              break;
+            case "pm":
+              statusText = (
+                <span>
                     partial match
-                    <img
-                      className="loading-gif"
-                      src={loadingGif}
-                      alt="Pending"
-                    />
-                  </span>
-                );
-                statusClass = "matched";
-                break;
-              case "m":
-                statusText = (
-                  <span>
-                    matched{" "}
-                    <img
-                      className="loading-gif"
-                      src={loadingGif}
-                      alt="Pending"
-                    />
-                  </span>
-                );
-                statusClass = "matched";
-                break;
-              case "b":
-                statusText = (
-                  <span>
-                    committing{" "}
-                    <img
-                      className="loading-gif"
-                      src={loadingGif}
-                      alt="Pending"
-                    />
-                  </span>
-                );
-                statusClass = "committing";
-                break;
-              case "o":
-                statusText = "open";
-                statusClass = "open";
-                break;
-              case "c":
-                statusText = "canceled";
-                statusClass = "canceled";
-                break;
-              case "e":
-                statusText = "expired";
-                statusClass = "expired";
-                break;
-              default:
-                break;
+                  <img className="loading-gif" src={loadingGif} alt="Pending" />
+                </span>
+              );
+              statusClass = "matched";
+              break;
+            case "m":
+              statusText = (
+                <span>
+                    matched <img className="loading-gif" src={loadingGif} alt="Pending" />
+                </span>
+              );
+              statusClass = "matched";
+              break;
+            case "b":
+              statusText = (
+                <span>
+                    committing <img className="loading-gif" src={loadingGif} alt="Pending" />
+                </span>
+              );
+              statusClass = "committing";
+              break;
+            case "o":
+              statusText = "open";
+              statusClass = "open";
+              break;
+            case "c":
+              statusText = "canceled";
+              statusClass = "canceled";
+              break;
+            case "e":
+              statusText = "expired";
+              statusClass = "expired";
+              break;
+            default:
+              break;
             }
 
             return (
               <tr key={orderId}>
                 <td data-label="Market">{market}</td>
-                <td data-label="Order Type">
-                  {orderType === "l"
-                    ? "limit"
-                    : orderType === "m"
-                    ? "market"
-                    : "swap"}
-                </td>
+                <td data-label="Order Type">{orderType === "l" ? "limit" : orderType === "m" ? "market" : "swap"}</td>
                 <td data-label="Price">{price.toPrecision(6) / 1}</td>
                 <td data-label="Quantity">
                   {baseQuantity.toPrecision(6) / 1} {baseCurrency}
@@ -236,8 +211,7 @@ class Footer extends React.Component {
                         : statusClass
                       : statusClass
                   }
-                  data-label="Order Status"
-                >
+                  data-label="Order Status">
                   {this.props.unbroadcasted !== baseQuantity &&
                   orderStatus !== "m" &&
                   orderStatus !== "o" &&
@@ -247,13 +221,9 @@ class Footer extends React.Component {
                       : statusText
                     : statusText}
                 </td>
-                {orderStatus === "o" ||
-                (orderStatus === "pm" && remaining > 0) ? (
+                {orderStatus === "o" || (orderStatus === "pm" && remaining > 0) ? (
                   <td data-label="Action">
-                    <span
-                      className="cancel_order_link"
-                      onClick={() => Core.run("cancelOrder", orderId)}
-                    >
+                    <span className="cancel_order_link" onClick={() => Core.run("cancelOrder", orderId)}>
                       Cancel
                     </span>
                   </td>
@@ -308,8 +278,7 @@ class Footer extends React.Component {
 
             let feeText;
 
-            if (["zksyncv1", "zksyncv1_goerli"].includes(this.props.network))
-              feeText = "0 " + baseCurrency;
+            if (["zksyncv1", "zksyncv1_goerli"].includes(this.props.network)) feeText = "0 " + baseCurrency;
             else feeText = fee.toFixed() + " " + feeCurrency;
 
             const fillWithoutFee = getFillDetailsWithoutFee(fill);
@@ -319,46 +288,36 @@ class Footer extends React.Component {
             }
             let statusText, statusClass;
             switch (fillstatus) {
-              case "f":
-                statusText = "filled";
-                statusClass = "filled";
-                break;
-              case "m":
-                statusText = (
-                  <span>
-                    matched{" "}
-                    <img
-                      className="loading-gif"
-                      src={loadingGif}
-                      alt="Pending"
-                    />
-                  </span>
-                );
-                statusClass = "matched";
-                break;
-              case "b":
-                statusText = (
-                  <span>
-                    committing{" "}
-                    <img
-                      className="loading-gif"
-                      src={loadingGif}
-                      alt="Pending"
-                    />
-                  </span>
-                );
-                statusClass = "committing";
-                break;
-              case "r":
-                statusText = "rejected";
-                statusClass = "rejected";
-                break;
-              case "e":
-                statusText = "expired";
-                statusClass = "expired";
-                break;
-              default:
-                break;
+            case "f":
+              statusText = "filled";
+              statusClass = "filled";
+              break;
+            case "m":
+              statusText = (
+                <span>
+                    matched <img className="loading-gif" src={loadingGif} alt="Pending" />
+                </span>
+              );
+              statusClass = "matched";
+              break;
+            case "b":
+              statusText = (
+                <span>
+                    committing <img className="loading-gif" src={loadingGif} alt="Pending" />
+                </span>
+              );
+              statusClass = "committing";
+              break;
+            case "r":
+              statusText = "rejected";
+              statusClass = "rejected";
+              break;
+            case "e":
+              statusText = "expired";
+              statusClass = "expired";
+              break;
+            default:
+              break;
             }
 
             return (
@@ -378,11 +337,7 @@ class Footer extends React.Component {
                 </td>
                 <td data-label="Action">
                   {txHash ? (
-                    <a
-                      href={getExplorerLink(this.props.network) + txHash}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
+                    <a href={getExplorerLink(this.props.network) + txHash} target="_blank" rel="noreferrer">
                       View Tx
                     </a>
                   ) : (
@@ -412,7 +367,7 @@ class Footer extends React.Component {
           </tr>
         </thead>
         <tbody>
-          {orders.map((order) => {
+          {orders.map(order => {
             let date;
             const orderId = order.id;
             const market = order.market;
@@ -435,79 +390,59 @@ class Footer extends React.Component {
             }
             let statusText, statusClass;
             switch (orderStatus) {
-              case "r":
-                statusText = "rejected";
-                statusClass = "rejected";
-                break;
-              case "pf":
-                statusText = "partial fill";
-                statusClass = "filled";
-                break;
-              case "f":
-                statusText = "filled";
-                statusClass = "filled";
-                break;
-              case "pm":
-                statusText = (
-                  <span>
+            case "r":
+              statusText = "rejected";
+              statusClass = "rejected";
+              break;
+            case "pf":
+              statusText = "partial fill";
+              statusClass = "filled";
+              break;
+            case "f":
+              statusText = "filled";
+              statusClass = "filled";
+              break;
+            case "pm":
+              statusText = (
+                <span>
                     partial match
-                    <img
-                      className="loading-gif"
-                      src={loadingGif}
-                      alt="Pending"
-                    />
-                  </span>
-                );
-                statusClass = "matched";
-                break;
-              case "m":
-                statusText = (
-                  <span>
-                    matched{" "}
-                    <img
-                      className="loading-gif"
-                      src={loadingGif}
-                      alt="Pending"
-                    />
-                  </span>
-                );
-                statusClass = "matched";
-                break;
-              case "b":
-                statusText = (
-                  <span>
-                    committing{" "}
-                    <img
-                      className="loading-gif"
-                      src={loadingGif}
-                      alt="Pending"
-                    />
-                  </span>
-                );
-                statusClass = "committing";
-                break;
-              case "c":
-                statusText = "canceled";
-                statusClass = "canceled";
-                break;
-              case "e":
-                statusText = "expired";
-                statusClass = "expired";
-                break;
-              default:
-                break;
+                  <img className="loading-gif" src={loadingGif} alt="Pending" />
+                </span>
+              );
+              statusClass = "matched";
+              break;
+            case "m":
+              statusText = (
+                <span>
+                    matched <img className="loading-gif" src={loadingGif} alt="Pending" />
+                </span>
+              );
+              statusClass = "matched";
+              break;
+            case "b":
+              statusText = (
+                <span>
+                    committing <img className="loading-gif" src={loadingGif} alt="Pending" />
+                </span>
+              );
+              statusClass = "committing";
+              break;
+            case "c":
+              statusText = "canceled";
+              statusClass = "canceled";
+              break;
+            case "e":
+              statusText = "expired";
+              statusClass = "expired";
+              break;
+            default:
+              break;
             }
 
             return (
               <tr key={orderId}>
                 <td data-label="Market">{market}</td>
-                <td data-label="Order Type">
-                  {orderType === "l"
-                    ? "limit"
-                    : orderType === "m"
-                    ? "market"
-                    : "swap"}
-                </td>
+                <td data-label="Order Type">{orderType === "l" ? "limit" : orderType === "m" ? "market" : "swap"}</td>
                 <td data-label="Time">{date}</td>
                 <td data-label="Price">{price.toPrecision(6) / 1}</td>
                 <td data-label="Quantity">
@@ -527,8 +462,7 @@ class Footer extends React.Component {
                         : statusClass
                       : statusClass
                   }
-                  data-label="Order Status"
-                >
+                  data-label="Order Status">
                   {this.props.unbroadcasted !== baseQuantity &&
                   orderStatus !== "m" &&
                   orderStatus !== "o" &&
@@ -554,61 +488,61 @@ class Footer extends React.Component {
       classNameFills = "",
       classNameHistory = "";
     switch (this.state.tab) {
-      case "orders":
-        footerContent = this.renderOrderTable(this.getUserOrders());
-        classNameOrders = "selected";
-        break;
-      case "fills":
-        footerContent = this.renderFillTable(this.getFills());
-        classNameFills = "selected";
-        break;
-      case "history":
-        footerContent = this.renderOrderHistoryTable(this.getOrderHistory());
-        classNameHistory = "selected";
-        break;
-      case "balances":
-        if (this.props.user.balances) {
-          const balancesContent = Object.keys(this.props.user.balances)
-            .sort()
-            .map((token) => {
-              let balance = this.props.user.balances[token].valueReadable;
-              return (
+    case "orders":
+      footerContent = this.renderOrderTable(this.getUserOrders());
+      classNameOrders = "selected";
+      break;
+    case "fills":
+      footerContent = this.renderFillTable(this.getFills());
+      classNameFills = "selected";
+      break;
+    case "history":
+      footerContent = this.renderOrderHistoryTable(this.getOrderHistory());
+      classNameHistory = "selected";
+      break;
+    case "balances":
+      if (this.props.user.balances) {
+        const balancesContent = Object.keys(this.props.user.balances)
+          .sort()
+          .map(token => {
+            let balance = this.props.user.balances[token].valueReadable;
+            return (
+              <tr>
+                <td data-label="Token">{token}</td>
+                <td data-label="Balance">{balance}</td>
+              </tr>
+            );
+          });
+        footerContent = (
+          <div>
+            <table className="balances_table">
+              <thead>
                 <tr>
-                  <td data-label="Token">{token}</td>
-                  <td data-label="Balance">{balance}</td>
+                  <th scope="col">Token</th>
+                  <th scope="col">Balance</th>
                 </tr>
-              );
-            });
-          footerContent = (
-            <div>
-              <table className="balances_table">
-                <thead>
-                  <tr>
-                    <th scope="col">Token</th>
-                    <th scope="col">Balance</th>
-                  </tr>
-                </thead>
-                <tbody>{balancesContent}</tbody>
-              </table>
+              </thead>
+              <tbody>{balancesContent}</tbody>
+            </table>
 
-              <a href={explorerLink} target="_blank" rel="noreferrer">
+            <a href={explorerLink} target="_blank" rel="noreferrer">
                 View Account on Explorer
-              </a>
-            </div>
-          );
-        } else {
-          footerContent = (
-            <div>
-              <a href={explorerLink} target="_blank" rel="noreferrer">
+            </a>
+          </div>
+        );
+      } else {
+        footerContent = (
+          <div>
+            <a href={explorerLink} target="_blank" rel="noreferrer">
                 View Account on Explorer
-              </a>
-            </div>
-          );
-        }
-        classNameBalances = "selected";
-        break;
-      default:
-        break;
+            </a>
+          </div>
+        );
+      }
+      classNameBalances = "selected";
+      break;
+    default:
+      break;
     }
 
     return (
@@ -617,28 +551,16 @@ class Footer extends React.Component {
           <div className="user-info-container ">
             <div>
               <div className="ft_tabs">
-                <strong
-                  className={classNameOrders}
-                  onClick={() => this.setTab("orders")}
-                >
+                <strong className={classNameOrders} onClick={() => this.setTab("orders")}>
                   Open Orders ({this.getUserOrders().length})
                 </strong>
-                <strong
-                  className={classNameFills}
-                  onClick={() => this.setTab("fills")}
-                >
+                <strong className={classNameFills} onClick={() => this.setTab("fills")}>
                   Trade History ({this.getFills().length})
                 </strong>
-                <strong
-                  className={classNameHistory}
-                  onClick={() => this.setTab("history")}
-                >
+                <strong className={classNameHistory} onClick={() => this.setTab("history")}>
                   Order History ({this.getOrderHistory().length})
                 </strong>
-                <strong
-                  className={classNameBalances}
-                  onClick={() => this.setTab("balances")}
-                >
+                <strong className={classNameBalances} onClick={() => this.setTab("balances")}>
                   Assets
                 </strong>
                 {this.getOpenOrders().length > 1 ? (
@@ -650,9 +572,8 @@ class Footer extends React.Component {
                         cancelText: "No",
                         alert: "Are you sure you want to delete all orders?",
                       });
-                      if(accept) Core.run("cancelAllOrders");
-                    }}
-                  >
+                      if (accept) Core.run("cancelAllOrders");
+                    }}>
                     cancel all order
                   </button>
                 ) : null}
@@ -664,9 +585,10 @@ class Footer extends React.Component {
       </>
     );
   }
+
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   currentMarket: currentMarketSelector(state),
   unbroadcasted: unbroadcastedSelector(state),
   lastPrices: lastPricesSelector(state),

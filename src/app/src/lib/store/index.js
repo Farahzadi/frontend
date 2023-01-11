@@ -8,6 +8,7 @@ import autoMergeLevel2 from "redux-persist/lib/stateReconciler/autoMergeLevel2";
 import sagas from "./sagas";
 
 class Store {
+
   static instance = null;
 
   static getInstance() {
@@ -61,6 +62,7 @@ class Store {
   getState() {
     return this.reduxStore.getState();
   }
+
 }
 
 export default Store;

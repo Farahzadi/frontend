@@ -10,12 +10,10 @@ function Provider({ children, store, persistor }) {
   return (
     <ThemeProvider theme={theme}>
       <PersistGate loading={null} persistor={persistor}>
-        <ReduxProvider store={store}>
-          {children}
-        </ReduxProvider>
+        <ReduxProvider store={store}>{children}</ReduxProvider>
       </PersistGate>
     </ThemeProvider>
   );
-};
+}
 
 export default Provider;

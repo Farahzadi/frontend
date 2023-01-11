@@ -9,7 +9,9 @@ const notImplemented = function (method) {
 };
 
 export default class APIProvider {
+
   static State = class extends State {
+
     static DISCONNECTED = "DISCONNECTED";
     static CONNECTING = "CONNECTING";
     static CONNECTED = "CONNECTED";
@@ -17,6 +19,7 @@ export default class APIProvider {
     static DISCONNECTING = "DISCONNECTING";
 
     _state = "DISCONNECTED";
+
   };
 
   /// Common fields
@@ -31,30 +34,39 @@ export default class APIProvider {
   async start() {
     return notImplemented("start");
   }
+
   async stop() {
     return notImplemented("stop");
   }
+
   async prepareOrder() {
     return notImplemented("submitOrder");
   }
+
   async depositL2() {
     return notImplemented("depositL2");
   }
+
   async withdrawL2() {
     return notImplemented("withdrawL2");
   }
+
   async depositL2Fee() {
     return notImplemented("depositL2Fee");
   }
+
   async withdrawL2Fee() {
     return notImplemented("withdrawL2Fee");
   }
+
   async getBalances() {
     return notImplemented("getBalances");
   }
+
   async signMessage() {
     return notImplemented("signMessage");
   }
+
   async verifyMessage() {
     return notImplemented("verifyMessage");
   }
@@ -76,4 +88,5 @@ export default class APIProvider {
     this.networkInterface = networkInterface;
     this.state.onChange = onStateChange;
   }
+
 }

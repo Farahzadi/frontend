@@ -7,7 +7,7 @@ const Container = styled("div")(({ theme }) => ({
   alignItems: "center",
   cursor: "pointer",
   position: "relative",
-  zIndex: "9999"
+  zIndex: "9999",
 }));
 const Rect = styled("div")(({ isClicked, theme }) => ({
   position: "absolute",
@@ -19,18 +19,18 @@ const Rect = styled("div")(({ isClicked, theme }) => ({
   background: theme.palette.text.primary,
   transition: "all ease-in-out 0.5s",
   "&:nth-child(1)": {
-    transform: isClicked ? "rotate(40deg)" : "translateY(-7px)"
+    transform: isClicked ? "rotate(40deg)" : "translateY(-7px)",
   },
   "&:nth-child(2)": {
     background: theme.palette.text.primary,
     opacity: "0.6",
-    opacity: isClicked ? "0" : "1"
+    opacity: isClicked ? "0" : "1",
   },
   "&:nth-child(3)": {
     background: theme.palette.text.primary,
     opacity: "0.5",
-    transform: isClicked ? "rotate(140deg)" : "translateY(7px)"
-  }
+    transform: isClicked ? "rotate(140deg)" : "translateY(7px)",
+  },
 }));
 const HamburgerIcon = ({ isClicked, handleClick }) => {
   return (

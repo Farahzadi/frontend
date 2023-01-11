@@ -1,17 +1,17 @@
 .btn-outline-secondary:hover {
-    color: #fff !important;
-    background-color: #5E35B1 !important;
-    border-color: #5E35B1 !important;
+  color: #fff !important;
+  background-color: #5e35b1 !important;
+  border-color: #5e35b1 !important;
 }
 
 .btn-outline-secondary {
-    color: #5E35B1 !important;
-    border-color: #5E35B1 !important;
+  color: #5e35b1 !important;
+  border-color: #5e35b1 !important;
 }
 
-.security-modal{
-    height: 180px;
-    display: flex;
-    align-items: center ;
-    justify-content: center;
+.security-modal {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

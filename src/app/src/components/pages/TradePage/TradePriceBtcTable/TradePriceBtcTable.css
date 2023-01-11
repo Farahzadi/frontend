@@ -1,58 +1,57 @@
 .trade_page_market {
   padding-top: 0.82rem;
-
 }
 
 .trade_page_market table {
-    overflow: auto;
-    width: 100%;
-    text-align: center;
+  overflow: auto;
+  width: 100%;
+  text-align: center;
 }
 
 .trade_page_market table::-webkit-scrollbar {
-    width: 5px;
-    position: relative;
-    z-index: 20;
+  width: 5px;
+  position: relative;
+  z-index: 20;
 }
 
 .trade_page_market table::-webkit-scrollbar-track {
-    border-radius: 5px;
-    background: hsla(0, 0%, 100%, 0.15);
-    height: 23px;
+  border-radius: 5px;
+  background: hsla(0, 0%, 100%, 0.15);
+  height: 23px;
 }
 
 .trade_page_market table::-webkit-scrollbar-thumb {
-    border-radius: 5px;
-    background: hsla(0, 0%, 100%, 0.4);
+  border-radius: 5px;
+  background: hsla(0, 0%, 100%, 0.4);
 }
 
 .trade_page_market table::-webkit-scrollbar-thumb:window-inactive {
-    background: #fff;
+  background: #fff;
 }
 
 .thead {
-    position: sticky;
-    top: 0;
-    background-color: var(--dexpressoTableBackground);
+  position: sticky;
+  top: 0;
+  background-color: var(--dexpressoTableBackground);
 }
 
 .trade_page_market table th {
-    color: var(--dexpresssoTextPrimery);
-    font-weight: 400;
-    text-align: center;
-    padding: 0 20px;
+  color: var(--dexpresssoTextPrimery);
+  font-weight: 400;
+  text-align: center;
+  padding: 0 20px;
 }
 
 .trade_page_market table th:nth-child(1) {
-    text-align: start;
+  text-align: start;
 }
 
 .trade_page_market table tbody tr.selected {
-    background-color: var(--dexpressoBackground);
+  background-color: var(--dexpressoBackground);
 }
 
 .trade_page_market table tbody tr {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .trade_page_market table td {
@@ -63,22 +62,22 @@
 }
 
 .trade_page_market table td span {
-    color: var(--dexpresssoTextPrimery);
+  color: var(--dexpresssoTextPrimery);
 }
 
 .trade_page_market table td:nth-child(1) {
-    text-align: start;
-    color: white;
+  text-align: start;
+  color: white;
 }
 
 @media screen and (max-width: 991px) {
-    .trade_page_market table th {
-        padding: 0 20px;
-    }
+  .trade_page_market table th {
+    padding: 0 20px;
+  }
 }
 
 @media screen and (max-width: 421px) {
-    .trade_page_market table tbody {
-        font-size: 0.8rem;
-    }
+  .trade_page_market table tbody {
+    font-size: 0.8rem;
+  }
 }

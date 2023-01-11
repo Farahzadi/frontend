@@ -28,11 +28,11 @@
   border-radius: 5px;
   background: hsla(0, 0%, 100%, 0.4);
 }
-.trade_table_asks_head{
+.trade_table_asks_head {
   position: sticky;
-    z-index: 2;
-    top: 0;
-    background: var(--dexpressoTableBackground);
+  z-index: 2;
+  top: 0;
+  background: var(--dexpressoTableBackground);
 }
 
 .trade-price-table::-webkit-scrollbar-thumb:window-inactive {

@@ -21,8 +21,8 @@ const BridgeInputForm = styled("div")(() => ({
     outline: "none",
     color: "#fff",
     textAlign: "left",
-    appearance: "none"
-  }
+    appearance: "none",
+  },
 
   // .maxLink {
   //   position: absolute;
@@ -39,7 +39,7 @@ const BridgeInputForm = styled("div")(() => ({
   //   }
   // }
 }));
-const CurrencySelector = styled("div")(({theme}) => ({
+const CurrencySelector = styled("div")(({ theme }) => ({
   width: "230px",
   height: "55px",
   display: "flex",
@@ -47,28 +47,28 @@ const CurrencySelector = styled("div")(({theme}) => ({
   marginRight: "15px",
   [theme.breakpoints.down("md")]: {
     width: "100%",
-    marginRight: "0"
-  }
+    marginRight: "0",
+  },
 }));
 const BridgeInputBox = styled("div")(({ theme }) => ({
   display: "flex",
   justifyContent: "space-between",
   [theme.breakpoints.down("md")]: {
-    flexDirection: "column"
-  }
+    flexDirection: "column",
+  },
 }));
 const BridgeSwapInputBox = styled("div")(() => ({
   height: "100%",
   display: "flex",
   justifyContent: "space-between",
-  flexDirection: "column"
+  flexDirection: "column",
 }));
 const CurrencySelectorBox = styled("div")(({ theme }) => ({
   display: "flex",
   justifyContent: "space-between",
   [theme.breakpoints.down("md")]: {
-    flexDirection: "column"
-  }
+    flexDirection: "column",
+  },
 }));
 const BridgeSwapInput = ({
   value = {},
@@ -78,13 +78,10 @@ const BridgeSwapInput = ({
   balances = {},
   className,
   children,
-  availableBalanceOnSelectedSide
+  availableBalanceOnSelectedSide,
 }) => {
-  const setCurrency = useCallback((currency) => onChange({ currency, amount: "" }), [onChange]);
-  const setAmount = useCallback(
-    (e) => onChange({ amount: e.target.value.replace(/[^0-9.]/g, "") }),
-    [onChange]
-  );
+  const setCurrency = useCallback(currency => onChange({ currency, amount: "" }), [onChange]);
+  const setAmount = useCallback(e => onChange({ amount: e.target.value.replace(/[^0-9.]/g, "") }), [onChange]);
 
   let maxBalance = Number(balances?.[value.currency]?.valueReadable || 0);
   maxBalance -= 0.000105;
@@ -112,13 +109,7 @@ const BridgeSwapInput = ({
             />
           </CurrencySelector>
           <BridgeInputForm>
-            <input
-              onChange={setAmount}
-              value={value.amount}
-              className={className}
-              placeholder="0.00"
-              type="text"
-            />
+            <input onChange={setAmount} value={value.amount} className={className} placeholder="0.00" type="text" />
             {false && (
               <a className="maxLink" href="#max" onClick={setMax}>
                 Max

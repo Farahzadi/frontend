@@ -16,28 +16,28 @@ const NetFormControl = styled(FormControl)(({ theme }) => ({
   [theme.breakpoints.up("md")]: {
     marginInlineEnd: "0.25rem",
     marginBlockEnd: "0",
-    marginBottom: "0"
+    marginBottom: "0",
   },
   "&:focus": {
-    backgroundColor: theme.palette.primary.main
-  }
+    backgroundColor: theme.palette.primary.main,
+  },
 }));
 const NetInput = styled(TextField)(({ theme }) => ({
   paddingLeft: "0",
   transition: "0.2s",
   "& .MuiInputBase-root": {
-    paddingLeft: "0"
+    paddingLeft: "0",
   },
   "& .MuiSelect-select": {
-    paddingLeft: "30px"
+    paddingLeft: "30px",
   },
   "&:hover": {
-    boxShadow: "0px 0px 15px 0px var(--dexpressoPrimery)"
-  }
+    boxShadow: "0px 0px 15px 0px var(--dexpressoPrimery)",
+  },
 }));
 const GlobAdornment = styled(InputAdornment)(() => ({
   position: "absolute",
-  left: "10px"
+  left: "10px",
 }));
 const NetworkSelection = () => {
   const networks = useSelector(networkListSelector);
@@ -52,11 +52,11 @@ const NetworkSelection = () => {
       setSelectedNet(network);
     }
   }, [network, networks]);
-  const transformNetName = (network) => {
+  const transformNetName = network => {
     return network.replace("_", " ");
   };
 
-  const handleChangeNetwork = async (network) => {
+  const handleChangeNetwork = async network => {
     await Core.run("setNetwork", network);
   };
 
@@ -67,13 +67,13 @@ const NetworkSelection = () => {
           size="small"
           value={selectedNet}
           select
-          onChange={(e) => handleChangeNetwork(e.target.value)}
+          onChange={e => handleChangeNetwork(e.target.value)}
           InputProps={{
             startAdornment: (
               <GlobAdornment position="start">
                 <GoGlobe />
               </GlobAdornment>
-            )
+            ),
           }}>
           {networks?.map(({ network }, index) => (
             <MenuItem key={network} value={network}>

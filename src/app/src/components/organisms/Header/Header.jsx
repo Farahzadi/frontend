@@ -3,11 +3,7 @@ import { useHistory, useLocation } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { Button, Dropdown, AccountDropdown, Menu, MenuItem } from "components";
-import {
-  networkConfigSelector,
-  userChainDetailsSelector,
-  userAddressSelector
-} from "lib/store/features/api/apiSlice";
+import { networkConfigSelector, userChainDetailsSelector, userAddressSelector } from "lib/store/features/api/apiSlice";
 import logo from "assets/images/LogoMarkCremeLight.svg";
 import menu from "assets/icons/menu.png";
 import darkPlugHead from "assets/icons/dark-plug-head.png";
@@ -26,7 +22,7 @@ import {
   NavUl,
   ActionBtnContainer,
   XSLogoContainer,
-  ResponsiveItems
+  ResponsiveItems,
 } from "./Header.module";
 import Core from "lib/api/Core";
 
@@ -42,17 +38,17 @@ export const Header = () => {
     { name: "Trade", to: "/" },
     { name: "Bridge", to: "/bridge", isHidden: !hasBridge },
     { name: "Security", to: "/security" },
-    { name: "Docs", to: getDocsLink(), target: "blank" }
+    { name: "Docs", to: getDocsLink(), target: "blank" },
   ];
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.down("md"));
   const handleMenu = ({ key }) => {
     switch (key) {
-      case "signOut":
-        Core.run("disconnectWallet");
-        return;
-      default:
-        throw new Error("Invalid dropdown option");
+    case "signOut":
+      Core.run("disconnectWallet");
+      return;
+    default:
+      throw new Error("Invalid dropdown option");
     }
   };
 

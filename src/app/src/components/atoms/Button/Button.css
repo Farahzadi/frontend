@@ -13,14 +13,13 @@
   font-weight: 300;
 }
 
-
 .bg_btn {
   display: flex;
   align-items: center;
   transition: all 0.2s linear;
   height: 45px;
   padding: 4px 30px;
-  background: linear-gradient(to right top, rgba(10,181,255,1) 0%, rgba(3,95,135,1) 100%);
+  background: linear-gradient(to right top, rgba(10, 181, 255, 1) 0%, rgba(3, 95, 135, 1) 100%);
   border: none;
   border-radius: 5px;
   width: 100%;
@@ -42,7 +41,7 @@
   transition: all 0.2s linear;
   height: 38px;
   padding: 4px 30px;
-  background: linear-gradient(to right top, rgba(10,181,255,1) 0%, rgba(3,95,135,1) 100%);
+  background: linear-gradient(to right top, rgba(10, 181, 255, 1) 0%, rgba(3, 95, 135, 1) 100%);
   border: none;
   border-radius: 5px;
   justify-content: center;
@@ -51,7 +50,7 @@
   font-size: 0.9rem;
   outline: none;
 }
-.bg_btn-transfer{
+.bg_btn-transfer {
   height: 50px;
   border-radius: 15px;
 }

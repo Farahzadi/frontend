@@ -1,10 +1,10 @@
-import { Header } from 'components'
+import { Header } from "components";
 
 export const DefaultTemplate = ({ children }) => {
-    return (
-        <>
-            <Header />
-            {children}
-        </>
-    )
-}
+  return (
+    <>
+      <Header />
+      {children}
+    </>
+  );
+};
