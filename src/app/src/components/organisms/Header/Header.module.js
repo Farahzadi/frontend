@@ -38,7 +38,6 @@ const MainContent = styled("div")(({ show, theme }) => ({
 }));
 const NavUl = styled("ul")(({ theme }) => ({
   display: "flex",
-  alignItems: "center",
   listStyle: "none",
   position: "relative",
   paddingInlineStart: "2rem",

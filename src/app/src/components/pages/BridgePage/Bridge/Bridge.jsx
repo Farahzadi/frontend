@@ -64,6 +64,48 @@ const Bridge = () => {
   let L1Balances = userL1Balances;
   let L2Balances = userBalances;
 
+  const setSwapDetails = values => {
+    const details = {
+      ...swapDetails,
+      ...values,
+    };
+
+    _setSwapDetails(details);
+
+    const setFee = bridgeFee => {
+      setBridgeFee(bridgeFee);
+
+      const bals = transfer.type === "deposit" ? L1Balances : L2Balances;
+      const detailBalance = Number(bals?.[details.currency]?.valueReadable ?? 0);
+      const input = Number(details.amount || 0);
+      if (input > 0) {
+        if (input < 0.001) {
+          setFormErr("Must be at least 0.001");
+        } else if (input <= activationFee) {
+          setFormErr(`Must be more than ${activationFee} ${swapDetails.currency}`);
+        } else if (input > detailBalance - Number(bridgeFee)) {
+          setFormErr("Insufficient balance");
+        } else {
+          setFormErr("");
+        }
+      } else {
+        setFormErr("");
+      }
+    };
+
+    if (userAddress && transfer.type === "withdraw") {
+      setFee(null);
+      Core.run("withdrawL2Fee", details.currency)
+        .then(fee => setFee(fee))
+        .catch(err => {
+          console.log(err);
+          setFee(null);
+        });
+    } else {
+      setFee(0);
+    }
+  };
+
   useEffect(() => {
     if (fromNetwork.from.key === "zksync") {
       const type = (transfer.type = "withdraw");
@@ -115,47 +157,6 @@ const Bridge = () => {
       window.removeEventListener("resize", handleWindowResize);
     };
   }, []);
-  const setSwapDetails = values => {
-    const details = {
-      ...swapDetails,
-      ...values,
-    };
-
-    _setSwapDetails(details);
-
-    const setFee = bridgeFee => {
-      setBridgeFee(bridgeFee);
-
-      const bals = transfer.type === "deposit" ? L1Balances : L2Balances;
-      const detailBalance = Number(bals?.[details.currency]?.valueReadable ?? 0);
-      const input = Number(details.amount || 0);
-      if (input > 0) {
-        if (input < 0.001) {
-          setFormErr("Must be at least 0.001");
-        } else if (input <= activationFee) {
-          setFormErr(`Must be more than ${activationFee} ${swapDetails.currency}`);
-        } else if (input > detailBalance - Number(bridgeFee)) {
-          setFormErr("Insufficient balance");
-        } else {
-          setFormErr("");
-        }
-      } else {
-        setFormErr("");
-      }
-    };
-
-    if (userAddress && transfer.type === "withdraw") {
-      setFee(null);
-      Core.run("withdrawL2Fee", details.currency)
-        .then(fee => setFee(fee))
-        .catch(err => {
-          console.log(err);
-          setFee(null);
-        });
-    } else {
-      setFee(0);
-    }
-  };
 
   const switchTransferType = e => {
     const f = networks.find(i => i.from.key === toNetwork.key);

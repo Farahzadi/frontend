@@ -23,7 +23,7 @@ const Rect = styled("div")(({ isClicked, theme }) => ({
   },
   "&:nth-child(2)": {
     background: theme.palette.text.primary,
-    opacity: "0.6",
+    // opacity: "0.6",
     opacity: isClicked ? "0" : "1",
   },
   "&:nth-child(3)": {

@@ -5,12 +5,10 @@ import { styled } from "@mui/material/styles";
 import { DefaultTemplate } from "components/templates/DefaultTemplate";
 import { Button } from "components/atoms/Button";
 import { useSelector } from "react-redux";
-import { balancesSelector } from "lib/store/features/api/apiSlice";
+import { balancesSelector, userChainDetailsSelector } from "lib/store/features/api/apiSlice";
 import { validateNumberInputs } from "lib/utils";
-import api from "lib/api";
 import { useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/styles";
-import { userChainDetailsSelector } from "lib/store/features/api/apiSlice";
 import Core from "lib/api/Core";
 
 const Container = styled("div")(({ theme }) => ({

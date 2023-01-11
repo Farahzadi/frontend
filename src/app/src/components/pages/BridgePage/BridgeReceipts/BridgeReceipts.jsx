@@ -16,13 +16,6 @@ const BridgeReceipts = props => {
   const receipts = useSelector(bridgeReceiptsSelector);
   const userAddress = useSelector(userAddressSelector);
   const dispatch = useDispatch();
-  useEffect(() => {
-    filterReceipts();
-  }, [userAddress, receipts]);
-
-  useEffect(() => {
-    setChecked(matches);
-  }, [matches]);
 
   const filterReceipts = () => {
     if (receipts) {
@@ -30,6 +23,14 @@ const BridgeReceipts = props => {
       setFinalReceipts(final);
     }
   };
+
+  useEffect(() => {
+    filterReceipts();
+  }, [userAddress, receipts]);
+
+  useEffect(() => {
+    setChecked(matches);
+  }, [matches]);
 
   const api = {}; // TODO replace api
 

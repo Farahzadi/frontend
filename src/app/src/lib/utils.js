@@ -212,8 +212,8 @@ export function getOrderDetailsWithoutFee(order) {
 
 export function getFillDetailsWithoutFee(fill) {
   const price = new Decimal(parseFloat(fill.price));
-  const baseQuantity = fill.amount;
-  const quoteQuantity = price.mul(fill.amount);
+  let baseQuantity = fill.amount;
+  let quoteQuantity = price.mul(fill.amount);
   const time = hasOneDayPassed(fill.insertTimestamp);
   const side = fill.side;
   const fee = fill.feeAmount ? fill.feeAmount : 0;

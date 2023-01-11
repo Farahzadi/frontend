@@ -1,7 +1,6 @@
 import { useSelector } from "react-redux";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation, NavLink } from "react-router-dom";
 import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
 import { Button, Dropdown, AccountDropdown, Menu, MenuItem } from "components";
 import { networkConfigSelector, userChainDetailsSelector, userAddressSelector } from "lib/store/features/api/apiSlice";
 import logo from "assets/images/LogoMarkCremeLight.svg";
@@ -12,7 +11,6 @@ import { getDocsLink } from "lib/helpers/env";
 import { styled, useMediaQuery } from "@mui/material";
 import HamburgerIcon from "components/atoms/Icons/HamburgerIcon";
 import { BrandLogo, Logo } from "components/atoms/Icons/Logo";
-import Drawerx from "@mui/material";
 import { NotificationDrawer } from "./NotificationDrawer";
 import { useTheme } from "@mui/styles";
 import {

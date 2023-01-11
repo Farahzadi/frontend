@@ -25,21 +25,11 @@ const NonceIncreasement = () => {
     Core.run("connectWallet").finally(() => setConnecting(false));
   };
 
-  const acceptNonce = async () => {
-    setCancelCheck(!cancelCheck);
-    setTersmsCheck(!termsCheck);
-    const accept = await Modal.accept({
-      cancelText: "No",
-      proceedText: "Yes",
-      alert: "Do you agree with all the changes?",
-    });
-    if (accept) increaseWalletNonce();
-  };
-
   const getOldNonce = () => {
     const oldNonce = user.nonce;
     setOldNonce(oldNonce);
   };
+
   const increaseWalletNonce = async () => {
     try {
       const res = await Core.run("increaseWalletNonce");
@@ -51,6 +41,17 @@ const NonceIncreasement = () => {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const acceptNonce = async () => {
+    setCancelCheck(!cancelCheck);
+    setTersmsCheck(!termsCheck);
+    const accept = await Modal.accept({
+      cancelText: "No",
+      proceedText: "Yes",
+      alert: "Do you agree with all the changes?",
+    });
+    if (accept) increaseWalletNonce();
   };
 
   useEffect(() => {

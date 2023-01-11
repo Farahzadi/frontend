@@ -1,10 +1,13 @@
 import { useSelector } from "react-redux";
-import { arweaveAllocationSelector, userChainDetailsSelector } from "../../../lib/store/features/api/apiSlice";
+import {
+  arweaveAllocationSelector,
+  userChainDetailsSelector,
+  userAddressSelector,
+} from "../../../lib/store/features/api/apiSlice";
 import React, { useEffect, useState } from "react";
 import { Modal } from "../../atoms/Modal";
 import Pane from "../../atoms/Pane/Pane";
 import { FaEquals, FaTimes, FaMinus } from "react-icons/all";
-import { userAddressSelector } from "../../../lib/store/features/api/apiSlice";
 import Submit from "../../atoms/Form/Submit";
 import Form from "../../atoms/Form/Form";
 import { x } from "@xstyled/styled-components";

@@ -52,7 +52,7 @@ const DropdownButton = styled("div")(() => ({
   fontWeight: "bold",
   padding: "0 16px",
   marginRight: "0.25rem",
-  transition: "0.2s",
+  transitionDuration: "0.2s",
   "&:focus": {
     outline: 0,
   },

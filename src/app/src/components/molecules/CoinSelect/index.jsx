@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Autocomplete, TextField, autocompleteClasses } from "@mui/material";
+import { Autocomplete, TextField, autocompleteClasses, ClickAwayListener, Popper } from "@mui/material";
 import { useSelector } from "react-redux";
 import { networkSelector, userChainDetailsSelector } from "lib/store/features/api/apiSlice";
 import { FiChevronDown } from "react-icons/fi";
 import { styled } from "@mui/material/styles";
-import { ClickAwayListener, Popper } from "@mui/material";
 import Currencies from "config/Currencies";
 
 const CoinBtn = styled("button")(() => ({

@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Modal } from "../../atoms/Modal";
-import { x } from "@xstyled/styled-components";
+import styled, { x } from "@xstyled/styled-components";
 import { BsFillCheckCircleFill } from "react-icons/all";
 import { Link } from "react-router-dom";
-import styled from "@xstyled/styled-components";
 import axios from "axios";
 import Loader from "react-loader-spinner";
 import ExternalLink from "./ExternalLink";
