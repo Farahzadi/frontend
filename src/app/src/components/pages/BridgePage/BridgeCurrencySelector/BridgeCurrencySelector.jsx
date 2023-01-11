@@ -281,7 +281,7 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
                 </div>
               )}
             </li>
-          )
+          ),
         )}
         {!tickers.length && (
           <li

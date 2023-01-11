@@ -28,7 +28,7 @@ export default class EthereumInterface extends NetworkInterface {
     else
       balance = await this.apiProvider.getTokenBalance(
         !this.HAS_BRIDGE || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
-        userAddress
+        userAddress,
       );
     return balance.toString();
   }
@@ -59,7 +59,7 @@ export default class EthereumInterface extends NetworkInterface {
     const allowance = await this.apiProvider.getAllowance(
       !this.HAS_BRIDGE || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
       userAddress,
-      !this.HAS_BRIDGE || isLayerTwo ? this.DEX_CONTRACT : this.BRIDGE_CONTRACT
+      !this.HAS_BRIDGE || isLayerTwo ? this.DEX_CONTRACT : this.BRIDGE_CONTRACT,
     );
     return allowance.toString();
   }
@@ -84,7 +84,7 @@ export default class EthereumInterface extends NetworkInterface {
     return await this.apiProvider?.approve(
       !this.HAS_BRIDGE || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
       !this.HAS_BRIDGE || isLayerTwo ? this.DEX_CONTRACT : this.BRIDGE_CONTRACT,
-      allowance
+      allowance,
     );
   }
 
@@ -191,7 +191,7 @@ export default class EthereumInterface extends NetworkInterface {
         order.ratioBuyArgument,
         order.sellTokenAddress,
         order.buyTokenAddress,
-      ]
+      ],
     );
     const signature = await this.apiProvider?.signOrder({ orderHash });
     const tx = {

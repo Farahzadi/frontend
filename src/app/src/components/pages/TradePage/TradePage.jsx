@@ -147,11 +147,11 @@ const TradePage = () => {
       : [];
 
   const activeLimitAndMarketOrders = Object.values(userOrders).filter(
-    order => activeOrderStatuses.includes(order.status) && order.type === "l"
+    order => activeOrderStatuses.includes(order.status) && order.type === "l",
   );
 
   const activeSwapOrders = Object.values(userOrders).filter(
-    order => activeOrderStatuses.includes(order.status) && order.type === "s"
+    order => activeOrderStatuses.includes(order.status) && order.type === "s",
   );
 
   let tradingViewMarket = currentMarket;

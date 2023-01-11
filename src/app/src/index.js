@@ -52,7 +52,7 @@ const startRedering = config => {
     <React.StrictMode>
       <App redux={config.redux} />
     </React.StrictMode>,
-    document.getElementById("root")
+    document.getElementById("root"),
   );
 };
 

@@ -96,7 +96,7 @@ export const Header = () => {
                     </NavLink>
                   )}
                 </NavItem>
-              )
+              ),
           )}
         </NavUl>
         <ActionBtnContainer>

@@ -93,7 +93,7 @@ export class ModalComponent extends React.Component {
           </div>
         </div>
       </CSSTransition>,
-      document.getElementById("root")
+      document.getElementById("root"),
     );
   }
 

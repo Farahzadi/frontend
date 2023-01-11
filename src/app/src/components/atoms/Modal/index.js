@@ -25,7 +25,7 @@ class Modal {
     });
     return promise.then(
       () => true,
-      () => false
+      () => false,
     );
   }
 

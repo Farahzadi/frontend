@@ -37,7 +37,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
         this.syncProvider,
         syncSigner,
         undefined,
-        ethSignatureType
+        ethSignatureType,
       );
     } catch (err) {
       console.log(err);
@@ -89,7 +89,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
     const feeUSD = data.result.totalFee / 10 ** 6;
     return feeUSD;
@@ -113,7 +113,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
         address: "0x5364ff0cecb1d44efd9e4c7e4fe16bf5774530e3",
         tokenLike: currency,
       },
-      { headers: { "Content-Type": "application/json" } }
+      { headers: { "Content-Type": "application/json" } },
     );
 
     if (currency === "USDC") return (data.result.totalFee / 10 ** 6) * 2;
@@ -134,17 +134,17 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
             headers: {
               "Content-Type": "application/json",
             },
-          }
+          },
         );
         const feeUSD = data.result.totalFee / 10 ** 6;
         toast.info(
           `You need to sign a one-time transaction to activate your zksync account. The fee for this tx will be $${feeUSD.toFixed(
-            2
-          )}`
+            2,
+          )}`,
         );
       } catch (err) {
         toast.info(
-          "You need to sign a one-time transaction to activate your zksync account. The fee for this tx will be ~$2.5"
+          "You need to sign a one-time transaction to activate your zksync account. The fee for this tx will be ~$2.5",
         );
       }
     } else if (this.networkInterface.NETWORK === "zksyncv1_goerli") {
@@ -316,7 +316,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
   getParsedSellQuantity(tokenSell, sellQuantity) {
     const parsedSellQuantity = this.syncProvider.tokenSet.parseToken(
       tokenSell,
-      sellQuantity.toFixed(Currencies[tokenSell].decimals)
+      sellQuantity.toFixed(Currencies[tokenSell].decimals),
     );
 
     return parsedSellQuantity;

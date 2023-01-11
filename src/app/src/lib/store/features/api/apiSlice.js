@@ -229,7 +229,7 @@ export const apiSlice = createSlice({
             toast.success(
               `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
                 noFeeOrder.price.toPrecision(4) / 1
-              } was partial match!`
+              } was partial match!`,
             );
           }
           break;
@@ -253,7 +253,7 @@ export const apiSlice = createSlice({
             toast.success(
               `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
                 noFeeOrder.price.toPrecision(4) / 1
-              } was filled!`
+              } was filled!`,
             );
           }
           break;
@@ -294,7 +294,7 @@ export const apiSlice = createSlice({
             toast.error(
               `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
                 noFeeOrder.price.toPrecision(4) / 1
-              } was rejected: ${error}`
+              } was rejected: ${error}`,
             );
             toast.info("This happens occasionally. Run the transaction again and you should be fine.");
           }
@@ -411,7 +411,7 @@ export const apiSlice = createSlice({
             rel="noreferrer">
             Bridge FAQ
           </a>
-        </>
+        </>,
       );
     },
     updateBridgeReceiptStatus(state, { payload }) {

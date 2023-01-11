@@ -199,7 +199,7 @@ export default class ZKSyncInterface extends EthereumInterface {
 
     this.emit(
       "bridgeReceipt",
-      this.handleBridgeReceipt(transfer, readableAmount, token, type, userId, address, receipt?.status)
+      this.handleBridgeReceipt(transfer, readableAmount, token, type, userId, address, receipt?.status),
     );
     return transfer;
   }

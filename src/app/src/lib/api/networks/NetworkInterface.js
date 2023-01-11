@@ -155,7 +155,7 @@ export default class NetworkInterface {
             {" "}
             go to wallet.zksync.io
           </a>
-        </>
+        </>,
       );
       throw new Error();
     }
@@ -375,7 +375,7 @@ export default class NetworkInterface {
       }
       if (price.eq(0))
         throw new VError(
-          type === "l" ? "Price should not be equal to 0" : "There is no orders in the orderbook to match"
+          type === "l" ? "Price should not be equal to 0" : "There is no orders in the orderbook to match",
         );
 
       if (side === "buy") side = "b";
@@ -414,7 +414,7 @@ export default class NetworkInterface {
       const minOrderSize = new Decimal(toBaseUnit(configSelector(state).minOrderSize, baseDecimals));
       if (amount.lt(minOrderSize))
         throw new VError(
-          `Minimum order size is ${minOrderSize.div(Decimal.pow(10, baseDecimals)).toFixed()} ${baseCurrency}`
+          `Minimum order size is ${minOrderSize.div(Decimal.pow(10, baseDecimals)).toFixed()} ${baseCurrency}`,
         );
 
       const lastPrice = new Decimal(lastPricesSelector(state)[market]?.price ?? price);

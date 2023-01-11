@@ -115,7 +115,7 @@ export default class Core extends Emitter {
           this.lastSocketOpenState = false;
           this.start();
         },
-        this.lastSocketOpenState ? 0 : 8000
+        this.lastSocketOpenState ? 0 : 8000,
       );
     }
   }
@@ -193,12 +193,12 @@ export default class Core extends Emitter {
           console.log(
             "API Error",
             error.response.status,
-            (error.response.data.error && error.response.data.message) || error.message
+            (error.response.data.error && error.response.data.message) || error.message,
           );
           toast.error(
             `API Error ${error.response.status}: ${
               (error.response.data.error && error.response.data.message) || error.message
-            }`
+            }`,
           );
           // console.log("status", error.response.status);
           // console.log("headers", error.response.headers);
@@ -254,7 +254,7 @@ export default class Core extends Emitter {
       {
         id: orderId,
       },
-      true
+      true,
     );
   }
 
@@ -266,7 +266,7 @@ export default class Core extends Emitter {
         market: undefined,
         side: undefined,
       },
-      true
+      true,
     );
     return true;
   }
@@ -308,7 +308,7 @@ export default class Core extends Emitter {
         price: data.price,
         type: data.type,
       },
-      true
+      true,
     );
   }
 
