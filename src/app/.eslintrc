@@ -47,7 +47,13 @@
     "arrow-parens": ["warn", "as-needed"],
     "arrow-spacing": "warn",
 
-    "comma-dangle": ["warn", "always-multiline"],
+    "comma-dangle": ["warn", {
+        "arrays": "always-multiline",
+        "objects": "always-multiline",
+        "imports": "always-multiline",
+        "exports": "always-multiline",
+        "functions": "always-multiline"
+    }],
     "comma-spacing": ["warn", { "before": false, "after": true }],
     "comma-style": ["warn", "last"],
 
