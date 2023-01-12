@@ -28,6 +28,7 @@ import {
 } from "./OrderHistory.style.module";
 import OrderList from "./OrderList";
 import AssetList from "./AssetList";
+import { Modal } from 'components/atoms/Modal';
 
 const OrderHistory = () => {
   const [selectedTab, setSelectedTab] = useState("orders");
