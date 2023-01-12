@@ -11,6 +11,7 @@ export const OrderStatus = {
 }
 export const fillStatusList = ["m", "b", "f", "r", "e"];
 export const openOrderStatusList = ["c", "r", "e", "f"];
+export const liveOrderStatusList = ["e", "r", "c"];
 export const OrderType = {
     l: "limit",
     m: "market",

@@ -1,3 +1,4 @@
+import React from "react";
 import { styled } from "@mui/system";
 import Decimal from "decimal.js";
 import { OrderSide, OrderStatus, OrderType } from "lib/interface";
@@ -7,9 +8,8 @@ import {
   hasOneDayPassed,
   isZKSYNCNet
 } from "lib/utils";
-import React from "react";
+import loadingGif from "assets/icons/loading.svg";
 
-const OrderItem = () => {};
 export const OrderStatusColors = {
   r: "#c4384e",
   m: "rgb(240, 185, 11)",
@@ -21,10 +21,14 @@ const OrderStatusItem = styled("span")(({ theme, orderStatus }) => ({
 const OrderSideItem = styled("span")(({ side, theme }) => ({
   color: side === "b" ? theme.palette.success.main : theme.palette.error.main
 }));
+const LoadingGif = styled("img")(() => ({
+    width: "30px",
+    height: "30px",
+}))
 const renderLoading = ({ orderStatus }) => {
   const pendingStats = ["b", "m", "pm"];
   if (pendingStats.includes(orderStatus)) {
-    return <img className="loading-gif" src={loadingGif} alt="Pending" />;
+    return <LoadingGif className="loading-gif" src={loadingGif} alt="Pending" />;
   }
   return null;
 };
@@ -42,16 +46,15 @@ const formatTimeInSec = (time) => {
   for (const prop in timeInSec) {
     if (offset > timeInSec[prop]) {
       rounded = Math.floor(offset / timeInSec[prop]) + prop;
-      console.log("rounded ", rounded);
       break;
     }
   }
   if (rounded === null) {
     rounded = "--";
   }
-  console.log(rounded);
   return rounded;
 };
+
 export const OrderPropMap = {
   market: (val) => val,
   type: (val) => OrderType[val],
@@ -63,9 +66,11 @@ export const OrderPropMap = {
     </>
   ),
   time: (val) => hasOneDayPassed(val),
-  expires: (status, expires) =>
-    status !== "f" && status !== "c" ? formatTimeInSec(expires) : "--",
-  orderDetail: (order, network) => {
+  expiry: (status, expires) => (status !== "f" && status !== "c" ? formatTimeInSec(expires) : "--"),
+}
+export const OpenOrderPropMap = {
+  ...OrderPropMap,
+  detail: (order, network) => {
     if (!order) return;
     let { price, baseQuantity, remaining } = order;
     const baseCurrency = order.market.split("-")[0];
@@ -85,7 +90,10 @@ export const OrderPropMap = {
       remaining: remaining + " " + baseCurrency
     };
   },
-  fillDetail: (fill, network) => {
+};
+export const FillOrdersPropMap = {
+  ...OrderPropMap,
+  detail: (fill, network) => {
     console.log(fill);
     if (!fill) return;
     const { isTaker, side } = fill;
@@ -118,13 +126,17 @@ export const OrderPropMap = {
       fee: feeText
     };
   },
-  txHash: (val) =>
-    val && (
-      <a href={getExplorerLink(network) + val} target="_blank" rel="noreferrer">
-        View Tx
-      </a>
-    ),
-  token: (val) => val && Object.keys(val)[0],
-  balances: (val) => val && Object.values(val)[0],
-  action: (val) => {}
+}
+
+
+export const mapColsTitleToProp = {
+  history: (val) => {
+    if (val === "time") {
+      return "createdAt";
+    }
+    return val;
+  },
+  orders: (val) => val,
+  fills: (val) => val,
+  balances: (val) => val
 };

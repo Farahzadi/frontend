@@ -591,7 +591,9 @@ export const userSelector = (state) => state.api.user;
 export const userBalanceByTokenSelector = (state) =>
   !!state.api.user.balances &&
   Object.keys(state.api.user.balances).map((val) => {
-    val: state.api.user.balances[val].valueReadable;
+    return {
+      [val]: state.api.user.balances[val].valueReadable
+    };
   });
 
 export const handleMessage = createAction("api/handleMessage");

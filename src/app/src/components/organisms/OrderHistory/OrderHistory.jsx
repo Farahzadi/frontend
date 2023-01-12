@@ -10,15 +10,36 @@ import {
   userFillOrdersSelector,
   userOpenOrdersSelector
 } from "lib/store/features/api/apiSlice";
-import React, { useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { OrderPropMap } from "../Order/OrderItem";
+import {
+  BalancePropMap,
+  FillOrdersPropMap,
+  mapColsTitleToProp,
+  OpenOrderPropMap,
+  OrderPropMap
+} from "./Order";
 import Tabs from "../Tabs/Tabs";
-import { CancelOrderBtn, Header, MainContainer, Table, TableContainer, Td, Th, Thead, Tr } from "./OrderHistory.style.module";
+import {
+  ActionBar,
+  ActionBtn,
+  CancelAllOrderBtn,
+  CancelOrderBtn,
+  Header,
+  InnerTh,
+  MainContainer,
+  Table,
+  TableContainer,
+  Td,
+  Th,
+  Thead,
+  Tr
+} from "./OrderHistory.style.module";
+import OrderList from "./OrderList";
+import AssetList from "./AssetList";
 
 const OrderHistory = () => {
   const [selectedTab, setSelectedTab] = useState("orders");
-  const [orders, setOrders] = useState([]);
   const [orderNum, setOrderNum] = useState({
     open: 0,
     fill: 0,
@@ -30,17 +51,30 @@ const OrderHistory = () => {
     orders: {
       name: "open orders",
       id: "orders",
-      cols: ["market", "type", "price", "volume", "remaining", "side", "expiry", "status", "action"]
+      cols: [
+        "market",
+        "type",
+        "price",
+        "volume",
+        "remaining",
+        "side",
+        "expiry",
+        "status",
+        "action"
+      ],
+      map: OpenOrderPropMap
     },
     fills: {
       name: "trade history",
       id: "fills",
-      cols: ["market", "time", "price", "volume", "side", "fee", "status", "action"]
+      cols: ["market", "time", "price", "volume", "side", "fee", "status", "action"],
+      map: FillOrdersPropMap
     },
     history: {
       name: "order history",
       id: "history",
-      cols: ["market", "type", "time", "price", "side", "volume", "size", "status"]
+      cols: ["market", "type", "time", "price", "volume", "side", "status"],
+      map: OpenOrderPropMap
     },
     balances: { name: "assets", id: "balances", cols: ["token", "balances"] }
   };
@@ -53,116 +87,68 @@ const OrderHistory = () => {
   const network = useSelector(networkSelector);
   const handleOpen = () => setOpenModal(true);
   const handleClose = () => setOpenModal(false);
+
   useEffect(() => {
-    setOrders(openOrders);
-  }, [])
-  useEffect(() => {
-    handleChangeTab(selectedTab);
     setOrderNum({
-      open: openOrders?.length,
-      fill: userFillOrders?.length,
+      orders: openOrders?.length,
+      fills: userFillOrders?.length,
       history: lastUserOrders?.length
-    })
+    });
   }, [openOrders, userFillOrders, lastUserOrders, balances]);
   const getOrderDetails = (order) => {
-    if (selectedTab === "fills") {
-      return OrderPropMap["fillDetail"](order, network);
-    } else if (selectedTab === "orders") {
-      return OrderPropMap["orderDetail"](order, network);
-    }
+    return tabs[selectedTab]["map"]["detail"](order, network);
   };
-
-  const renderActionCell = (status, id, txHash) => {
-    if (selectedTab === "orders") {
-      return (
-        <td data-label="Action">
-          {status === "o" ||
-            (status === "pm" && remaining > 0 && (
-              <span className="cancel_order_link" onClick={() => Core.run("cancelOrder", id)}>
-                Cancel
-              </span>
-            ))}
-        </td>
-      );
-    } else if (selectedTab === "fills" && txHash) {
-      return (
-        <td data-label="Action">
-          <TxExplorerLink txHash={txHash} />
-        </td>
-      );
-    }
-  };
-  const handleChangeTab = (val) => {
-    setSelectedTab(val);
-    switch (val) {
-      case "orders":
-        setOrders(openOrders);
-        break;
+  const renderRelatedOrderList = useMemo(() => {
+    let orders;
+    switch (selectedTab) {
       case "fills":
-        setOrders(userFillOrders);
+        orders = userFillOrders;
         break;
       case "history":
-        setOrders(lastUserOrders);
+        orders = lastUserOrders;
         break;
       case "balances":
-        setOrders(balances);
-        break;
+        orders = balances;
+        return <AssetList orders={balances} tabs={tabs} selectedTab={selectedTab} />;
       default:
-        setOrders(openOrders);
+        orders = openOrders;
         break;
     }
-  }
+    return <OrderList orders={orders} tabs={tabs} selectedTab={selectedTab} />;
+  }, [selectedTab, openOrders, userFillOrders, lastUserOrders, balances]);
   return (
     <MainContainer>
-      {!!orders.length && selectedTab !== "balances" && (
-        <CancelOrderBtn  onClick={handleOpen}>
-          cancel all order
-        </CancelOrderBtn>
-      )}
+      {/* {openOrders.length > 1 && selectedTab === "orders" && (
+        <CancelAllOrderBtn onClick={handleOpen}>cancel all orders</CancelAllOrderBtn>
+      )} */}
       <Header>
-        <Tabs items={tabs}
+        <Tabs
+          items={tabs}
           ordersNum={orderNum}
-         handleSelect={(val) => setSelectedTab(val)} active={selectedTab}></Tabs>
+          handleSelect={(val) => setSelectedTab(val)}
+          selected={selectedTab}></Tabs>
       </Header>
-      <TableContainer>
-
-      <Table>
-        <Thead>
-          <tr>
-            {tabs[selectedTab].cols.map((col) => (
-              <Th key={col} scope="col">
-                {col}
-              </Th>
-            ))}
-          </tr>
-        </Thead>
-        <tbody>
-          {orders.map((order) => {
-            if (!order) return null;
-            const detail = selectedTab === "fills" || selectedTab === "orders" && getOrderDetails(order);
-
-            return (
-              <Tr key={order.id}>
-                {tabs[selectedTab].cols.map((col) => {
-                  if (props.includes(col)) {
-                    return <Td key={col} data-label={col}>{OrderPropMap[col](order?.[col])}</Td>;
-                  } else if (col === "expires") {
-                    return (
-                      <Td key={col} data-label={col}>{OrderPropMap[col](order.status, order.expires)}</Td>
-                    );
-                  } else {
-                    return <Td key={col} data-label={col}>{detail?.[col]}</Td>;
-                  }
-                })}
-                {selectedTab !== "balances" &&renderActionCell(order.status, order.id, order.txHash)}
-              </Tr>
-            );
-          })}
-        </tbody>
-      </Table>
+      {openOrders.length > 1 && selectedTab === "orders" && (
+        <ActionBar>
+          <ActionBtn onClick={handleOpen}>cancel all order</ActionBtn>
+        </ActionBar>
+      )}
+      <TableContainer hasAction={openOrders.length > 1 && selectedTab === "orders"}>
+        <Table>
+          <Thead>
+            <tr>
+              {tabs[selectedTab].cols.map((col) => (
+                <Th key={col} scope="col">
+                  <InnerTh>{col}</InnerTh>
+                </Th>
+              ))}
+            </tr>
+          </Thead>
+          {renderRelatedOrderList}
+        </Table>
       </TableContainer>
       {selectedTab === "balances" && <UserAddressExplorerLink />}
     </MainContainer>
   );
 };
-export default OrderHistory;
+export default memo(OrderHistory);
