@@ -10,7 +10,7 @@ import Core from "lib/api/Core";
 import Store from "lib/store";
 import { checkLocalStorageVersion } from "lib/helpers/utils";
 
-var DSN_ADDRESS;
+let DSN_ADDRESS;
 
 // if (process.env.NODE_ENV || process.env.NODE_ENV === 'production') {
 //     DSN_ADDRESS = process.env.REACT_APP_DSN_ADDRESS
@@ -47,12 +47,12 @@ const startApp = () => {
   return { redux: { store: reduxStore, persistor } };
 };
 
-const startRedering = (config) => {
+const startRedering = config => {
   ReactDOM.render(
     <React.StrictMode>
       <App redux={config.redux} />
     </React.StrictMode>,
-    document.getElementById("root")
+    document.getElementById("root"),
   );
 };
 

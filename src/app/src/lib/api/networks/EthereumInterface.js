@@ -3,18 +3,15 @@ import { getNetworkCurrencies, getNetworkCurrency } from "config/Currencies";
 import Decimal from "decimal.js";
 import { BigNumber, ethers } from "ethers";
 import { getENSName } from "lib/ens";
-import {
-  formatBalances,
-  getCurrentValidUntil,
-  switchRatio,
-} from "lib/utils";
+import { formatBalances, getCurrentValidUntil, switchRatio } from "lib/utils";
 import { toast } from "react-toastify";
 import { maxAllowance } from "../constants";
 import EthAPIProvider from "../providers/EthAPIProvider";
 import NetworkInterface from "./NetworkInterface";
 
-const ETHEREUM_DEX_CONTRACT = process.env.REACT_APP_ETHEREUM_DEX_CONTRACT
+const ETHEREUM_DEX_CONTRACT = process.env.REACT_APP_ETHEREUM_DEX_CONTRACT;
 export default class EthereumInterface extends NetworkInterface {
+
   static Actions = [...super.Actions, "approve"];
   static Provider = EthAPIProvider;
   NETWORK = "ethereum";
@@ -27,14 +24,11 @@ export default class EthereumInterface extends NetworkInterface {
     const currency = getNetworkCurrency(this.NETWORK, ticker);
     if (!currency) return "0";
     let balance;
-    if (ticker === this.CURRENCY)
-      balance = await this.apiProvider.getBalance(userAddress);
+    if (ticker === this.CURRENCY) balance = await this.apiProvider.getBalance(userAddress);
     else
       balance = await this.apiProvider.getTokenBalance(
-        !this.HAS_BRIDGE || !isLayerTwo
-          ? currency.info.contract
-          : currency.info.L2Contract,
-        userAddress
+        !this.HAS_BRIDGE || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
+        userAddress,
       );
     return balance.toString();
   }
@@ -43,7 +37,7 @@ export default class EthereumInterface extends NetworkInterface {
     if (!this.apiProvider) return null;
     const userAddress = await this.apiProvider.getAddress();
     const currencies = getNetworkCurrencies(this.NETWORK);
-    const entriesPromises = Object.keys(currencies).map(async (ticker) => [
+    const entriesPromises = Object.keys(currencies).map(async ticker => [
       ticker,
       await this.fetchBalance(ticker, userAddress, isLayerTwo),
     ]);
@@ -63,11 +57,9 @@ export default class EthereumInterface extends NetworkInterface {
     const currency = getNetworkCurrency(this.NETWORK, ticker);
     if (!currency || ticker === this.CURRENCY) return "0";
     const allowance = await this.apiProvider.getAllowance(
-      !this.HAS_BRIDGE || !isLayerTwo
-        ? currency.info.contract
-        : currency.info.L2Contract,
+      !this.HAS_BRIDGE || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
       userAddress,
-      !this.HAS_BRIDGE || isLayerTwo ? this.DEX_CONTRACT : this.BRIDGE_CONTRACT
+      !this.HAS_BRIDGE || isLayerTwo ? this.DEX_CONTRACT : this.BRIDGE_CONTRACT,
     );
     return allowance.toString();
   }
@@ -76,7 +68,7 @@ export default class EthereumInterface extends NetworkInterface {
     if (!this.apiProvider) return null;
     const userAddress = await this.apiProvider.getAddress();
     const currencies = getNetworkCurrencies(this.NETWORK);
-    const entriesPromises = Object.keys(currencies).map(async (ticker) => [
+    const entriesPromises = Object.keys(currencies).map(async ticker => [
       ticker,
       await this.fetchAllowance(ticker, userAddress, isLayerTwo),
     ]);
@@ -90,11 +82,9 @@ export default class EthereumInterface extends NetworkInterface {
     if (!currency || ticker === this.CURRENCY) return;
     allowance = BigNumber.from(allowance ?? maxAllowance);
     return await this.apiProvider?.approve(
-      !this.HAS_BRIDGE || !isLayerTwo
-        ? currency.info.contract
-        : currency.info.L2Contract,
+      !this.HAS_BRIDGE || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
       !this.HAS_BRIDGE || isLayerTwo ? this.DEX_CONTRACT : this.BRIDGE_CONTRACT,
-      allowance
+      allowance,
     );
   }
 
@@ -142,10 +132,7 @@ export default class EthereumInterface extends NetworkInterface {
   }
 
   async getProfileName(address) {
-    return (
-      (await this.fetchENSName(address)) ??
-      (await super.getProfileName(address))
-    );
+    return (await this.fetchENSName(address)) ?? (await super.getProfileName(address));
   }
 
   async validateOrder({ market, price, amount, side, fee, type }) {
@@ -156,27 +143,20 @@ export default class EthereumInterface extends NetworkInterface {
       amount,
       side,
       fee,
-      type
+      type,
     });
     const compareAmount = side === "s" ? res.amount : Decimal.mul(res.amount, res.unitPrice);
-    const currency = side === "s" ? res.baseCurrency : res.quoteCurrency
+    const currency = side === "s" ? res.baseCurrency : res.quoteCurrency;
     const userAddress = await this.getAddress();
-    const allowance = await this.apiProvider.getAllowance(
-      res.sellTokenAddress,
-      userAddress,
-      this.DEX_CONTRACT
-      );
-      if (new Decimal(allowance.toString()).lt(compareAmount)) {
-        toast.warning("Insufficient allowance");
+    const allowance = await this.apiProvider.getAllowance(res.sellTokenAddress, userAddress, this.DEX_CONTRACT);
+    if (new Decimal(allowance.toString()).lt(compareAmount)) {
+      toast.warning("Insufficient allowance");
       await this.approve(currency);
       // TODO: throw the error and catch the correct error message to start approving procedure
       // throw new Error("Insufficient allowance");
     }
     const validUntil = getCurrentValidUntil();
-    const ratio = switchRatio(
-      side,
-      res.ratio
-    );
+    const ratio = switchRatio(side, res.ratio);
     return {
       ...res,
       validUntil,
@@ -184,18 +164,7 @@ export default class EthereumInterface extends NetworkInterface {
     };
   }
 
-  async prepareOrder({
-    market,
-    amount,
-    price,
-    side,
-    buyTokenAddress,
-    sellTokenAddress,
-    fee,
-    type,
-    validUntil,
-    ratio,
-  }) {
+  async prepareOrder({ market, amount, price, side, buyTokenAddress, sellTokenAddress, fee, type, validUntil, ratio }) {
     let ratioSellArgument = ratio.sell;
     let ratioBuyArgument = ratio.buy;
     let clientOrderId = Math.floor(Math.random() * 1000000);
@@ -212,16 +181,7 @@ export default class EthereumInterface extends NetworkInterface {
     };
 
     const orderHash = ethers.utils.solidityKeccak256(
-      [
-        "uint16",
-        "uint64",
-        "uint64",
-        "uint64",
-        "uint256",
-        "uint256",
-        "address",
-        "address",
-      ],
+      ["uint16", "uint64", "uint64", "uint64", "uint256", "uint256", "address", "address"],
       [
         order.maxFeeRatio,
         order.clientOrderId,
@@ -231,7 +191,7 @@ export default class EthereumInterface extends NetworkInterface {
         order.ratioBuyArgument,
         order.sellTokenAddress,
         order.buyTokenAddress,
-      ]
+      ],
     );
     const signature = await this.apiProvider?.signOrder({ orderHash });
     const tx = {
@@ -240,4 +200,5 @@ export default class EthereumInterface extends NetworkInterface {
     };
     return tx;
   }
+
 }

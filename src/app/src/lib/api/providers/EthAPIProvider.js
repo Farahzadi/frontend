@@ -6,6 +6,7 @@ import WalletConnectProvider from "@walletconnect/web3-provider";
 import erc20ContractABI from "lib/contracts/ERC20.json";
 
 export default class EthAPIProvider extends APIProvider {
+
   async start(emitChanges = true) {
     if (emitChanges) this.state.set(APIProvider.State.CONNECTING);
 
@@ -81,13 +82,9 @@ export default class EthAPIProvider extends APIProvider {
   }
 
   async switchNetwork() {
-    const chainId = ethers.utils.hexStripZeros(
-      this.networkInterface.CHAIN_ID ?? 0
-    );
+    const chainId = ethers.utils.hexStripZeros(this.networkInterface.CHAIN_ID ?? 0);
     try {
-      const currentChainId = ethers.utils.hexStripZeros(
-        (await this.provider.getNetwork())?.chainId ?? 0
-      );
+      const currentChainId = ethers.utils.hexStripZeros((await this.provider.getNetwork())?.chainId ?? 0);
       if (currentChainId === chainId) return false;
 
       await this.provider.provider.request({
@@ -133,22 +130,14 @@ export default class EthAPIProvider extends APIProvider {
 
   async getAllowance(tokenAddress, userAddress, spenderAddress) {
     if (!userAddress) userAddress = await this.getAddress();
-    const token = new ethers.Contract(
-      tokenAddress,
-      erc20ContractABI,
-      this.provider
-    );
+    const token = new ethers.Contract(tokenAddress, erc20ContractABI, this.provider);
     const allowance = await token.allowance(userAddress, spenderAddress);
     return allowance;
   }
 
   async approve(tokenAddress, spenderAddress, amount) {
     amount = ethers.BigNumber.from(amount);
-    const contract = new ethers.Contract(
-      tokenAddress,
-      erc20ContractABI,
-      this.wallet
-    );
+    const contract = new ethers.Contract(tokenAddress, erc20ContractABI, this.wallet);
     const tx = await contract.approve(spenderAddress, amount);
     await tx.wait();
   }
@@ -161,11 +150,7 @@ export default class EthAPIProvider extends APIProvider {
 
   async getTokenBalance(tokenAddress, userAddress) {
     if (!userAddress) userAddress = await this.getAddress();
-    const token = new ethers.Contract(
-      tokenAddress,
-      erc20ContractABI,
-      this.provider
-    );
+    const token = new ethers.Contract(tokenAddress, erc20ContractABI, this.provider);
     const balance = await token.balanceOf(userAddress);
     return balance;
   }
@@ -175,14 +160,12 @@ export default class EthAPIProvider extends APIProvider {
   }
 
   async signOrder({ orderHash }) {
-    const result = await this.wallet.signMessage(
-      ethers.utils.arrayify(orderHash)
-    );
+    const result = await this.wallet.signMessage(ethers.utils.arrayify(orderHash));
     return result;
   }
 
-  onAccountChange = (cb) => {
-    if (this.state.get() === APIProvider.State.CONNECTED)
-      this.provider.provider.on("accountsChanged", cb);
+  onAccountChange = cb => {
+    if (this.state.get() === APIProvider.State.CONNECTED) this.provider.provider.on("accountsChanged", cb);
   };
+
 }

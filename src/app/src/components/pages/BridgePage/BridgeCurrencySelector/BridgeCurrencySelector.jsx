@@ -6,54 +6,51 @@ import { FiChevronDown } from "react-icons/fi";
 import { useCoinEstimator } from "components";
 import { formatUSD } from "lib/utils";
 import Currencies from "config/Currencies";
+import { styled as Newstyled } from "@mui/material";
 
-const StyledBridgeCurrencySelector = styled.div`
-  padding: 0 0 0 3px;
-  color: #fff;
-  border-radius: 15px;
-  display: inline-flex;
-  width: 100%;
-  height: 50px;
-  flex-direction: row;
-  align-items: center;
-  border: 2px solid var(--dexpressoPrimery)!important;
-  cursor: pointer;
-  user-select: none;
+const StyledBridgeCurrencySelector = Newstyled("div")(() => ({
+  padding: "0 0 0 3px",
+  color: "#fff",
+  borderRadius: "15px",
+  display: "flex",
+  width: "100%",
+  height: "50px",
+  alignItems: "center",
+  border: "2px solid var(--dexpressoPrimery)!important",
+  cursor: "pointer",
+  userSelect: "none",
+  "& select": {
+    width: "100%",
+    height: "100%",
+    border: "none",
+    background: "transparent",
+  },
+}));
 
-  select {
-    width: 100%;
-    height: 100%;
-    border: none;
-    background: transparent;
-  }
-`;
+const BridgeCurrencyWrapper = Newstyled("div")(() => ({
+  width: "100%",
+  "& .currencyIcon": {
+    marginLeft: "10px",
+    background: "#fff",
+    padding: "3px",
+    borderRadius: "30px",
+  },
+  "& .currencyIcon > img": {
+    width: "28px",
+    height: "28px",
+    objectFit: "contain",
+  },
+  "& .currencyName": {
+    marginLeft: " 20px",
+    fontSize: "20px",
 
-const BridgeCurrencyWrapper = styled.div`
-  width: 100%;
-  .currencyIcon  {
-    margin-left: 10px;
-    background: #fff;
-    padding: 3px;
-    border-radius: 30px;
-  }
-  .currencyIcon > img {
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
-  }
-
-  .currencyName {
-    flex: 1 1 auto;
-    margin-left: 20px;
-    font-size: 20px;
-
-    svg {
-      position: relative;
-      top: -1px;
-      margin-left: 5px;
-    }
-  }
-`;
+    "& svg": {
+      position: "relative",
+      top: "-1px",
+      marginLeft: " 5px",
+    },
+  },
+}));
 
 const BridgeCurrencyOptions = styled.ul`
   position: absolute;
@@ -64,7 +61,6 @@ const BridgeCurrencyOptions = styled.ul`
   width: 90vw;
   height: 90vh;
   box-shadow: 0 2px 7px 3px rgba(0, 0, 0, 0.2);
-  // background: #fff;
   padding: 0;
   list-style-type: none;
   border-radius: 15px;
@@ -99,6 +95,7 @@ const BridgeCurrencyOptions = styled.ul`
       border-radius: 15px;
       text-align: left;
       font-size: 20px;
+      width: 100%;
     }
     .input-search:focus {
       height: 40px;
@@ -106,7 +103,7 @@ const BridgeCurrencyOptions = styled.ul`
     }
   }
 
-  ${(p) =>
+  ${p =>
     p.show &&
     css`
       opacity: 1;
@@ -176,7 +173,7 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
 
   useEffect(() => {
     const tickers = (currencies || Object.keys(Currencies))
-      .filter((c) => {
+      .filter(c => {
         return Currencies[c].chain[network];
       })
       .sort();
@@ -185,28 +182,28 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
     onChange(Currencies["ETH"] ? "ETH" : tickers[0]);
   }, [network, currencies]);
 
-  const inputTest = (val) => {
+  const inputTest = val => {
     if (val.target.value === "") {
       const tickers = (currencies || Object.keys(Currencies))
-        .filter((c) => {
+        .filter(c => {
           return Currencies[c].chain[network];
         })
         .sort();
       return setTickers(tickers);
     }
-    const arr = tickers.filter((i) => i.includes(val.target.value.toUpperCase()));
+    const arr = tickers.filter(i => i.includes(val.target.value.toUpperCase()));
     setTickers(arr);
   };
   // const inputTest = (val) => {
   //   console.warn(val.target.value);
   // };
 
-  const hideOptions = (e) => {
+  const hideOptions = e => {
     if (e) e.preventDefault();
     setShowingOptions(false);
   };
 
-  const toggleOptions = (e) => {
+  const toggleOptions = e => {
     if (e) e.preventDefault();
     e.stopPropagation();
     setShowingOptions(!showingOptions);
@@ -239,7 +236,7 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
 
   const currency = Currencies[value];
 
-  const selectOption = (ticker) => (e) => {
+  const selectOption = ticker => e => {
     if (e) e.preventDefault();
     onChange(ticker);
   };
@@ -262,10 +259,8 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
       <BridgeCurrencyOptions
         className={`${windowSize.innerWidth <= "960" ? "select-currency-width" : ""} `}
         show={showingOptions}>
-        <li className="currencyOption w-md-100 text-white border-top border-bottom">
-          SELECT A TOKEN
-        </li>
-        <div className="border-side input-box" onClick={(e) => e.stopPropagation()}>
+        <li className="currencyOption w-md-100 text-white border-top border-bottom">SELECT A TOKEN</li>
+        <div className="border-side input-box" onClick={e => e.stopPropagation()}>
           <input type="text" className="input-search" onChange={inputTest} placeholder="search" />
         </div>
         {tickers.map((ticker, key, tickers) =>
@@ -282,13 +277,11 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
               {balances?.[ticker] && (
                 <div className="currencyBalance">
                   <strong>{balances[ticker]?.valueReadable ?? 0}</strong>
-                  <small>
-                    ${formatUSD(coinEstimator(ticker) * (balances[ticker]?.valueReadable ?? 0))}
-                  </small>
+                  <small>${formatUSD(coinEstimator(ticker) * (balances[ticker]?.valueReadable ?? 0))}</small>
                 </div>
               )}
             </li>
-          )
+          ),
         )}
         {!tickers.length && (
           <li

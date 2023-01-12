@@ -161,7 +161,7 @@ const Currencies = {
         contract: "0x959A48D4b694D7AD404e2EB848A42409d232E349",
       },
     },
-  }
+  },
 };
 
 export function getNetworkCurrencies(network) {

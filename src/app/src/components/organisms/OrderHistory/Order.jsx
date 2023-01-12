@@ -6,25 +6,25 @@ import {
   getFillDetailsWithoutFee,
   getOrderDetailsWithoutFee,
   hasOneDayPassed,
-  isZKSYNCNet
+  isZKSYNCNet,
 } from "lib/utils";
 import loadingGif from "assets/icons/loading.svg";
 
 export const OrderStatusColors = {
   r: "#c4384e",
   m: "rgb(240, 185, 11)",
-  f: "#3fe199"
+  f: "#3fe199",
 };
 const OrderStatusItem = styled("span")(({ theme, orderStatus }) => ({
-  color: OrderStatusColors[orderStatus]
+  color: OrderStatusColors[orderStatus],
 }));
 const OrderSideItem = styled("span")(({ side, theme }) => ({
-  color: side === "b" ? theme.palette.success.main : theme.palette.error.main
+  color: side === "b" ? theme.palette.success.main : theme.palette.error.main,
 }));
 const LoadingGif = styled("img")(() => ({
-    width: "30px",
-    height: "30px",
-}))
+  width: "30px",
+  height: "30px",
+}));
 const renderLoading = ({ orderStatus }) => {
   const pendingStats = ["b", "m", "pm"];
   if (pendingStats.includes(orderStatus)) {
@@ -32,14 +32,14 @@ const renderLoading = ({ orderStatus }) => {
   }
   return null;
 };
-const formatTimeInSec = (time) => {
+const formatTimeInSec = time => {
   const now = (Date.now() / 1000) | 0;
   const offset = time - now;
   const timeInSec = {
     d: 24 * 60 * 60,
     h: 60 * 60,
     m: 60,
-    s: 0
+    s: 0,
   };
   const { day, hour, minute } = timeInSec;
   let rounded = null;
@@ -56,18 +56,18 @@ const formatTimeInSec = (time) => {
 };
 
 export const OrderPropMap = {
-  market: (val) => val,
-  type: (val) => OrderType[val],
-  side: (val) => <OrderSideItem side={val}>{OrderSide[val]}</OrderSideItem>,
-  status: (val) => (
+  market: val => val,
+  type: val => OrderType[val],
+  side: val => <OrderSideItem side={val}>{OrderSide[val]}</OrderSideItem>,
+  status: val => (
     <>
       <OrderStatusItem status={val}>{OrderStatus[val]}</OrderStatusItem>
       {renderLoading(val)}
     </>
   ),
-  time: (val) => hasOneDayPassed(val),
+  time: val => hasOneDayPassed(val),
   expiry: (status, expires) => (status !== "f" && status !== "c" ? formatTimeInSec(expires) : "--"),
-}
+};
 export const OpenOrderPropMap = {
   ...OrderPropMap,
   detail: (order, network) => {
@@ -87,7 +87,7 @@ export const OpenOrderPropMap = {
     return {
       price,
       volume: baseQuantity + " " + baseCurrency,
-      remaining: remaining + " " + baseCurrency
+      remaining: remaining + " " + baseCurrency,
     };
   },
 };
@@ -123,20 +123,20 @@ export const FillOrdersPropMap = {
     return {
       price,
       volume: baseQuantity + " " + baseCurrency,
-      fee: feeText
+      fee: feeText,
     };
   },
-}
+};
 
 
 export const mapColsTitleToProp = {
-  history: (val) => {
+  history: val => {
     if (val === "time") {
       return "createdAt";
     }
     return val;
   },
-  orders: (val) => val,
-  fills: (val) => val,
-  balances: (val) => val
+  orders: val => val,
+  fills: val => val,
+  balances: val => val,
 };

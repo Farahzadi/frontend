@@ -1,53 +1,100 @@
-import React, { useEffect } from 'react';
-import ReactDOM from 'react-dom';
-import { CSSTransition } from 'react-transition-group';
-import { Button } from '../Button';
-import './Modal.css';
+import React from "react";
+import ReactDOM from "react-dom";
+import { CSSTransition } from "react-transition-group";
+import { Button } from "../Button";
+import "./Modal.css";
 
-export const Modal = ({
-  show,
-  title,
-  alert,
-  closeText = 'Cancel',
-  actionText,
-  children,
-  onClose,
-  onSubmit,
-}) => {
-  const closeOnEscapeKeyDown = (e) => {
-    if ((e.charCode || e.keyCode) === 27) {
-      onClose();
-    }
+export class ModalComponent extends React.Component {
+
+  constructor() {
+    super();
+    // this.resetState();
+    this.state = {
+      show: false,
+      title: undefined,
+      children: undefined,
+      alert: undefined,
+      cancelText: "Cancel",
+      proceed: undefined,
+      proceedText: "OK",
+      cancel: undefined,
+    };
+  }
+
+  resetState = () => {
+    this.setState({
+      show: false,
+      title: undefined,
+      children: undefined,
+      alert: undefined,
+      cancelText: "Cancel",
+      proceed: undefined,
+      proceedText: "OK",
+      cancel: undefined,
+    });
   };
 
-  useEffect(() => {
-    document.body.addEventListener('keydown', closeOnEscapeKeyDown);
-    return function cleanup() {
-      document.body.removeEventListener('keydown', closeOnEscapeKeyDown);
-    };
-  }, []);
+  onEscapeKeyDown = e => {
+    if ((e.charCode || e.keyCode) === 27) this.cancel();
+  };
 
-  return ReactDOM.createPortal(
-    <CSSTransition in={show} unmountOnExit timeout={{ enter: 0, exit: 300 }}>
-      <div className='dex_modal' onClick={onClose}>
-        <div className='dex_modal_content' onClick={(e) => e.stopPropagation()}>
-         {title && <div className='dex_modal_header'>
-            <h4 className='dex_modal_title'>{title}</h4>
-          </div>}
-          {}
-          <div className='dex_modal_body'>
-            { alert && <p className='dex_alert'>{alert}</p>}
-            {children}
-          </div>
-          {onSubmit && (
-            <div className='dex_modal_action_footer'>
-              <Button className={'btn_danger normal_btn'} text={closeText} onClick={onClose}></Button>
-              <Button className={'btn_success normal_btn'} text={actionText} onClick={onSubmit}></Button>
+  componentDidMount() {
+    document.body.addEventListener("keydown", this.onEscapeKeyDown);
+  }
+
+  componentWillUnmount() {
+    document.body.removeEventListener("keydown", this.onEscapeKeyDown);
+  }
+
+  updateState = data => {
+    this.setState(data);
+  };
+
+  proceed = () => {
+    const { proceed } = this.state;
+    this.resetState();
+    proceed?.();
+  };
+
+  cancel = () => {
+    const { cancel } = this.state;
+    this.resetState();
+    cancel?.();
+  };
+
+  render() {
+    if (!this.state) {
+      console.log("fk", this.state);
+      return <></>;
+    }
+    const { show, title, children, alert, cancelText, proceed, proceedText, cancel } = this.state;
+    console.log("shw", show, title, this.state);
+
+    return ReactDOM.createPortal(
+      <CSSTransition in={show} unmountOnExit timeout={{ enter: 0, exit: 300 }}>
+        <div className="dex_modal" onClick={this.cancel}>
+          <div className="dex_modal_content" onClick={e => e.stopPropagation()}>
+            {title && (
+              <div className="dex_modal_header">
+                <h4 className="dex_modal_title">{title}</h4>
+              </div>
+            )}
+            {}
+            <div className="dex_modal_body">
+              {alert && <p className="dex_alert">{alert}</p>}
+              {children}
             </div>
-          )}
+            {proceed && (
+              <div className="dex_modal_action_footer">
+                <Button className={"btn_danger normal_btn"} text={cancelText} onClick={this.cancel}></Button>
+                <Button className={"btn_success normal_btn"} text={proceedText} onClick={this.proceed}></Button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </CSSTransition>,
-    document.getElementById('root')
-  );
-};
+      </CSSTransition>,
+      document.getElementById("root"),
+    );
+  }
+
+}

@@ -5,12 +5,10 @@ import { styled } from "@mui/material/styles";
 import { DefaultTemplate } from "components/templates/DefaultTemplate";
 import { Button } from "components/atoms/Button";
 import { useSelector } from "react-redux";
-import { balancesSelector } from "lib/store/features/api/apiSlice";
+import { balancesSelector, userChainDetailsSelector } from "lib/store/features/api/apiSlice";
 import { validateNumberInputs } from "lib/utils";
-import api from "lib/api";
 import { useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/styles";
-import { userChainDetailsSelector } from "lib/store/features/api/apiSlice";
 import Core from "lib/api/Core";
 
 const Container = styled("div")(({ theme }) => ({
@@ -18,7 +16,7 @@ const Container = styled("div")(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   minHeight: "80vh",
-  color: theme.palette.secondary.dark
+  color: theme.palette.secondary.dark,
 }));
 const InnerContainer = styled("div")(({ theme }) => ({
   padding: "1.25em",
@@ -26,11 +24,11 @@ const InnerContainer = styled("div")(({ theme }) => ({
   minHeight: "337px",
   margin: "2.5rem auto",
   backgroundColor: "#dadbdc",
-  borderRadius: "2rem"
+  borderRadius: "2rem",
 }));
 const Header = styled("h2")(() => ({
   marginBottom: "0.5em",
-  textAlign: "center"
+  textAlign: "center",
 }));
 const Paragraph = styled("p")(() => ({
   marginBottom: "1.2rem",
@@ -39,7 +37,7 @@ const Paragraph = styled("p")(() => ({
   overflow: "hidden",
   textOverflow: "ellipsis",
   position: "relative",
-  paddingBottom: "7px"
+  paddingBottom: "7px",
 }));
 const Ellipsis = styled("span")(() => ({
   position: "absolute",
@@ -50,7 +48,7 @@ const Ellipsis = styled("span")(() => ({
   backgroundColor: "#43434370",
   cursor: "pointer",
   color: "white",
-  borderRadius: "3px"
+  borderRadius: "3px",
 }));
 const InputContainer = styled("div")(({ theme }) => ({
   marginBottom: "0.5rem",
@@ -58,11 +56,11 @@ const InputContainer = styled("div")(({ theme }) => ({
   flexFlow: "row",
   border: `2px solid ${theme.palette.primary.main}`,
   borderRadius: "24px",
-  backgroundColor: "white"
+  backgroundColor: "white",
 }));
 const FormContainer = styled("div")(() => ({
   display: "flex",
-  justifyContent: "center"
+  justifyContent: "center",
 }));
 const Input = styled("input")(({ theme }) => ({
   border: "none",
@@ -76,19 +74,19 @@ const Input = styled("input")(({ theme }) => ({
   padding: "0.3rem 1.2rem",
   fontSize: "1.25rem",
   "&:focus": {
-    outline: "none"
-  }
+    outline: "none",
+  },
 }));
 const Diff = styled("div")(() => ({
   marginBottom: "0.25rem",
   textAlign: "center",
   fontSize: "0.95rem",
   "& span": {
-    fontWeight: "bold"
-  }
+    fontWeight: "bold",
+  },
 }));
 const BtnContainer = styled("div")(() => ({
-  marginTop: "1.2rem"
+  marginTop: "1.2rem",
 }));
 
 const Allowance = () => {
@@ -115,17 +113,17 @@ const Allowance = () => {
       setAllowanceInfo(ALLOWANCE_INFO);
     }
   }, [truncated]);
-  const handleCurrencyChange = (value) => {
+  const handleCurrencyChange = value => {
     setCurrency(value);
   };
-  const handleSetAllowance = (e) => {
+  const handleSetAllowance = e => {
     const value = validateNumberInputs(e.target.value);
     setAllowance(value);
   };
   const handleSubmitAllowance = async () => {
     setPending(true);
     await Core.run("approve", currency, allowance)
-      .catch((err) => {
+      .catch(err => {
         console.log(err);
       })
       .finally(() => {
@@ -150,21 +148,14 @@ const Allowance = () => {
             <InputContainer>
               <CoinSelect handleCurrencyChange={handleCurrencyChange} currency={currency} />
 
-              <Input
-                type="text"
-                placeholder="0.00"
-                value={allowance}
-                onChange={handleSetAllowance}
-              />
+              <Input type="text" placeholder="0.00" value={allowance} onChange={handleSetAllowance} />
             </InputContainer>
           </FormContainer>
 
           <Diff>
             {+allowance !== +preAllowance ? (
               <div>
-                {` You're about to ${
-                  allowance > preAllowance ? "increase" : "decrease"
-                } your allowance by `}
+                {` You're about to ${allowance > preAllowance ? "increase" : "decrease"} your allowance by `}
                 <span>{Math.abs(allowance - preAllowance) || 0}</span> {currency}
               </div>
             ) : (

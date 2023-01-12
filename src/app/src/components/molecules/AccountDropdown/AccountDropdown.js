@@ -52,7 +52,7 @@ const DropdownButton = styled("div")(() => ({
   fontWeight: "bold",
   padding: "0 16px",
   marginRight: "0.25rem",
-  transition:"0.2s",
+  transitionDuration: "0.2s",
   "&:focus": {
     outline: 0,
   },
@@ -220,7 +220,7 @@ export const AccountDropdown = () => {
     setTickers(tickers);
   }, [network]);
 
-  const handleKeys = (e) => {
+  const handleKeys = e => {
     if (~[32, 13, 27].indexOf(e.which)) {
       e.preventDefault();
       setShow(!show);
@@ -252,33 +252,19 @@ export const AccountDropdown = () => {
   }
 
   return (
-    <DropdownContainer
-      onKeyDown={handleKeys}
-      onClick={(e) => e.stopPropagation()}
-      show={show}
-      tabIndex="0"
-    >
+    <DropdownContainer onKeyDown={handleKeys} onClick={e => e.stopPropagation()} show={show} tabIndex="0">
       <DropdownButton onClick={() => setShow(!show)} tabIndex="0">
         <AvatarImg src={userImage != null ? userImage : logo} alt={userName} />
         {userName}
         <AiOutlineCaretDown />
       </DropdownButton>
-      <DropdownDisplay
-        className={`${
-          windowSize.innerWidth <= "960" ? "mobile-account-dropdown" : ""
-        } `}
-        show={show}
-      >
+      <DropdownDisplay className={`${windowSize.innerWidth <= "960" ? "mobile-account-dropdown" : ""} `} show={show}>
         <DropdownHeader>
           <h3>Your Wallet</h3>{" "}
           {hasBridge && (
             <WalletToggle>
               {layers.map(({ id, name }) => (
-                <WalletToggleItem
-                  key={id}
-                  onClick={() => setSelectedLayer(id)}
-                  selected={selectedLayer === id}
-                >
+                <WalletToggleItem key={id} onClick={() => setSelectedLayer(id)} selected={selectedLayer === id}>
                   {name}
                 </WalletToggleItem>
               ))}
@@ -299,21 +285,12 @@ export const AccountDropdown = () => {
                 }
                 return (
                   <CurrencyListItem key={key}>
-                    <img
-                      className="currency-icon"
-                      src={Currencies[ticker].image.default}
-                      alt={ticker}
-                    />
+                    <img className="currency-icon" src={Currencies[ticker].image.default} alt={ticker} />
                     <div>
                       <strong>
                         {wallet[ticker]?.valueReadable} {ticker}
                       </strong>
-                      <small>
-                        $
-                        {formatUSD(
-                          coinEstimator(ticker) * wallet[ticker]?.valueReadable
-                        )}
-                      </small>
+                      <small>${formatUSD(coinEstimator(ticker) * wallet[ticker]?.valueReadable)}</small>
                     </div>
                   </CurrencyListItem>
                 );

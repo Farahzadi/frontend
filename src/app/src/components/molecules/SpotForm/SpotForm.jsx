@@ -18,6 +18,7 @@ import Currencies from "config/Currencies";
 import Core from "lib/api/Core";
 
 class SpotForm extends React.Component {
+
   constructor(props) {
     super(props);
     this.state = {
@@ -77,16 +78,12 @@ class SpotForm extends React.Component {
 
   getBaseBalance() {
     const baseCurrency = this.props.currentMarket?.split("-")[0];
-    return (
-      this.props.user.availableBalances?.[baseCurrency]?.valueReadable ?? "0"
-    );
+    return this.props.user.availableBalances?.[baseCurrency]?.valueReadable ?? "0";
   }
 
   getQuoteBalance() {
     const quoteCurrency = this.props.currentMarket?.split("-")[1];
-    return (
-      this.props.user.availableBalances?.[quoteCurrency]?.valueReadable ?? "0"
-    );
+    return this.props.user.availableBalances?.[quoteCurrency]?.valueReadable ?? "0";
   }
 
   async buySellHandler(e) {
@@ -105,9 +102,7 @@ class SpotForm extends React.Component {
     }
 
     if (sessionStorage.getItem("test") === null) {
-      toast.warning(
-        "Dear user, there is no guarantee from us for your definite performance"
-      );
+      toast.warning("Dear user, there is no guarantee from us for your definite performance");
       sessionStorage.setItem("test", true);
     }
 
@@ -149,9 +144,7 @@ class SpotForm extends React.Component {
     newstate.orderButtonDisabled = true;
     this.setState(newstate);
 
-    orderPendingToast = toast.info(
-      "Order pending. Sign or Cancel to continue..."
-    );
+    orderPendingToast = toast.info("Order pending. Sign or Cancel to continue...");
 
     // send feeType for limit order (fee method)
     try {
@@ -169,103 +162,35 @@ class SpotForm extends React.Component {
   }
 
   priceIsDisabled() {
-    return (
-      this.props.orderType === "market" ||
-      this.props.orderType === "marketOrder"
-    );
+    return this.props.orderType === "market" || this.props.orderType === "marketOrder";
   }
 
   amountPercentOfMax() {
-    if (!this.props.user.id) return 0;
+    if (!this.props.user.address) return 0;
+    const validOrderTypes = ["limit", "marketOrder", "market"];
+    const baseBalance = this.getBaseBalance();
+    const quoteBalance = this.getQuoteBalance();
+    const amount = this.state.amount ?? 0;
     let finalAmount;
-
-    if (this.props.side === "s") {
-      const baseBalance = this.getBaseBalance();
-      if (!+baseBalance) return 0;
-      const amount = this.state.amount || 0;
-      finalAmount = amount / baseBalance;
-      if (
-        this.props.orderType === "limit" ||
-        this.props.orderType === "marketOrder" ||
-        this.props.orderType === "market"
-      ) {
-        return Math.round(finalAmount * 100);
-      } else if (finalAmount < this.props.marketInfo.min_order_size) {
-        return Math.round(finalAmount * 100);
-      } else {
-        return Math.round(this.props.marketInfo.min_order_size * 100);
-      }
-    }
-    if (this.props.side === "b") {
-      const quoteBalance = this.getQuoteBalance();
-      if (!+quoteBalance) return 0;
-      const amount = this.state.amount || 0;
-      const total = amount * this.currentPrice();
-      finalAmount = total / quoteBalance;
-      if (
-        this.props.orderType === "limit" ||
-        this.props.orderType === "marketOrder" ||
-        this.props.orderType === "market"
-      ) {
-        return Math.round(finalAmount * 100);
-      } else if (finalAmount < this.props.marketInfo.min_order_size) {
-        return Math.round(finalAmount * 100);
-      } else {
-        return Math.round(this.props.marketInfo.min_order_size * 100);
-      }
+    if (!+baseBalance) return 0;
+    finalAmount = amount / (this.props.side === "s" ? baseBalance : quoteBalance);
+    if (validOrderTypes.includes(this.props.orderType)) {
+      return Math.round(finalAmount * 100);
+    } else if (finalAmount < this.props.marketInfo.min_order_size) {
+      return Math.round(finalAmount * 100);
+    } else {
+      return Math.round(this.props.marketInfo.min_order_size * 100);
     }
   }
 
   currentPrice() {
-    if (this.props.orderType === "limit" && this.state.price)
-      return this.state.price;
-
-    if (this.props.side === "b") {
-      if (
-        this.props.currentMarket === "ETH-USDT" ||
-        this.props.currentMarket === "ETH-USDC" ||
-        this.props.currentMarket === "ETH-DAI"
-      )
-        return parseFloat(
-          (this.props.lastPrice * (1 + this.props.config.swapFee)).toPrecision(
-            6
-          )
-        );
-      else {
-        return parseFloat(
-          (
-            this.props.lastPrice *
-            (1 + this.props.config.swapFee * 0.1)
-          ).toPrecision(6)
-        );
-      }
-    }
-    if (this.props.side === "s")
-      if (
-        this.props.currentMarket === "ETH-USDT" ||
-        this.props.currentMarket === "ETH-USDC" ||
-        this.props.currentMarket === "ETH-DAI"
-      )
-        return parseFloat(
-          (this.props.lastPrice * (1 - this.props.config.swapFee)).toPrecision(
-            6
-          )
-        );
-      else {
-        return parseFloat(
-          (
-            this.props.lastPrice *
-            (1 - this.props.config.swapFee * 0.1)
-          ).toPrecision(6)
-        );
-      }
-
+    if (this.props.orderType === "limit" && this.state.price) return this.state.price;
+    if (this.props.lastPrice) return +this.props.lastPrice.toPrecision(6);
     return 0;
   }
 
   marketPrice() {
-    if (this.props.orderType === "limit" && this.state.price)
-      return this.state.price;
+    if (this.props.orderType === "limit" && this.state.price) return this.state.price;
     if (this.props.orderType === "market") return this.currentPrice();
 
     let orders = Object.values(this.props.orders);
@@ -289,7 +214,7 @@ class SpotForm extends React.Component {
         }
 
         if (mOrders.length > 0) {
-          bestPrice = Math.max(...mOrders.map((order) => order.price));
+          bestPrice = Math.max(...mOrders.map(order => order.price));
           return !bestPrice ? 0 : bestPrice;
         }
       }
@@ -308,7 +233,7 @@ class SpotForm extends React.Component {
         }
 
         if (mOrders.length > 0) {
-          bestPrice = Math.min(...mOrders.map((order) => order.price));
+          bestPrice = Math.min(...mOrders.map(order => order.price));
           return !bestPrice ? 0 : bestPrice;
         }
       }
@@ -319,7 +244,6 @@ class SpotForm extends React.Component {
 
   rangeSliderHandler(e, val) {
     if (!this.props.user.address) return;
-
     Core.run("emit", "rangePrice", 0);
     const baseBalance = this.getBaseBalance();
     const baseCurrency = this.props.currentMarket.split("-")[0];
@@ -336,25 +260,16 @@ class SpotForm extends React.Component {
     }
     if (this.props.side === "s") {
       let displayAmount = (baseBalance * val) / 100;
-      displayAmount -= Currencies[baseCurrency].gasFee;
-      displayAmount = parseFloat(displayAmount.toFixed(decimals)).toPrecision(
-        7
-      );
+      displayAmount = parseFloat(displayAmount.toFixed(decimals)).toPrecision(7);
       if (displayAmount < 1e-5) {
         newstate.amount = 0;
-      } else {
-        newstate.amount = parseFloat(displayAmount.slice(0, -1));
-      }
-      if (displayAmount < 1e-5) {
         newstate.baseAmount = 0;
       } else {
+        newstate.amount = parseFloat(displayAmount.slice(0, -1));
         newstate.baseAmount = displayAmount;
       }
     } else if (this.props.side === "b") {
-      let quoteAmount =
-        ((quoteBalance - Currencies[quoteCurrency].gasFee) * val) /
-        100 /
-        this.currentPrice();
+      let quoteAmount = (quoteBalance * val) / 100;
       quoteAmount = parseFloat(quoteAmount.toFixed(decimals)).toPrecision(7);
       if (quoteAmount < 1e-5) {
         newstate.amount = 0;
@@ -373,16 +288,14 @@ class SpotForm extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     // Prevents bug where price volatility can cause buy amount to be too large
     // by refreshing a maxed out buy amount to match the new price
-    if (
-      this.props.lastPrice !== prevProps.lastPrice &&
-      this.state.maxSizeSelected
-    ) {
+    if (this.props.lastPrice !== prevProps.lastPrice && this.state.maxSizeSelected) {
       this.rangeSliderHandler(null, 100);
     }
     if (this.props.currentMarket !== prevProps.currentMarket) {
-      this.setState((state) => ({ ...state, price: "", amount: "" }));
+      this.setState(state => ({ ...state, price: "", amount: "" }));
     }
   }
+
   componentDidMount() {
     const senderOrReceiver = this.props.side === "s" ? "Receive" : "Send";
     this.setState({ orderSide: senderOrReceiver });
@@ -392,13 +305,9 @@ class SpotForm extends React.Component {
     const baseCurrency = this.props.currentMarket.split("-")[0];
     const quoteCurrency = this.props.currentMarket.split("-")[1];
     let sellWithFee = this.state.amount - this.state.amount * 0.99;
-    let buyWithFee =
-      (this.state.amount * 1.01 - this.state.amount) * this.props.lastPrice;
+    let buyWithFee = (this.state.amount * 1.01 - this.state.amount) * this.props.lastPrice;
 
-    if (
-      this.props.orderType === "limit" ||
-      this.props.orderType === "marketOrder"
-    ) {
+    if (this.props.orderType === "limit" || this.props.orderType === "marketOrder") {
       if (this.props.side === "s") {
         return (
           <div>
@@ -446,10 +355,7 @@ class SpotForm extends React.Component {
   }
 
   render() {
-    let price =
-      this.props.orderType === "market"
-        ? this.currentPrice()
-        : this.marketPrice();
+    let price = this.props.orderType === "market" ? this.currentPrice() : this.marketPrice();
     // if (price === 0) price = this.props.rangePrice;
 
     const baseCurrency = this.props.currentMarket?.split("-")[0];
@@ -533,10 +439,10 @@ class SpotForm extends React.Component {
                 this.props.orderType === "marketOrder"
                   ? "Market"
                   : !isNaN(price) && this.props.orderType !== "limit"
-                  ? price
-                  : this.props.selectedPrice > 0
-                  ? this.props.selectedPrice
-                  : this.state.price
+                    ? price
+                    : this.props.selectedPrice > 0
+                      ? this.props.selectedPrice
+                      : this.state.price
               }
               placeholder="0.0000"
               onChange={this.updatePrice.bind(this)}
@@ -553,7 +459,7 @@ class SpotForm extends React.Component {
               value={
                 this.props.orderType === "limit"
                   ? this.props.rangePrice > 0
-                    ? parseFloat(this.props.rangePrice) 
+                    ? parseFloat(this.props.rangePrice)
                     : this.state.amount
                   : this.state.amount
               }
@@ -563,10 +469,7 @@ class SpotForm extends React.Component {
             <span>{baseCurrency}</span>
           </div>
           <div className="spf_range">
-            <RangeSlider
-              value={this.amountPercentOfMax()}
-              onChange={this.rangeSliderHandler.bind(this)}
-            />
+            <RangeSlider value={this.amountPercentOfMax()} onChange={this.rangeSliderHandler.bind(this)} />
           </div>
           <div className="spot_box_footer">
             <div className="connect-btn">
@@ -578,69 +481,40 @@ class SpotForm extends React.Component {
                       {this.props.orderType === "limit" ? (
                         <>
                           {this.props.rangePrice > 0 && this.props.selectedPrice
-                            ? parseFloat(
-                                this.props.rangePrice * this.props.selectedPrice
-                              )
-                                .toFixed(2)
-                                .replace(
-                                  /([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/,
-                                  "$1"
-                                )
+                            ? parseFloat(this.props.rangePrice * this.props.selectedPrice)
+                              .toFixed(2)
+                              .replace(/([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, "$1")
                             : this.state.price || this.props.selectedPrice
-                            ? parseFloat(
-                                this.currentPrice() * this.state.baseAmount
-                              )
+                              ? parseFloat(this.currentPrice() * this.state.baseAmount)
                                 .toFixed(2)
-                                .replace(
-                                  /([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/,
-                                  "$1"
-                                )
-                            : parseFloat(0).toPrecision(6)}{" "}
+                                .replace(/([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, "$1")
+                              : parseFloat(0).toPrecision(6)}{" "}
                           {this.props.marketInfo.quote_asset_name}
                         </>
                       ) : (
                         <>
-                          {(
-                            this.props.lastPrice * this.state.baseAmount
-                          ).toPrecision(5)}{" "}
+                          {(this.props.lastPrice * this.state.baseAmount).toPrecision(5)}{" "}
                           {this.props.marketInfo.quote_asset_name}
                         </>
                       )}
                     </strong>
                   </div>
-                  {this.props.orderType === "limit" ||
-                  this.props.orderType === "marketOrder" ? (
+                  {this.props.orderType === "limit" || this.props.orderType === "marketOrder" ? (
                     <OverlayTrigger
-                      key={`top`}
+                      key={"top"}
                       placement="top"
-                      overlay={
-                        <Tooltip id={"top"}>
-                          {this.getLimitFeesDetails()}
-                        </Tooltip>
-                      }
-                    >
-                      <div key={`top`} className="spf_fee">
-                        Fees{" "}
-                        <i
-                          className="icon-question-sign"
-                        ></i>
+                      overlay={<Tooltip id={"top"}>{this.getLimitFeesDetails()}</Tooltip>}>
+                      <div key={"top"} className="spf_fee">
+                        Fees <i className="icon-question-sign"></i>
                       </div>
                     </OverlayTrigger>
                   ) : (
                     <OverlayTrigger
-                      key={`top`}
+                      key={"top"}
                       placement="top"
-                      overlay={
-                        <Tooltip id={"top"}>
-                          {this.getSwapFeesDetails()}
-                        </Tooltip>
-                      }
-                    >
-                      <div key={`top`} className="spf_fee">
-                        Fees{" "}
-                        <i
-                          className="icon-question-sign"
-                        ></i>
+                      overlay={<Tooltip id={"top"}>{this.getSwapFeesDetails()}</Tooltip>}>
+                      <div key={"top"} className="spf_fee">
+                        Fees <i className="icon-question-sign"></i>
                       </div>
                     </OverlayTrigger>
                   )}
@@ -654,8 +528,7 @@ class SpotForm extends React.Component {
                     type="button"
                     className={buySellBtnClass}
                     onClick={this.buySellHandler.bind(this)}
-                    disabled={activity}
-                  >
+                    disabled={activity}>
                     {buttonText}
                   </button>
                 </div>
@@ -675,9 +548,10 @@ class SpotForm extends React.Component {
       </>
     );
   }
+
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   config: configSelector(state),
   rangePrice: rangePriceSelector(state),
   selectedPrice: selectedPriceSelector(state),

@@ -3,6 +3,7 @@ import updownIcon from "assets/icons/up-down-arrow.png";
 import "./TradePriceBtcTable.css";
 
 class TradePriceBtcTable extends React.Component {
+
   render() {
     return (
       <>
@@ -29,25 +30,14 @@ class TradePriceBtcTable extends React.Component {
                 return (
                   <tr
                     key={i}
-                    onClick={(e) => this.props.updateMarketChain(data.market)}
-                    className={
-                      this.props.currentMarket === data.market ? "selected" : ""
-                    }
-                  >
+                    onClick={e => this.props.updateMarketChain(data.market)}
+                    className={this.props.currentMarket === data.market ? "selected" : ""}>
                     <td>
                       {data.market.replace("-", "/")}
                       <span>{data.span}</span>
                     </td>
-                    <td
-                      className={data.pctchange < 0 ? "down_value" : "up_value"}
-                    >
-                      {data.price}
-                    </td>
-                    <td
-                      className={data.pctchange < 0 ? "down_value" : "up_value"}
-                    >
-                      {data.pctchange}%
-                    </td>
+                    <td className={data.pctchange < 0 ? "down_value" : "up_value"}>{data.price}</td>
+                    <td className={data.pctchange < 0 ? "down_value" : "up_value"}>{data.pctchange}%</td>
                   </tr>
                 );
               })}
@@ -57,6 +47,7 @@ class TradePriceBtcTable extends React.Component {
       </>
     );
   }
+
 }
 
 export default TradePriceBtcTable;

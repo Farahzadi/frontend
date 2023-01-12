@@ -7,13 +7,13 @@ const DexHeader = styled("header")(({ theme }) => ({
   backgroundColor: theme.palette.secondary.dark,
   padding: "0 15px",
   [theme.breakpoints.down("md")]: {
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   justifyContent: "flex-start",
   alignItems: "center",
   position: "sticky",
   top: "0",
-  zIndex: "99"
+  zIndex: "99",
 }));
 const MainContent = styled("div")(({ show, theme }) => ({
   [theme.breakpoints.down("md")]: {
@@ -21,7 +21,7 @@ const MainContent = styled("div")(({ show, theme }) => ({
     justifyContent: "center",
     flexFlow: "column",
     transform: show ? "0" : "translateX(-250px)",
-    backgroundColor: theme.palette.secondary.dark
+    backgroundColor: theme.palette.secondary.dark,
   },
   position: "relative",
   zIndex: "999",
@@ -34,59 +34,58 @@ const MainContent = styled("div")(({ show, theme }) => ({
   justifyContent: "space-between",
   flexFlow: "row",
   alignItems: "center",
-  transition: ".3s"
+  transition: ".3s",
 }));
 const NavUl = styled("ul")(({ theme }) => ({
   display: "flex",
-  alignItems: "center",
   listStyle: "none",
   position: "relative",
   paddingInlineStart: "2rem",
   [theme.breakpoints.down("md")]: {
-    paddingInlineStart: "0"
+    paddingInlineStart: "0",
   },
   flexFlow: "row",
   alignItems: "center",
-  justifyContent: "center"
+  justifyContent: "center",
 }));
 const NavItem = styled("li")(({ theme }) => ({
   "& a": {
     color: theme.palette.text.primary,
     textDecoration: "none",
     margin: "0 10px",
-    position: "relative"
+    position: "relative",
   },
   "& a::after": {
     position: "absolute",
     bottom: "-10px",
     left: "0",
-    content: '""',
+    content: "\"\"",
     width: "0",
     height: "2px",
     backgroundColor: theme.palette.primary.main,
-    transition: "all .5s"
+    transition: "all .5s",
   },
   "& a:hover": {
-    color: "#fff !important"
+    color: "#fff !important",
   },
   "& a:hover::after": {
     width: "100%",
-    color: "#fff !important"
-  }
+    color: "#fff !important",
+  },
 }));
 const XSLogoContainer = styled("div")(() => ({
-  marginBlock: "13px"
+  marginBlock: "13px",
 }));
 const ActionBtnContainer = styled("div")(({ theme }) => ({
   flexDirection: "column",
   display: "flex",
   [theme.breakpoints.up("md")]: {
     flexDirection: "row",
-    justifyContent: "flex-end"
+    justifyContent: "flex-end",
   },
   alignItems: "center",
   flex: "0.75 1 auto",
-  justifyContent: "center"
+  justifyContent: "center",
 }));
 const NotifictionSidebar = styled("button")(({ theme }) => ({
   width: "50px",
@@ -102,13 +101,13 @@ const NotifictionSidebar = styled("button")(({ theme }) => ({
 
   "&:hover": {
     color: "#fff !important",
-    boxShadow: "0px 0px 15px 0px var(--dexpressoPrimery)"
-  }
+    boxShadow: "0px 0px 15px 0px var(--dexpressoPrimery)",
+  },
 }));
 const ResponsiveItems = styled("div")(() => ({
   display: "flex",
   width: "90px",
-  justifyContent: "space-between"
+  justifyContent: "space-between",
 }));
 const CurrencySelector = styled("div")(() => ({
   width: "37%",
@@ -116,7 +115,7 @@ const CurrencySelector = styled("div")(() => ({
   display: "flex",
   alignItems: "center",
   marginLeft: "15px",
-  borderRight: "2px solid var(--dexpressoPrimery)"
+  borderRight: "2px solid var(--dexpressoPrimery)",
 }));
 
 export {
@@ -128,5 +127,5 @@ export {
   ActionBtnContainer,
   NotifictionSidebar,
   ResponsiveItems,
-  CurrencySelector
+  CurrencySelector,
 };

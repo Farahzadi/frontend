@@ -1,7 +1,6 @@
 import React, { useCallback } from "react";
 import BridgeCurrencySelector from "../BridgeCurrencySelector/BridgeCurrencySelector";
 import { styled } from "@mui/material";
-import { flexDirection } from "@xstyled/styled-components";
 
 const BridgeInputForm = styled("div")(() => ({
   display: "flex",
@@ -22,8 +21,8 @@ const BridgeInputForm = styled("div")(() => ({
     outline: "none",
     color: "#fff",
     textAlign: "left",
-    appearance: "none"
-  }
+    appearance: "none",
+  },
 
   // .maxLink {
   //   position: absolute;
@@ -40,26 +39,36 @@ const BridgeInputForm = styled("div")(() => ({
   //   }
   // }
 }));
-const CurrencySelector = styled("div")(() => ({
-  width: "180px",
+const CurrencySelector = styled("div")(({ theme }) => ({
+  width: "230px",
   height: "55px",
   display: "flex",
   alignItems: "center",
-  marginRight: "15px"
+  marginRight: "15px",
+  [theme.breakpoints.down("md")]: {
+    width: "100%",
+    marginRight: "0",
+  },
 }));
-const BridgeInputBox = styled("div")(() => ({
+const BridgeInputBox = styled("div")(({ theme }) => ({
   display: "flex",
-  justifyContent:"space-between",
-  flexDirection:"column"
+  justifyContent: "space-between",
+  [theme.breakpoints.down("md")]: {
+    flexDirection: "column",
+  },
 }));
 const BridgeSwapInputBox = styled("div")(() => ({
   height: "100%",
-  display: "flex"
-}));
-const CurrencySelectorBox = styled("div")(() => ({
   display: "flex",
+  justifyContent: "space-between",
   flexDirection: "column",
-  justifyContent: "space-between"
+}));
+const CurrencySelectorBox = styled("div")(({ theme }) => ({
+  display: "flex",
+  justifyContent: "space-between",
+  [theme.breakpoints.down("md")]: {
+    flexDirection: "column",
+  },
 }));
 const BridgeSwapInput = ({
   value = {},
@@ -69,13 +78,10 @@ const BridgeSwapInput = ({
   balances = {},
   className,
   children,
-  availableBalanceOnSelectedSide
+  availableBalanceOnSelectedSide,
 }) => {
-  const setCurrency = useCallback((currency) => onChange({ currency, amount: "" }), [onChange]);
-  const setAmount = useCallback(
-    (e) => onChange({ amount: e.target.value.replace(/[^0-9.]/g, "") }),
-    [onChange]
-  );
+  const setCurrency = useCallback(currency => onChange({ currency, amount: "" }), [onChange]);
+  const setAmount = useCallback(e => onChange({ amount: e.target.value.replace(/[^0-9.]/g, "") }), [onChange]);
 
   let maxBalance = Number(balances?.[value.currency]?.valueReadable || 0);
   maxBalance -= 0.000105;
@@ -91,6 +97,9 @@ const BridgeSwapInput = ({
       <BridgeSwapInputBox>
         <CurrencySelectorBox>
           {children}
+          {availableBalanceOnSelectedSide}
+        </CurrencySelectorBox>
+        <BridgeInputBox>
           <CurrencySelector>
             <BridgeCurrencySelector
               currencies={currencies}
@@ -99,17 +108,8 @@ const BridgeSwapInput = ({
               value={value.currency}
             />
           </CurrencySelector>
-        </CurrencySelectorBox>
-        <BridgeInputBox>
-          {availableBalanceOnSelectedSide}
           <BridgeInputForm>
-            <input
-              onChange={setAmount}
-              value={value.amount}
-              className={className}
-              placeholder="0.00"
-              type="text"
-            />
+            <input onChange={setAmount} value={value.amount} className={className} placeholder="0.00" type="text" />
             {false && (
               <a className="maxLink" href="#max" onClick={setMax}>
                 Max

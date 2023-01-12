@@ -1,4 +1,5 @@
 class NetworkManager {
+
   networks = {
     zksyncv1: [
       "ETH-USDT",
@@ -30,6 +31,7 @@ class NetworkManager {
   has(network, market) {
     return Boolean(this.get(network)?.includes?.(market));
   }
+
 }
 
 const networkManager = new NetworkManager();

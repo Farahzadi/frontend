@@ -22,11 +22,11 @@ const OrderList = ({ orders, tabs, selectedTab, mapsFn }) => {
 
   return (
     <tbody>
-      {orders.map((order) => {
+      {orders.map(order => {
         if (!order) return null;
         return (
           <Tr key={order.id}>
-            {tabs[selectedTab].cols.map((col) => {
+            {tabs[selectedTab].cols.map(col => {
               const mapFn = tabs[selectedTab]["map"];
               const colMapFn = tabs[selectedTab]["map"][col];
               const detail = mapFn["detail"](order, network);

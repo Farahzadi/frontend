@@ -5,21 +5,17 @@ import "./SpotBox.css";
 // assets
 import SpotForm from "components/molecules/SpotForm/SpotForm";
 //actions
-import {
-  setOrderType,
-  orderTypeSelector,
-  allOrdersSelector,
-  orderSideSelector,
-} from "lib/store/features/api/apiSlice";
+import { setOrderType, orderTypeSelector, allOrdersSelector, orderSideSelector } from "lib/store/features/api/apiSlice";
 import Core from "lib/api/Core";
 
 class SpotBox extends React.Component {
+
   constructor(props) {
     super(props);
     this.state = { isBuying: false };
   }
 
-  sellOrBuy = (isBuying) => {
+  sellOrBuy = isBuying => {
     if (isBuying) {
       Core.run("emit", "orderSide", isBuying);
     }
@@ -38,18 +34,14 @@ class SpotBox extends React.Component {
   getOrders(orderSide) {
     Object.filter = (obj, predicate) =>
       Object.keys(obj)
-        .filter((key) => predicate(obj[key]))
+        .filter(key => predicate(obj[key]))
         .reduce((res, key) => {
           res[key] = obj[key];
           return res;
         }, {});
-        
+
     let filltered = this.props.user.address
-      ? Object.filter(
-          this.props.allOrders,
-          (order) =>
-            order.side === orderSide 
-        )
+      ? Object.filter(this.props.allOrders, order => order.side === orderSide)
       : "";
 
     return filltered;
@@ -68,27 +60,18 @@ class SpotBox extends React.Component {
           <div className="buy_or_sell pt-2">
             <button
               onClick={() => this.sellOrBuy(false)}
-              className={
-                "order-btn " + (!this.props.orderSide ? "order-btn-active" : "")
-              }
-            >
+              className={"order-btn " + (!this.props.orderSide ? "order-btn-active" : "")}>
               sell
             </button>
             <button
               onClick={() => this.sellOrBuy(true)}
-              className={
-                "order-btn " + (this.props.orderSide ? "order-btn-active" : "")
-              }
-            >
+              className={"order-btn " + (this.props.orderSide ? "order-btn-active" : "")}>
               buy
             </button>
           </div>
           <div className="spot_tabs">
             <div className="st_l">
-              <h2
-                className={this.orderTypeTabClassName("limit")}
-                onClick={() => this.updateOrderType("limit")}
-              >
+              <h2 className={this.orderTypeTabClassName("limit")} onClick={() => this.updateOrderType("limit")}>
                 Limit
               </h2>
               {/* <h2
@@ -99,8 +82,7 @@ class SpotBox extends React.Component {
               </h2> */}
               <h2
                 className={this.orderTypeTabClassName("marketOrder")}
-                onClick={() => this.updateOrderType("marketOrder")}
-              >
+                onClick={() => this.updateOrderType("marketOrder")}>
                 Market
               </h2>
             </div>
@@ -115,9 +97,7 @@ class SpotBox extends React.Component {
                 user={this.props.user}
                 currentMarket={this.props.currentMarket}
                 orderType={this.props.orderType}
-                activeLimitAndMarketOrders={
-                  this.props.activeLimitAndMarketOrders
-                }
+                activeLimitAndMarketOrders={this.props.activeLimitAndMarketOrders}
                 activeSwapOrdersCount={this.props.activeSwapOrdersCount}
                 liquidity={this.props.liquidity}
                 marketInfo={this.props.marketInfo}
@@ -133,9 +113,7 @@ class SpotBox extends React.Component {
                 user={this.props.user}
                 currentMarket={this.props.currentMarket}
                 orderType={this.props.orderType}
-                activeLimitAndMarketOrders={
-                  this.props.activeLimitAndMarketOrders
-                }
+                activeLimitAndMarketOrders={this.props.activeLimitAndMarketOrders}
                 activeSwapOrdersCount={this.props.activeSwapOrdersCount}
                 liquidity={this.props.liquidity}
                 marketInfo={this.props.marketInfo}
@@ -147,9 +125,10 @@ class SpotBox extends React.Component {
       </>
     );
   }
+
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   orderType: orderTypeSelector(state),
   allOrders: allOrdersSelector(state),
   orderSide: orderSideSelector(state),

@@ -2,12 +2,12 @@ import { useSelector } from "react-redux";
 import {
   arweaveAllocationSelector,
   userChainDetailsSelector,
+  userAddressSelector,
 } from "../../../lib/store/features/api/apiSlice";
 import React, { useEffect, useState } from "react";
 import { Modal } from "../../atoms/Modal";
 import Pane from "../../atoms/Pane/Pane";
 import { FaEquals, FaTimes, FaMinus } from "react-icons/all";
-import { userAddressSelector } from "../../../lib/store/features/api/apiSlice";
 import Submit from "../../atoms/Form/Submit";
 import Form from "../../atoms/Form/Form";
 import { x } from "@xstyled/styled-components";
@@ -56,27 +56,19 @@ const AllocationModal = ({ onClose, show, onSuccess, bytesToPurchase }) => {
   return (
     <Modal title={"Purchase Arweave Allocation"} show={show} onClose={onClose}>
       <x.div fontSize={14}>
-        ZigZag enables permissionless pair listings by storing your pair's
-        metadata on Arweave. You must purchase space on Arweave first.
+        ZigZag enables permissionless pair listings by storing your pair's metadata on Arweave. You must purchase space
+        on Arweave first.
       </x.div>
       <Pane size={"xs"} my={8}>
-        <x.div
-          display={"flex"}
-          justifyContent={"space-around"}
-          alignItems={"center"}
-        >
+        <x.div display={"flex"} justifyContent={"space-around"} alignItems={"center"}>
           {userHasExistingAllocation ? (
             <x.div display={"flex"} alignItems={"center"}>
               <x.div fontSize={28} mr={3}>
                 (
               </x.div>
-              <AllocationItem label={"file size"}>
-                {fileSizeKB} kB
-              </AllocationItem>
+              <AllocationItem label={"file size"}>{fileSizeKB} kB</AllocationItem>
               <FaMinus size={18} style={{ margin: "0px 10px" }} />
-              <AllocationItem label={"existing"}>
-                {arweaveAllocationKB} kB
-              </AllocationItem>
+              <AllocationItem label={"existing"}>{arweaveAllocationKB} kB</AllocationItem>
               <x.div fontSize={28} ml={3}>
                 )
               </x.div>
@@ -87,31 +79,23 @@ const AllocationModal = ({ onClose, show, onSuccess, bytesToPurchase }) => {
           <FaTimes size={18} />
           <AllocationItem label={"$/kB"}>${pricePerKB}</AllocationItem>
           <FaEquals size={18} />
-          <AllocationItem label={"total price"}>
-            ~${totalPrice.toPrecision(2)}
-          </AllocationItem>
+          <AllocationItem label={"total price"}>~${totalPrice.toPrecision(2)}</AllocationItem>
         </x.div>
       </Pane>
 
       <Form
         onSubmit={async () => {
           try {
-            const transaction = await Core.run(
-              "purchaseArweaveBytes",
-              bytesToPurchase
-            );
+            const transaction = await Core.run("purchaseArweaveBytes", bytesToPurchase);
             await transaction.awaitReceipt();
             await onSuccess();
           } catch (e) {
             console.error("Error purchasing arweave bytes", e);
             toast.error("Transaction was rejected");
           }
-        }}
-      >
+        }}>
         <Submit block isDisabled={!isUSDCBalanceSufficient}>
-          {isUSDCBalanceSufficient
-            ? "PURCHASE"
-            : `INSUFFICIENT USDC WALLET BALANCE`}
+          {isUSDCBalanceSufficient ? "PURCHASE" : "INSUFFICIENT USDC WALLET BALANCE"}
         </Submit>
       </Form>
     </Modal>

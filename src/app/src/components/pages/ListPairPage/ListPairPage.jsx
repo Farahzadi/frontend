@@ -10,12 +10,7 @@ import { x } from "@xstyled/styled-components";
 import Form from "../../atoms/Form/Form";
 import NumberInput from "../../atoms/Form/NumberInput";
 import Submit, { Button } from "../../atoms/Form/Submit";
-import {
-  forceValidation,
-  max,
-  min,
-  required,
-} from "../../atoms/Form/validation";
+import { forceValidation, max, min, required } from "../../atoms/Form/validation";
 import { jsonify } from "../../../lib/helpers/strings";
 import { Dev } from "../../../lib/helpers/env";
 import SuccessModal from "./SuccessModal";
@@ -40,13 +35,11 @@ export const TRADING_VIEW_CHART_KEY = "tradingViewChart";
 export default function ListPairPage() {
   const userChainDetails = useSelector(userChainDetailsSelector);
   const userAddress = useSelector(userAddressSelector);
-  const isUserLoggedIn =
-    userChainDetails.user_id !== null && userChainDetails.user_id !== undefined;
+  const isUserLoggedIn = userChainDetails.user_id !== null && userChainDetails.user_id !== undefined;
 
   const arweaveAllocation = useSelector(arweaveAllocationSelector);
   const arweaveAllocationKB = Number(arweaveAllocation) / 1000;
-  const [isArweaveAllocationSufficient, setIsArweaveAllocationSufficient] =
-    useState(false);
+  const [isArweaveAllocationSufficient, setIsArweaveAllocationSufficient] = useState(false);
 
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
@@ -83,7 +76,7 @@ export default function ListPairPage() {
     return Core.run("refreshArweaveAllocation", userAddress);
   };
 
-  const getAmountForTargetNotional = (price) => {
+  const getAmountForTargetNotional = price => {
     const targetUSDFeeAmount = 1;
     return (targetUSDFeeAmount / price).toFixed(6);
   };
@@ -100,8 +93,7 @@ export default function ListPairPage() {
             mt={1}
             display={"flex"}
             alignItems={"center"}
-            justifyContent={"space-between"}
-          >
+            justifyContent={"space-between"}>
             <x.div style={{ wordBreak: "break-all" }}>
               {assetFee} {symbol} = ${notional}
             </x.div>
@@ -111,10 +103,7 @@ export default function ListPairPage() {
                   ml={1}
                   variant={"secondary"}
                   size={"xs"}
-                  onClick={() =>
-                    feeSetter(getAmountForTargetNotional(assetPrice))
-                  }
-                >
+                  onClick={() => feeSetter(getAmountForTargetNotional(assetPrice))}>
                   set to $1
                 </Button>
                 <x.div />
@@ -133,11 +122,7 @@ export default function ListPairPage() {
         const { symbol } = await Core.run("getTokenInfo", baseAssetId, chainId);
         if (symbol) {
           try {
-            const { price: apiPrice } = await Core.run(
-              "getTokenPrice",
-              baseAssetId,
-              chainId
-            );
+            const { price: apiPrice } = await Core.run("getTokenPrice", baseAssetId, chainId);
             const price = Number(apiPrice);
             if (price === 0) {
               throw Error(`${symbol} price came back as 0`);
@@ -167,18 +152,10 @@ export default function ListPairPage() {
   async function getQuoteInfo(quoteAssetId, chainId) {
     if (quoteAssetId && quoteAssetId !== "") {
       try {
-        const { symbol } = await Core.run(
-          "getTokenInfo",
-          quoteAssetId,
-          chainId
-        );
+        const { symbol } = await Core.run("getTokenInfo", quoteAssetId, chainId);
         if (symbol) {
           try {
-            const { price: apiPrice } = await Core.run(
-              "getTokenPrice",
-              quoteAssetId,
-              chainId
-            );
+            const { price: apiPrice } = await Core.run("getTokenPrice", quoteAssetId, chainId);
             const price = Number(apiPrice);
             if (price === 0) {
               throw Error(`${symbol} price came back as 0`);
@@ -228,10 +205,7 @@ export default function ListPairPage() {
         }
       }
       const fileData = new TextEncoder().encode(jsonify(toFile));
-      const file = new File(
-        [fileData],
-        `${toFile.baseAssetId}-${toFile.quoteAssetId}.json`
-      );
+      const file = new File([fileData], `${toFile.baseAssetId}-${toFile.quoteAssetId}.json`);
 
       if (file.size > arweaveAllocation) {
         setFileToUpload(file);
@@ -245,13 +219,7 @@ export default function ListPairPage() {
       const message = `${userAddress}:${timestamp}`;
       try {
         const signature = await Core.run("signMessage", message);
-        const response = await Core.run(
-          "uploadArweaveFile",
-          userAddress,
-          timestamp,
-          signature,
-          file
-        );
+        const response = await Core.run("uploadArweaveFile", userAddress, timestamp, signature, file);
         setTxId(response.arweave_txid);
 
         setIsSuccessModalOpen(true);
@@ -292,8 +260,7 @@ export default function ListPairPage() {
         color={"white"}
         display={"flex"}
         alignItems={"center"}
-        justifyContent={"center"}
-      >
+        justifyContent={"center"}>
         <Pane size={"sm"} variant={"light"} maxWidth={"500px"} margin={"auto"}>
           <x.div display={"flex"} justifyContent={"space-between"} mb={4}>
             <x.div fontSize={28} mb={2}>
@@ -309,22 +276,9 @@ export default function ListPairPage() {
             </x.div>
           </x.div>
           {(baseAssetId || quoteAssetId) && (
-            <x.div
-              display={"flex"}
-              fontSize={35}
-              justifyContent={"center"}
-              my={4}
-            >
-              <x.span color={baseSymbol ? "blue-gray-400" : "blue-gray-800"}>
-                {baseSymbol ? baseSymbol : "XXX"}
-              </x.span>
-              <x.span
-                color={
-                  baseSymbol && quoteSymbol ? "blue-gray-400" : "blue-gray-800"
-                }
-              >
-                /
-              </x.span>
+            <x.div display={"flex"} fontSize={35} justifyContent={"center"} my={4}>
+              <x.span color={baseSymbol ? "blue-gray-400" : "blue-gray-800"}>{baseSymbol ? baseSymbol : "XXX"}</x.span>
+              <x.span color={baseSymbol && quoteSymbol ? "blue-gray-400" : "blue-gray-800"}>/</x.span>
               <x.span color={quoteSymbol ? "blue-gray-400" : "blue-gray-800"}>
                 {quoteSymbol ? quoteSymbol : "XXX"}
               </x.span>
@@ -340,15 +294,8 @@ export default function ListPairPage() {
               pricePrecisionDecimals: "",
               [TRADING_VIEW_CHART_KEY]: "",
             }}
-            onSubmit={onFormSubmit}
-          >
-            <x.div
-              display={"grid"}
-              gridTemplateColumns={2}
-              rowGap={5}
-              columnGap={6}
-              mb={5}
-            >
+            onSubmit={onFormSubmit}>
+            <x.div display={"grid"} gridTemplateColumns={2} rowGap={5} columnGap={6} mb={5}>
               <NumberInput
                 block
                 {...model(baseAssetId, setBaseAssetId)}
@@ -362,26 +309,15 @@ export default function ListPairPage() {
                         zigZagChainId === 1
                           ? "https://zkscan.io/explorer/tokens"
                           : "https://goerli.zkscan.io/explorer/tokens"
-                      }
-                    >
+                      }>
                       Internal ID
                     </x.a>
                   </x.span>
                 }
                 name={"baseAssetId"}
-                validate={[
-                  required,
-                  min(0),
-                  forceValidation(
-                    isBaseAssetIdInvalid,
-                    "invalid asset on zksync"
-                  ),
-                ]}
+                validate={[required, min(0), forceValidation(isBaseAssetIdInvalid, "invalid asset on zksync")]}
                 rightOfLabel={
-                  <TooltipHelper>
-                    zkSync token ID of the first asset appearing in the pair
-                    (BASE/QUOTE)
-                  </TooltipHelper>
+                  <TooltipHelper>zkSync token ID of the first asset appearing in the pair (BASE/QUOTE)</TooltipHelper>
                 }
               />
               <NumberInput
@@ -397,26 +333,15 @@ export default function ListPairPage() {
                         zigZagChainId === 1
                           ? "https://zkscan.io/explorer/tokens"
                           : "https://goerli.zkscan.io/explorer/tokens"
-                      }
-                    >
+                      }>
                       Internal ID
                     </x.a>
                   </x.span>
                 }
                 name={"quoteAssetId"}
-                validate={[
-                  required,
-                  min(0),
-                  forceValidation(
-                    isQuoteAssetIdInvalid,
-                    "invalid asset on zksync"
-                  ),
-                ]}
+                validate={[required, min(0), forceValidation(isQuoteAssetIdInvalid, "invalid asset on zksync")]}
                 rightOfLabel={
-                  <TooltipHelper>
-                    zkSync token ID of the second asset appearing in the pair
-                    (BASE/QUOTE)
-                  </TooltipHelper>
+                  <TooltipHelper>zkSync token ID of the second asset appearing in the pair (BASE/QUOTE)</TooltipHelper>
                 }
               />
               <x.div display={"flex"} flexDirection={"column"}>
@@ -424,15 +349,9 @@ export default function ListPairPage() {
                   block
                   name={"baseFee"}
                   {...model(baseFee, setBaseFee)}
-                  label={
-                    baseSymbol ? `${baseSymbol} Swap Fee` : "Base Swap Fee"
-                  }
+                  label={baseSymbol ? `${baseSymbol} Swap Fee` : "Base Swap Fee"}
                   validate={[required, min(0)]}
-                  rightOfLabel={
-                    <TooltipHelper>
-                      Swap fee collected by market makers
-                    </TooltipHelper>
-                  }
+                  rightOfLabel={<TooltipHelper>Swap fee collected by market makers</TooltipHelper>}
                 />
                 {renderFeeHint(basePrice, baseFee, baseSymbol, setBaseFee)}
               </x.div>
@@ -441,15 +360,9 @@ export default function ListPairPage() {
                   block
                   name={"quoteFee"}
                   {...model(quoteFee, setQuoteFee)}
-                  label={
-                    quoteSymbol ? `${quoteSymbol} Swap Fee` : "Quote Swap Fee"
-                  }
+                  label={quoteSymbol ? `${quoteSymbol} Swap Fee` : "Quote Swap Fee"}
                   validate={[required, min(0)]}
-                  rightOfLabel={
-                    <TooltipHelper>
-                      Swap fee collected by market makers
-                    </TooltipHelper>
-                  }
+                  rightOfLabel={<TooltipHelper>Swap fee collected by market makers</TooltipHelper>}
                 />
                 {renderFeeHint(quotePrice, quoteFee, quoteSymbol, setQuoteFee)}
               </x.div>
@@ -460,16 +373,9 @@ export default function ListPairPage() {
                 validate={[required, max(18), min(0)]}
                 rightOfLabel={
                   <TooltipHelper>
-                    <x.div>
-                      Number of decimal places in the price of the asset pair.
-                    </x.div>
+                    <x.div>Number of decimal places in the price of the asset pair.</x.div>
 
-                    <x.div
-                      display={"grid"}
-                      gridTemplateColumns={2}
-                      mt={2}
-                      gap={0}
-                    >
+                    <x.div display={"grid"} gridTemplateColumns={2} mt={2} gap={0}>
                       <x.div>ex: ETH/USDC has '2'</x.div>
                       <x.div>($3250.61)</x.div>
                       <x.div>ex: ETH/WBTC has '6'</x.div>
@@ -487,40 +393,25 @@ export default function ListPairPage() {
                   { name: "zkSync - Goerli", id: "zksyncv1_goerli" },
                 ]}
                 validate={required}
-                rightOfLabel={
-                  <TooltipHelper>
-                    zkSync network on which the pair will be listed
-                  </TooltipHelper>
-                }
+                rightOfLabel={<TooltipHelper>zkSync network on which the pair will be listed</TooltipHelper>}
               />
             </x.div>
 
             <x.div mb={4}>
-              <x.div
-                display={"flex"}
-                alignItems={"center"}
-                justifyContent={"flex-end"}
-              >
+              <x.div display={"flex"} alignItems={"center"} justifyContent={"flex-end"}>
                 <x.div fontSize={12} mr={2} color={"blue-gray-400"}>
                   advanced settings
                 </x.div>
                 <Button
                   size={"xs"}
                   variant={"secondary"}
-                  onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
-                >
+                  onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}>
                   {showAdvancedSettings ? "-" : "+"}
                 </Button>
               </x.div>
               {showAdvancedSettings && (
                 <>
-                  <x.div
-                    h={"2px"}
-                    w={"full"}
-                    bg={"blue-gray-800"}
-                    borderRadius={10}
-                    my={4}
-                  />
+                  <x.div h={"2px"} w={"full"} bg={"blue-gray-800"} borderRadius={10} my={4} />
                   <x.div display={"grid"} gridTemplateColumns={2} columnGap={6}>
                     <TextInput
                       block
@@ -528,13 +419,8 @@ export default function ListPairPage() {
                       label={"Default Chart Ticker"}
                       rightOfLabel={
                         <TooltipHelper>
-                          <x.div>
-                            Default TradingView chart to be seen on the trade
-                            page
-                          </x.div>
-                          <x.div mt={2}>
-                            (ex: show COINBASE:BTCUSD for WBTC-USD)
-                          </x.div>
+                          <x.div>Default TradingView chart to be seen on the trade page</x.div>
+                          <x.div mt={2}>(ex: show COINBASE:BTCUSD for WBTC-USD)</x.div>
                         </TooltipHelper>
                       }
                     />
@@ -544,12 +430,7 @@ export default function ListPairPage() {
             </x.div>
 
             {fileToUpload && !isArweaveAllocationSufficient && (
-              <x.div
-                display={"flex"}
-                alignItems={"center"}
-                justifyContent={"space-between"}
-                mb={4}
-              >
+              <x.div display={"flex"} alignItems={"center"} justifyContent={"space-between"} mb={4}>
                 <x.div display={"flex"} alignItems={"center"}>
                   <RiErrorWarningLine size={18} color={"red"} />
                   <x.div ml={1} fontSize={12} color={"blue-gray-400"}>
@@ -561,12 +442,7 @@ export default function ListPairPage() {
             )}
 
             <Dev>
-              <x.div
-                fontSize={12}
-                color={"blue-gray-500"}
-                mb={3}
-                textAlign={"right"}
-              >
+              <x.div fontSize={12} color={"blue-gray-500"} mb={3} textAlign={"right"}>
                 arweave allocation: {arweaveAllocationKB} kB
               </x.div>
             </Dev>
@@ -578,9 +454,7 @@ export default function ListPairPage() {
                 if (isUserConnectedToMainnet) {
                   return (
                     <Submit block mt={5}>
-                      {!isArweaveAllocationSufficient && hasAttemptedSubmit
-                        ? "PURCHASE ALLOCATION"
-                        : "LIST"}
+                      {!isArweaveAllocationSufficient && hasAttemptedSubmit ? "PURCHASE ALLOCATION" : "LIST"}
                     </Submit>
                   );
                 } else {
@@ -621,12 +495,7 @@ export default function ListPairPage() {
 const TooltipHelper = ({ children }) => {
   return (
     <Tooltip placement={"right"} label={children}>
-      <x.div
-        display={"inline-flex"}
-        color={"blue-gray-600"}
-        ml={2}
-        alignItems={"center"}
-      >
+      <x.div display={"inline-flex"} color={"blue-gray-600"} ml={2} alignItems={"center"}>
         <AiOutlineQuestionCircle size={14} />
       </x.div>
     </Tooltip>

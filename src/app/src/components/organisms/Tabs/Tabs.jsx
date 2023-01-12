@@ -11,7 +11,7 @@ const Button = styled("button")(({active, theme}) => ({
   paddingBlock: "0.5rem",
   textTransform: "uppercase",
   "&:last-child > div": {
-    border: "none"
+    border: "none",
   },
   "&:hover": {
     backgroundColor: theme.palette.secondary.main,
@@ -19,7 +19,7 @@ const Button = styled("button")(({active, theme}) => ({
   },
   "&:hover  span": {
     backgroundColor: theme.palette.primary.main,
-  }
+  },
 }));
 const Badge = styled("span")(({active, theme}) => ({
   display: "inline-block",
@@ -34,10 +34,10 @@ const InnerBlock = styled("div")(() => ({
   padding: "0 1.5rem",
   borderInlineEnd: "1px solid #b2bfc7",
 
-}))
+}));
 const Tabs = ({ items, selected, handleSelect, ordersNum }) => {
   if (!items.map) {
-    items = Object.keys(items).map(val => {return {...items[val], id: val}})
+    items = Object.keys(items).map(val => { return {...items[val], id: val}; });
   }
   return (
     <>

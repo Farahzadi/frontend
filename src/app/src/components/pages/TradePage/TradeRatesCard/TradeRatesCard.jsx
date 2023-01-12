@@ -3,14 +3,11 @@ import React from "react";
 import "./TradeRatesCard.css";
 
 class TradeRatesCard extends React.Component {
-    render() {
-        let baseCurrency = this.props.currentMarket?.split("-")[0] ?? "";
-        let quoteCurrency = this.props.currentMarket?.split("-")[1] ?? "";
-        const percentChange = (
-            (this.props.marketSummary.priceChange /
-                this.props.marketSummary.price) *
-            100
-        ).toFixed(2);
+
+  render() {
+    let baseCurrency = this.props.currentMarket?.split("-")[0] ?? "";
+    let quoteCurrency = this.props.currentMarket?.split("-")[1] ?? "";
+    const percentChange = ((this.props.marketSummary.priceChange / this.props.marketSummary.price) * 100).toFixed(2);
 
     return (
       <>
@@ -27,9 +24,7 @@ class TradeRatesCard extends React.Component {
             }>
             <h2>24h Change</h2>
             <p>
-              {!this.isMarketSummeryExist
-                ? this.props.marketSummary.priceChange + " " + percentChange + "%"
-                : "-.-"}
+              {!this.isMarketSummeryExist ? this.props.marketSummary.priceChange + " " + percentChange + "%" : "-.-"}
             </p>
           </div>
           <div className="rates_box rates_box_item">
@@ -52,6 +47,7 @@ class TradeRatesCard extends React.Component {
       </>
     );
   }
+
 }
 
 export default TradeRatesCard;
