@@ -5,7 +5,7 @@ import { getOrderDetailsWithoutFee } from "lib/utils";
 
 const translators = {
   // used for both initial orders and order updates
-  userOrder: (o) => ({
+  userOrder: o => ({
     chainId: o.network,
     id: o.id,
     market: o.market,
@@ -25,14 +25,14 @@ const translators = {
     txHash: o.tx_hash,
   }),
 
-  orderBook: (o) => ({
+  orderBook: o => ({
     price: +o.price,
     remaining: +o.unfilled,
     side: o.side,
   }),
 
   // used for both initial fills and fill updates
-  fills: (f) => ({
+  fills: f => ({
     chainId: f.network,
     id: f.id,
     market: f.market,
@@ -52,7 +52,7 @@ const translators = {
     error: f.error, // tx rejection error message
   }),
 
-  markets_config: (c) => ({
+  markets_config: c => ({
     market: c.market,
     limitEnabled: c.limit_enabled,
     swapEnabled: c.swap_nabled,
@@ -62,7 +62,7 @@ const translators = {
     minOrderSize: c.min_order_size,
   }),
 
-  markets_stats: (s) => ({
+  markets_stats: s => ({
     market: s.market,
     price: s.last_price,
     priceChange: s.change,
@@ -133,10 +133,8 @@ export const apiSlice = createSlice({
       state.lastPrices = {};
       payload.data
         .map(translators.markets_stats)
-        .filter((update) =>
-          networkManager.has(state.network.name, update.market)
-        )
-        .forEach((update) => {
+        .filter(update => networkManager.has(state.network.name, update.market))
+        .forEach(update => {
           const { market, price, priceChange: change } = update;
           state.lastPrices[market] = {
             price,
@@ -151,12 +149,9 @@ export const apiSlice = createSlice({
       state.config = payload.data.config.map(translators.markets_config)[0];
     },
     _fills_ws(state, { payload }) {
-      payload.data.map(translators.fills).forEach((fill) => {
+      payload.data.map(translators.fills).forEach(fill => {
         const fillid = fill.id;
-        if (
-          fill.market === state.currentMarket &&
-          fill.chainId === state.network.name
-        ) {
+        if (fill.market === state.currentMarket && fill.chainId === state.network.name) {
           state.marketFills[fillid] = fill;
         }
       });
@@ -164,8 +159,8 @@ export const apiSlice = createSlice({
     _user_fills(state, { payload }) {
       payload.data
         .map(translators.fills)
-        .filter((fill) => fill.chainId === state.network.name)
-        .forEach((fill) => {
+        .filter(fill => fill.chainId === state.network.name)
+        .forEach(fill => {
           state.userFills[fill.id] = {
             ...fill,
             isTaker: fill.takerUserAddress === state.user.address,
@@ -176,7 +171,7 @@ export const apiSlice = createSlice({
       apiSlice.caseReducers._user_fills(state, { payload });
     },
     _user_fills_update_ws(state, { payload }) {
-      payload.data.map(translators.fills).forEach((update) => {
+      payload.data.map(translators.fills).forEach(update => {
         let transactionHash;
         const fillId = update.id;
         const newStatus = update.status;
@@ -192,8 +187,8 @@ export const apiSlice = createSlice({
       if (!state.user.address) return;
       payload.data
         .map(translators.userOrder)
-        .filter((order) => order.chainId === state.network.name)
-        .forEach((order) => {
+        .filter(order => order.chainId === state.network.name)
+        .forEach(order => {
           if (order.userAddress === state.user.address) {
             state.userOrders[order.id] = order;
             state.unbroadcasted = order.unbroadcasted;
@@ -206,74 +201,62 @@ export const apiSlice = createSlice({
       });
     },
     _user_order_delete(state, { payload }) {
-      if (payload.data.success && state.userOrders[payload.data.id])
-        state.userOrders[payload.data.id].status = "c";
+      if (payload.data.success && state.userOrders[payload.data.id]) state.userOrders[payload.data.id].status = "c";
     },
     _user_orders_delete(state, { payload }) {
       for (const id of payload.data.ids)
-        if (payload.data.success && state.userOrders[id])
-          state.userOrders[id].status = "c";
+        if (payload.data.success && state.userOrders[id]) state.userOrders[id].status = "c";
     },
     _user_orders_update_ws(state, { payload }) {
-      payload.data.map(translators.userOrder).forEach(async (update) => {
+      payload.data.map(translators.userOrder).forEach(async update => {
         let filledOrder, partialmatchorder;
         switch (update.status) {
-          case "c":
-            if (state.userOrders[update.id])
-              state.userOrders[update.id].status = "c";
-            break;
-          case "pm":
-            partialmatchorder = state.userOrders[update.id];
-            if (update.unbroadcasted) {
-              state.unbroadcasted = update.unbroadcasted;
-            }
-            if (partialmatchorder) {
-              const remaining = update.remaining;
-              const sideText = partialmatchorder.side === "b" ? "buy" : "sell";
-              const baseCurrency = partialmatchorder.market.split("-")[0];
-              partialmatchorder.remaining = remaining;
-              partialmatchorder.status = "pm";
-              const noFeeOrder = getOrderDetailsWithoutFee(partialmatchorder);
-              toast.success(
-                `Your ${sideText} order for ${
-                  noFeeOrder.baseQuantity.toPrecision(4) / 1
-                } ${baseCurrency} @ ${
-                  noFeeOrder.price.toPrecision(4) / 1
-                } was partial match!`
-              );
-            }
-            break;
-          case "m":
-            const matchedOrder = state.userOrders[update.id];
-            if (!matchedOrder) return;
-            matchedOrder.status = "m";
-            matchedOrder.remaining = update.remaining;
-            if (
-              matchedOrder &&
-              state.user.address &&
-              matchedOrder.userAddress === state.user.address
-            ) {
-              if (!state.userOrders[matchedOrder.id])
-                state.userOrders[matchedOrder.id] = matchedOrder;
-            }
-            break;
-          case "f":
-            filledOrder = state.userOrders[update.id];
-            if (filledOrder) {
-              const sideText = filledOrder.side === "b" ? "buy" : "sell";
-              const baseCurrency = filledOrder.market.split("-")[0];
-              filledOrder.status = "f";
-              filledOrder.remaining = 0;
-              const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
-              toast.success(
-                `Your ${sideText} order for ${
-                  noFeeOrder.baseQuantity.toPrecision(4) / 1
-                } ${baseCurrency} @ ${
-                  noFeeOrder.price.toPrecision(4) / 1
-                } was filled!`
-              );
-            }
-            break;
+        case "c":
+          if (state.userOrders[update.id]) state.userOrders[update.id].status = "c";
+          break;
+        case "pm":
+          partialmatchorder = state.userOrders[update.id];
+          if (update.unbroadcasted) {
+            state.unbroadcasted = update.unbroadcasted;
+          }
+          if (partialmatchorder) {
+            const remaining = update.remaining;
+            const sideText = partialmatchorder.side === "b" ? "buy" : "sell";
+            const baseCurrency = partialmatchorder.market.split("-")[0];
+            partialmatchorder.remaining = remaining;
+            partialmatchorder.status = "pm";
+            const noFeeOrder = getOrderDetailsWithoutFee(partialmatchorder);
+            toast.success(
+              `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
+                noFeeOrder.price.toPrecision(4) / 1
+              } was partial match!`,
+            );
+          }
+          break;
+        case "m":
+          const matchedOrder = state.userOrders[update.id];
+          if (!matchedOrder) return;
+          matchedOrder.status = "m";
+          matchedOrder.remaining = update.remaining;
+          if (matchedOrder && state.user.address && matchedOrder.userAddress === state.user.address) {
+            if (!state.userOrders[matchedOrder.id]) state.userOrders[matchedOrder.id] = matchedOrder;
+          }
+          break;
+        case "f":
+          filledOrder = state.userOrders[update.id];
+          if (filledOrder) {
+            const sideText = filledOrder.side === "b" ? "buy" : "sell";
+            const baseCurrency = filledOrder.market.split("-")[0];
+            filledOrder.status = "f";
+            filledOrder.remaining = 0;
+            const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
+            toast.success(
+              `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
+                noFeeOrder.price.toPrecision(4) / 1
+              } was filled!`,
+            );
+          }
+          break;
           // case "pf":
           //   filledOrder = state.userOrders[update.id];
           //   state.orders[update.id].remaining = update.remaining;
@@ -292,53 +275,47 @@ export const apiSlice = createSlice({
           //     );
           //   }
           //   break;
-          case "b":
-            filledOrder = state.userOrders[update.id];
-            if (filledOrder) {
-              filledOrder.status = "b";
-              filledOrder.txHash = update.txHash;
-            }
-            break;
-          case "r":
-            filledOrder = state.userOrders[update.id];
-            if (filledOrder) {
-              const sideText = filledOrder.side === "b" ? "buy" : "sell";
-              const error = update.error;
-              const baseCurrency = filledOrder.market.split("-")[0];
-              filledOrder.status = "r";
-              filledOrder.txHash = update.txHash;
-              const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
-              toast.error(
-                `Your ${sideText} order for ${
-                  noFeeOrder.baseQuantity.toPrecision(4) / 1
-                } ${baseCurrency} @ ${
-                  noFeeOrder.price.toPrecision(4) / 1
-                } was rejected: ${error}`
-              );
-              toast.info(
-                `This happens occasionally. Run the transaction again and you should be fine.`
-              );
-            }
-            break;
-          case "e":
-            if (state.userOrders[update.id]) {
-              state.userOrders[update.id].status = "e";
-            }
-            break;
-          default:
-            break;
+        case "b":
+          filledOrder = state.userOrders[update.id];
+          if (filledOrder) {
+            filledOrder.status = "b";
+            filledOrder.txHash = update.txHash;
+          }
+          break;
+        case "r":
+          filledOrder = state.userOrders[update.id];
+          if (filledOrder) {
+            const sideText = filledOrder.side === "b" ? "buy" : "sell";
+            const error = update.error;
+            const baseCurrency = filledOrder.market.split("-")[0];
+            filledOrder.status = "r";
+            filledOrder.txHash = update.txHash;
+            const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
+            toast.error(
+              `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
+                noFeeOrder.price.toPrecision(4) / 1
+              } was rejected: ${error}`,
+            );
+            toast.info("This happens occasionally. Run the transaction again and you should be fine.");
+          }
+          break;
+        case "e":
+          if (state.userOrders[update.id]) {
+            state.userOrders[update.id].status = "e";
+          }
+          break;
+        default:
+          break;
         }
       });
     },
     _markets_subscription_post(state, { payload }) {},
     _markets_subscription_delete(state, { payload }) {},
     _orderbook(state, { payload }) {
-      state.orders = payload.data
-        .map(translators.orderBook)
-        .reduce((res, order) => {
-          res[order.price] = order;
-          return res;
-        }, {});
+      state.orders = payload.data.map(translators.orderBook).reduce((res, order) => {
+        res[order.price] = order;
+        return res;
+      }, {});
     },
     _orderbook_ws(state, { payload }) {
       apiSlice.caseReducers._orderbook(state, { payload });
@@ -384,7 +361,7 @@ export const apiSlice = createSlice({
     },
     clearBridgeReceipts(state, { payload }) {
       const userAddress = payload;
-      const newBridgeReceipts = state.bridgeReceipts.filter((r) => {
+      const newBridgeReceipts = state.bridgeReceipts.filter(r => {
         return r.userAddress !== userAddress;
       });
       state.bridgeReceipts = newBridgeReceipts;
@@ -404,8 +381,7 @@ export const apiSlice = createSlice({
       }
       toast.success(
         <>
-          Successfully {type === "deposit" ? "deposited" : "withdrew"} {amount}{" "}
-          {token}{" "}
+          Successfully {type === "deposit" ? "deposited" : "withdrew"} {amount} {token}{" "}
           {type === "deposit"
             ? "in your zkSync wallet"
             : "into your Ethereum wallet. Withdraws can take up to 7 hours to complete"}
@@ -420,8 +396,7 @@ export const apiSlice = createSlice({
               fontWeight: "bold",
             }}
             target="_blank"
-            rel="noreferrer"
-          >
+            rel="noreferrer">
             View transaction
           </a>
           {" • "}
@@ -433,11 +408,10 @@ export const apiSlice = createSlice({
               fontWeight: "bold",
             }}
             target="_blank"
-            rel="noreferrer"
-          >
+            rel="noreferrer">
             Bridge FAQ
           </a>
-        </>
+        </>,
       );
     },
     updateBridgeReceiptStatus(state, { payload }) {
@@ -536,40 +510,38 @@ export const {
   clearUserDetails,
 } = apiSlice.actions;
 
-export const configSelector = (state) => state.api.config;
-export const networkSelector = (state) => state.api.network.name;
-export const networkConfigSelector = (state) => state.api.network;
-export const providerStateSelector = (state) => state.api.providerState;
-export const userOrdersSelector = (state) => state.api.userOrders;
-export const userFillsSelector = (state) => state.api.userFills;
-export const allOrdersSelector = (state) => state.api.orders;
-export const marketFillsSelector = (state) => state.api.marketFills;
-export const lastPricesSelector = (state) => state.api.lastPrices;
-export const marketSummarySelector = (state) => state.api.marketSummary;
-export const marketInfoSelector = (state) => state.api.marketinfo;
-export const liquiditySelector = (state) => state.api.liquidity;
-export const currentMarketSelector = (state) => state.api.currentMarket;
-export const bridgeReceiptsSelector = (state) => state.api.bridgeReceipts;
-export const orderTypeSelector = (state) => state.api.orderType;
-export const unbroadcastedSelector = (state) => state.api.unbroadcasted;
-export const rangePriceSelector = (state) => state.api.rangePrice;
-export const orderSideSelector = (state) => state.api.orderSide;
-export const selectedPriceSelector = (state) => state.api.selectedPrice;
-export const uuidSelector = (state) => state.api.uuid;
-export const bridgeReceiptsStatusSelector = (state) =>
-  state.api.bridgeReceiptsStatus;
+export const configSelector = state => state.api.config;
+export const networkSelector = state => state.api.network.name;
+export const networkConfigSelector = state => state.api.network;
+export const providerStateSelector = state => state.api.providerState;
+export const userOrdersSelector = state => state.api.userOrders;
+export const userFillsSelector = state => state.api.userFills;
+export const allOrdersSelector = state => state.api.orders;
+export const marketFillsSelector = state => state.api.marketFills;
+export const lastPricesSelector = state => state.api.lastPrices;
+export const marketSummarySelector = state => state.api.marketSummary;
+export const marketInfoSelector = state => state.api.marketinfo;
+export const liquiditySelector = state => state.api.liquidity;
+export const currentMarketSelector = state => state.api.currentMarket;
+export const bridgeReceiptsSelector = state => state.api.bridgeReceipts;
+export const orderTypeSelector = state => state.api.orderType;
+export const unbroadcastedSelector = state => state.api.unbroadcasted;
+export const rangePriceSelector = state => state.api.rangePrice;
+export const orderSideSelector = state => state.api.orderSide;
+export const selectedPriceSelector = state => state.api.selectedPrice;
+export const uuidSelector = state => state.api.uuid;
+export const bridgeReceiptsStatusSelector = state => state.api.bridgeReceiptsStatus;
 
-export const networkListSelector = (state) => state.api.networks;
+export const networkListSelector = state => state.api.networks;
 
-export const userAddressSelector = (state) => state.api.user.address;
-export const userNameSelector = (state) => state.api.user.name;
-export const userImageSelector = (state) => state.api.user.image;
-export const userNonceSelector = (state) => state.api.user.nonce;
-export const userBalancesSelector = (state) => state.api.user.balances;
-export const userAvailableBalancesSelector = (state) =>
-  state.api.user.availableBalances;
-export const userChainDetailsSelector = (state) => state.api.user.chainDetails;
-export const userSelector = (state) => state.api.user;
+export const userAddressSelector = state => state.api.user.address;
+export const userNameSelector = state => state.api.user.name;
+export const userImageSelector = state => state.api.user.image;
+export const userNonceSelector = state => state.api.user.nonce;
+export const userBalancesSelector = state => state.api.user.balances;
+export const userAvailableBalancesSelector = state => state.api.user.availableBalances;
+export const userChainDetailsSelector = state => state.api.user.chainDetails;
+export const userSelector = state => state.api.user;
 
 export const handleMessage = createAction("api/handleMessage");
 

@@ -9,6 +9,7 @@ import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import "App.css";
 
 class App extends React.Component {
+
   render() {
     return (
       <Provider {...this.props.redux}>
@@ -18,6 +19,7 @@ class App extends React.Component {
       </Provider>
     );
   }
+
 }
 
 export default App;

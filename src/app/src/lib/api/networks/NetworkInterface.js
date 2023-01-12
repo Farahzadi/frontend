@@ -10,18 +10,15 @@ import {
   userOrdersSelector,
   userSelector,
 } from "lib/store/features/api/apiSlice";
-import {
-  formatBalances,
-  getCurrentValidUntil,
-  State,
-  toBaseUnit,
-} from "lib/utils";
+import { formatBalances, getCurrentValidUntil, State, toBaseUnit } from "lib/utils";
 import { isString } from "lodash";
 import { toast } from "react-toastify";
 import APIProvider from "../providers/APIProvider";
 
 export default class NetworkInterface {
+
   static State = class extends State {
+
     static DISCONNECTED = "DISCONNECTED";
     static PROVIDER_CONNECTING = "PROVIDER_CONNECTING";
     static PROVIDER_CONNECTED = "PROVIDER_CONNECTED";
@@ -32,6 +29,7 @@ export default class NetworkInterface {
     static PROVIDER_DISCONNECTING = "PROVIDER_DISCONNECTING";
 
     _state = "DISCONNECTED";
+
   };
 
   static Actions = [
@@ -96,10 +94,7 @@ export default class NetworkInterface {
   async connectWallet() {
     await this.disconnectWallet();
     try {
-      await Promise.all([
-        this.core.ws.uuidPromise,
-        this.startAPIProvider(),
-      ]);
+      await Promise.all([this.core.ws.uuidPromise, this.startAPIProvider()]);
       await this.signIn();
     } catch (err) {
       console.log("Wallet connection failed with error, disconnecting.", err);
@@ -122,8 +117,7 @@ export default class NetworkInterface {
     };
     const translatedState = mapping[state];
     if (translatedState) {
-      if (this.state.get() !== NetworkInterface.State.SIGNED_OUT)
-        await this.signOut();
+      if (this.state.get() !== NetworkInterface.State.SIGNED_OUT) await this.signOut();
       this.state.set(translatedState);
     }
     this.emit("providerStateChange", state);
@@ -132,9 +126,7 @@ export default class NetworkInterface {
   async startAPIProvider() {
     if (this.apiProvider) return;
     const APIProviderClass = this.getAPIProviderClass();
-    this.apiProvider = new APIProviderClass(this, (state) =>
-      this.onProviderStateChange(state)
-    );
+    this.apiProvider = new APIProviderClass(this, state => this.onProviderStateChange(state));
 
     let result;
     try {
@@ -159,12 +151,11 @@ export default class NetworkInterface {
             href="https://wallet.zksync.io/?network=goerli"
             style={{ color: "white" }}
             target="_blank"
-            rel="noreferrer"
-          >
+            rel="noreferrer">
             {" "}
             go to wallet.zksync.io
           </a>
-        </>
+        </>,
       );
       throw new Error();
     }
@@ -193,9 +184,7 @@ export default class NetworkInterface {
 
     let signature = sessionStorage.getItem(networkKey);
 
-    const shouldSign =
-      !signature ||
-      !(await this.apiProvider.verifyMessage(this.signInMessage, signature));
+    const shouldSign = !signature || !(await this.apiProvider.verifyMessage(this.signInMessage, signature));
 
     if (shouldSign) {
       sessionStorage.removeItem(networkKey);
@@ -228,8 +217,7 @@ export default class NetworkInterface {
     const state = this.state.get();
     this.shouldSignOut = false;
     if (state !== NetworkInterface.State.SIGNED_IN) {
-      if (state === NetworkInterface.State.SIGNING_IN)
-        this.shouldSignOut = true;
+      if (state === NetworkInterface.State.SIGNING_IN) this.shouldSignOut = true;
       return;
     }
     this.state.set(NetworkInterface.State.SIGNING_OUT);
@@ -272,18 +260,13 @@ export default class NetworkInterface {
   async updateAvailableBalances() {
     if (!this.getBalances()) return;
     const currencies = getNetworkCurrencies(this.NETWORK);
-    const entriesPromises = Object.entries(currencies).map(
-      async ([ticker, currency]) => [
-        ticker,
-        await this.getAvailableBalance(ticker, currency.decimals),
-      ]
-    );
+    const entriesPromises = Object.entries(currencies).map(async ([ticker, currency]) => [
+      ticker,
+      await this.getAvailableBalance(ticker, currency.decimals),
+    ]);
     const entries = await Promise.all(entriesPromises);
     const availableBalances = Object.fromEntries(entries);
-    this.userDetails.availableBalances = formatBalances(
-      availableBalances,
-      currencies
-    );
+    this.userDetails.availableBalances = formatBalances(availableBalances, currencies);
     return availableBalances;
   }
 
@@ -334,16 +317,11 @@ export default class NetworkInterface {
 
     const validStatuses = ["o", "b", "pm"];
     Object.entries(userOrdersSelector(this.getStoreState()))
-      .filter(
-        ([id, order]) =>
-          this.NETWORK === order.chainId && validStatuses.includes(order.status)
-      )
+      .filter(([id, order]) => this.NETWORK === order.chainId && validStatuses.includes(order.status))
       .forEach(([id, order]) => {
         const [base, quote] = order.market.split("-");
-        if (order.side === "b" && quote === ticker)
-          balance = balance.sub(toBaseUnit(order.quoteQuantity, decimals));
-        if (order.side === "s" && base === ticker)
-          balance = balance.sub(toBaseUnit(order.baseQuantity, decimals));
+        if (order.side === "b" && quote === ticker) balance = balance.sub(toBaseUnit(order.quoteQuantity, decimals));
+        if (order.side === "s" && base === ticker) balance = balance.sub(toBaseUnit(order.baseQuantity, decimals));
       });
     return giveDecimal ? balance : balance.toFixed(0);
   }
@@ -377,10 +355,7 @@ export default class NetworkInterface {
 
       const currencies = getNetworkCurrencies(this.NETWORK);
       const [baseCurrency, quoteCurrency] = market.split("-");
-      const [baseDecimals, quoteDecimals] = [
-        currencies[baseCurrency].decimals,
-        currencies[quoteCurrency].decimals,
-      ];
+      const [baseDecimals, quoteDecimals] = [currencies[baseCurrency].decimals, currencies[quoteCurrency].decimals];
       const [baseTokenAddress, quoteTokenAddress] = [
         currencies[baseCurrency].info.contract,
         currencies[quoteCurrency].info.contract,
@@ -394,45 +369,34 @@ export default class NetworkInterface {
       let unitPrice;
       try {
         price = new Decimal(price);
-        unitPrice = Decimal.mul(price, Decimal.pow(10, quoteDecimals - baseDecimals))
+        unitPrice = Decimal.mul(price, Decimal.pow(10, quoteDecimals - baseDecimals));
       } catch (err) {
         throw new VError("Invalid price");
       }
-      if (price.eq(0)) throw new VError(type === "l" ? "Price should not be equal to 0" : "There is no orders in the orderbook to match");
+      if (price.eq(0))
+        throw new VError(
+          type === "l" ? "Price should not be equal to 0" : "There is no orders in the orderbook to match",
+        );
 
       if (side === "buy") side = "b";
       if (side === "sell") side = "s";
-      if (!isString(side) || !["b", "s"].includes(side))
-        throw new VError("Invalid side");
+      if (!isString(side) || !["b", "s"].includes(side)) throw new VError("Invalid side");
 
       const [buyTokenAddress, sellTokenAddress] =
-        side === "b"
-          ? [baseTokenAddress, quoteTokenAddress]
-          : [quoteTokenAddress, baseTokenAddress];
+        side === "b" ? [baseTokenAddress, quoteTokenAddress] : [quoteTokenAddress, baseTokenAddress];
 
-      if (!isString(type) || !["l", "m"].includes(type))
-        throw new VError("Invalid order type");
+      if (!isString(type) || !["l", "m"].includes(type)) throw new VError("Invalid order type");
 
       await this.updateBalances();
 
-      const baseBalance = await this.getAvailableBalance(
-        baseCurrency,
-        baseDecimals,
-        true
-      );
-      const quoteBalance = await this.getAvailableBalance(
-        quoteCurrency,
-        quoteDecimals,
-        true
-      );
+      const baseBalance = await this.getAvailableBalance(baseCurrency, baseDecimals, true);
+      const quoteBalance = await this.getAvailableBalance(quoteCurrency, quoteDecimals, true);
 
       const state = this.getStoreState();
 
       try {
         if (this.HAS_CONTRACT) {
-          const selectedNet = networkListSelector(state).find(
-            (net) => net.network === this.NETWORK
-          );
+          const selectedNet = networkListSelector(state).find(net => net.network === this.NETWORK);
           fee = Decimal.div(selectedNet.maxFeeRatio, 1000);
         } else {
           fee = new Decimal(configSelector(state).takerFee);
@@ -443,31 +407,22 @@ export default class NetworkInterface {
         throw new VError("Invalid fee");
       }
 
-      if (side === "s" && baseBalance.lt(amount))
-        throw new VError(`Amount exceeds ${baseCurrency} balance`);
+      if (side === "s" && baseBalance.lt(amount)) throw new VError(`Amount exceeds ${baseCurrency} balance`);
       if (side === "b" && quoteBalance.lt(amount.mul(unitPrice)))
         throw new VError(`Total exceeds ${quoteCurrency} balance`);
 
-      const minOrderSize = new Decimal(
-        toBaseUnit(configSelector(state).minOrderSize, baseDecimals)
-      );
+      const minOrderSize = new Decimal(toBaseUnit(configSelector(state).minOrderSize, baseDecimals));
       if (amount.lt(minOrderSize))
         throw new VError(
-          `Minimum order size is ${minOrderSize
-            .div(Decimal.pow(10, baseDecimals))
-            .toFixed()} ${baseCurrency}`
+          `Minimum order size is ${minOrderSize.div(Decimal.pow(10, baseDecimals)).toFixed()} ${baseCurrency}`,
         );
 
-      const lastPrice = new Decimal(
-        lastPricesSelector(state)[market]?.price ?? price
-      );
+      const lastPrice = new Decimal(lastPricesSelector(state)[market]?.price ?? price);
 
       const warnings = [];
 
-      if (price.gt(lastPrice.mul(1.2)))
-        warnings.push("Price is 20% above the spot");
-      if (price.lt(lastPrice.mul(0.8)))
-        warnings.push("Price is 20% lower than the spot");
+      if (price.gt(lastPrice.mul(1.2))) warnings.push("Price is 20% above the spot");
+      if (price.lt(lastPrice.mul(0.8))) warnings.push("Price is 20% lower than the spot");
 
       const ratio = this.getRatio(price.toFixed(), baseDecimals, quoteDecimals);
 
@@ -498,17 +453,7 @@ export default class NetworkInterface {
     }
   }
 
-  async prepareOrder({
-    market,
-    amount,
-    price,
-    side,
-    buyTokenAddress,
-    sellTokenAddress,
-    fee,
-    type,
-    validUntil,
-  }) {
+  async prepareOrder({ market, amount, price, side, buyTokenAddress, sellTokenAddress, fee, type, validUntil }) {
     const tx = await this.apiProvider.signOrder({
       market,
       side,
@@ -549,4 +494,5 @@ export default class NetworkInterface {
       quote: useToBase ? toBaseUnit(price, quoteDecimals) : price,
     };
   }
+
 }

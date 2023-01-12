@@ -5,7 +5,7 @@ import TradingViewWidget, { Themes } from "react-tradingview-widget";
 // css
 import "./TradeChart.css";
 
-export const TradeChart = (props) => {
+export const TradeChart = props => {
   return (
     props.currentMarket && (
       <TradingViewWidget

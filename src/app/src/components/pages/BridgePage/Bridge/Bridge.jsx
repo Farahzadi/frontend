@@ -6,7 +6,7 @@ import {
   userChainDetailsSelector,
   userAddressSelector,
   userBalancesSelector,
-  networkConfigSelector
+  networkConfigSelector,
 } from "lib/store/features/api/apiSlice";
 import Loader from "react-loader-spinner";
 import ethLogo from "assets/images/currency/ETH.svg";
@@ -25,7 +25,7 @@ import TimeIcon from "assets/icons/clock.png";
 import Core from "lib/api/Core";
 
 const defaultTransfer = {
-  type: "deposit"
+  type: "deposit",
 };
 
 const Bridge = () => {
@@ -51,7 +51,7 @@ const Bridge = () => {
   const [windowSize, setWindowSize] = useState(getWindowSize());
   const [swapDetails, _setSwapDetails] = useState(() => ({
     amount: "",
-    currency: "ETH"
+    currency: "ETH",
   }));
   const currencies = useMemo(() => null, [transfer.type]);
   const coinEstimator = useCoinEstimator();
@@ -63,6 +63,48 @@ const Bridge = () => {
 
   let L1Balances = userL1Balances;
   let L2Balances = userBalances;
+
+  const setSwapDetails = values => {
+    const details = {
+      ...swapDetails,
+      ...values,
+    };
+
+    _setSwapDetails(details);
+
+    const setFee = bridgeFee => {
+      setBridgeFee(bridgeFee);
+
+      const bals = transfer.type === "deposit" ? L1Balances : L2Balances;
+      const detailBalance = Number(bals?.[details.currency]?.valueReadable ?? 0);
+      const input = Number(details.amount || 0);
+      if (input > 0) {
+        if (input < 0.001) {
+          setFormErr("Must be at least 0.001");
+        } else if (input <= activationFee) {
+          setFormErr(`Must be more than ${activationFee} ${swapDetails.currency}`);
+        } else if (input > detailBalance - Number(bridgeFee)) {
+          setFormErr("Insufficient balance");
+        } else {
+          setFormErr("");
+        }
+      } else {
+        setFormErr("");
+      }
+    };
+
+    if (userAddress && transfer.type === "withdraw") {
+      setFee(null);
+      Core.run("withdrawL2Fee", details.currency)
+        .then(fee => setFee(fee))
+        .catch(err => {
+          console.log(err);
+          setFee(null);
+        });
+    } else {
+      setFee(0);
+    }
+  };
 
   useEffect(() => {
     if (fromNetwork.from.key === "zksync") {
@@ -115,50 +157,9 @@ const Bridge = () => {
       window.removeEventListener("resize", handleWindowResize);
     };
   }, []);
-  const setSwapDetails = (values) => {
-    const details = {
-      ...swapDetails,
-      ...values
-    };
 
-    _setSwapDetails(details);
-
-    const setFee = (bridgeFee) => {
-      setBridgeFee(bridgeFee);
-
-      const bals = transfer.type === "deposit" ? L1Balances : L2Balances;
-      const detailBalance = Number(bals?.[details.currency]?.valueReadable ?? 0);
-      const input = Number(details.amount || 0);
-      if (input > 0) {
-        if (input < 0.001) {
-          setFormErr("Must be at least 0.001");
-        } else if (input <= activationFee) {
-          setFormErr(`Must be more than ${activationFee} ${swapDetails.currency}`);
-        } else if (input > detailBalance - Number(bridgeFee)) {
-          setFormErr("Insufficient balance");
-        } else {
-          setFormErr("");
-        }
-      } else {
-        setFormErr("");
-      }
-    };
-
-    if (userAddress && transfer.type === "withdraw") {
-      setFee(null);
-      Core.run("withdrawL2Fee", details.currency)
-        .then((fee) => setFee(fee))
-        .catch((err) => {
-          console.log(err);
-          setFee(null);
-        });
-    } else {
-      setFee(0);
-    }
-  };
-
-  const switchTransferType = (e) => {
-    const f = networks.find((i) => i.from.key === toNetwork.key);
+  const switchTransferType = e => {
+    const f = networks.find(i => i.from.key === toNetwork.key);
     setFromNetwork(f);
     setToNetwork(fromNetwork.from);
     setSwitchClicking(true);
@@ -166,7 +167,7 @@ const Bridge = () => {
   };
 
   const disconnect = () => {
-    Core.run("disconnectWallet").catch((err) => console.log(err));
+    Core.run("disconnectWallet").catch(err => console.log(err));
   };
 
   const ethLayer1Header = (
@@ -182,7 +183,7 @@ const Bridge = () => {
 
   const zkSyncLayer2Header = (
     <div className="bridge_coin_details ">
-      <p className={` `}>zkSync(V1) L2</p>
+      <p className={" "}>zkSync(V1) L2</p>
     </div>
   );
   const zkSyncLayer2HeaderDetails = (
@@ -199,26 +200,25 @@ const Bridge = () => {
   // );
   const hasError = formErr && formErr.length > 0;
 
-  const approveSpend = (e) => {
+  const approveSpend = e => {
     if (e) e.preventDefault();
     setApproving(true);
     Core.run("approveL1", swapDetails.currency)
       .then(() => {
         setApproving(false);
       })
-      .catch((err) => {
+      .catch(err => {
         console.log(err);
         setApproving(false);
       });
   };
 
-  const doTransfer = async (e) => {
+  const doTransfer = async e => {
     e.preventDefault();
 
     setLoading(true);
 
-    if (transfer.type === "deposit")
-      await Core.run("depositL2", swapDetails.amount, swapDetails.currency);
+    if (transfer.type === "deposit") await Core.run("depositL2", swapDetails.amount, swapDetails.currency);
     else await Core.run("withdrawL2", swapDetails.amount, swapDetails.currency);
 
     setLoading(false);
@@ -242,21 +242,14 @@ const Bridge = () => {
   return (
     <>
       <div className="bridge_lables-btn">
-        <button
-          onClick={() => setShowBridge(true)}
-          className={showBridge ? "bridge_lables-btn__active" : ""}>
+        <button onClick={() => setShowBridge(true)} className={showBridge ? "bridge_lables-btn__active" : ""}>
           BRIDGE
         </button>
-        <button
-          onClick={() => setShowBridge(false)}
-          className={!showBridge ? "bridge_lables-btn__active" : ""}>
+        <button onClick={() => setShowBridge(false)} className={!showBridge ? "bridge_lables-btn__active" : ""}>
           recepits
         </button>
       </div>
-      <div
-        className={`bridge_container ${
-          showBridge || "960" <= windowSize.innerWidth ? "d-flex" : "d-none"
-        }`}>
+      <div className={`bridge_container ${showBridge || "960" <= windowSize.innerWidth ? "d-flex" : "d-none"}`}>
         <div className="bridge_box_parent ">
           <div className="bridge_box">
             <div className="bridge_box_top">
@@ -301,10 +294,7 @@ const Bridge = () => {
                     <div className="currencyName-box">
                       <div className="currencyName-selected">
                         <div className="bridge_coin_image" style={{ background: "#fff" }}>
-                          <img
-                            alt="Ethereum logo"
-                            src={Currencies[swapDetails.currency.toString()].image.default}
-                          />
+                          <img alt="Ethereum logo" src={Currencies[swapDetails.currency.toString()].image.default} />
                         </div>
                         <div className="currencyName">{swapDetails.currency}</div>
                       </div>
@@ -331,9 +321,7 @@ const Bridge = () => {
                         <Loader type="TailSpin" color="#444" height={16} width={16} />
                       </div>
                     ) : (
-                      <div className="fee_container">
-                        {transfer.type === "withdraw" ? bridgeFee : "0.000105"}
-                      </div>
+                      <div className="fee_container">{transfer.type === "withdraw" ? bridgeFee : "0.000105"}</div>
                     )}
                     {transfer.type === "withdraw" ? swapDetails.currency : "ETH"}
                   </b>
@@ -349,10 +337,7 @@ const Bridge = () => {
           </div>
         </div>
       </div>
-      <div
-        className={`${!showBridge ? "d-block" : "d-none"} ${
-          windowSize.innerWidth >= "960" ? "d-none" : ""
-        } `}>
+      <div className={`${!showBridge ? "d-block" : "d-none"} ${windowSize.innerWidth >= "960" ? "d-none" : ""} `}>
         <BridgeReceipts ReceiptsHeight="true" />
       </div>
     </>

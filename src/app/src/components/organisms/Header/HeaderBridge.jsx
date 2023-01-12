@@ -8,18 +8,18 @@ import logo from "assets/images/LogoMarkCremeLight.svg";
 import "./Header.css";
 import Core from "lib/api/Core";
 
-export const HeaderBridge = (props) => {
+export const HeaderBridge = props => {
   // state to open or close the sidebar in mobile
   const network = useSelector(networkSelector);
 
   const [, bridgeLink] = useMemo(() => {
     switch (network) {
-      case "zksyncv1":
-        return ["https://wallet.zksync.io/", "/bridge"];
-      case "zksyncv1_goerli":
-        return ["https://Goerli.zksync.io/", "/bridge"];
-      default:
-        return [];
+    case "zksyncv1":
+      return ["https://wallet.zksync.io/", "/bridge"];
+    case "zksyncv1_goerli":
+      return ["https://Goerli.zksync.io/", "/bridge"];
+    default:
+      return [];
     }
   }, [network]);
 
@@ -39,11 +39,7 @@ export const HeaderBridge = (props) => {
               </li>
               <li>
                 {bridgeLink ? (
-                  <NavLink
-                    exact
-                    to={bridgeLink || ""}
-                    activeClassName="active_link"
-                  >
+                  <NavLink exact to={bridgeLink || ""} activeClassName="active_link">
                     Bridge
                   </NavLink>
                 ) : (
@@ -57,11 +53,10 @@ export const HeaderBridge = (props) => {
               <select
                 id="networkSelector"
                 value={network.toString()}
-                onChange={async (e) => {
+                onChange={async e => {
                   const network = e.target.value;
                   await Core.run("setNetwork", network);
-                }}
-              >
+                }}>
                 {/* uncomment this for mainnet test */}
                 {/* <option value="zksyncv1">zkSync - Mainnet</option> */}
                 <option value="zksyncv1_goerli">zkSync - Goerli</option>

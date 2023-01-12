@@ -5,6 +5,7 @@ import { Button } from "../Button";
 import "./Modal.css";
 
 export class ModalComponent extends React.Component {
+
   constructor() {
     super();
     // this.resetState();
@@ -16,8 +17,8 @@ export class ModalComponent extends React.Component {
       cancelText: "Cancel",
       proceed: undefined,
       proceedText: "OK",
-      cancel: undefined
-    }
+      cancel: undefined,
+    };
   }
 
   resetState = () => {
@@ -29,11 +30,11 @@ export class ModalComponent extends React.Component {
       cancelText: "Cancel",
       proceed: undefined,
       proceedText: "OK",
-      cancel: undefined
+      cancel: undefined,
     });
   };
 
-  onEscapeKeyDown = (e) => {
+  onEscapeKeyDown = e => {
     if ((e.charCode || e.keyCode) === 27) this.cancel();
   };
 
@@ -45,7 +46,7 @@ export class ModalComponent extends React.Component {
     document.body.removeEventListener("keydown", this.onEscapeKeyDown);
   }
 
-  updateState = (data) => {
+  updateState = data => {
     this.setState(data);
   };
 
@@ -72,7 +73,7 @@ export class ModalComponent extends React.Component {
     return ReactDOM.createPortal(
       <CSSTransition in={show} unmountOnExit timeout={{ enter: 0, exit: 300 }}>
         <div className="dex_modal" onClick={this.cancel}>
-          <div className="dex_modal_content" onClick={(e) => e.stopPropagation()}>
+          <div className="dex_modal_content" onClick={e => e.stopPropagation()}>
             {title && (
               <div className="dex_modal_header">
                 <h4 className="dex_modal_title">{title}</h4>
@@ -85,20 +86,15 @@ export class ModalComponent extends React.Component {
             </div>
             {proceed && (
               <div className="dex_modal_action_footer">
-                <Button
-                  className={"btn_danger normal_btn"}
-                  text={cancelText}
-                  onClick={this.cancel}></Button>
-                <Button
-                  className={"btn_success normal_btn"}
-                  text={proceedText}
-                  onClick={this.proceed}></Button>
+                <Button className={"btn_danger normal_btn"} text={cancelText} onClick={this.cancel}></Button>
+                <Button className={"btn_success normal_btn"} text={proceedText} onClick={this.proceed}></Button>
               </div>
             )}
           </div>
         </div>
       </CSSTransition>,
-      document.getElementById("root")
+      document.getElementById("root"),
     );
   }
+
 }

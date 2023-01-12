@@ -6,6 +6,7 @@ import { getAppConfig } from ".";
 const DEFAULT_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK;
 
 export default class Core extends Emitter {
+
   static instance = null;
   static init(config) {
     this.instance = new Core(config);
@@ -39,13 +40,7 @@ export default class Core extends Emitter {
   _profiles = {};
   lastSocketOpenState = false;
 
-  constructor({
-    infuraId,
-    websocketUrl,
-    apiUrl,
-    networkClasses,
-    signInMessage,
-  }) {
+  constructor({ infuraId, websocketUrl, apiUrl, networkClasses, signInMessage }) {
     super();
 
     this.networkClasses = networkClasses;
@@ -120,7 +115,7 @@ export default class Core extends Emitter {
           this.lastSocketOpenState = false;
           this.start();
         },
-        this.lastSocketOpenState ? 0 : 8000
+        this.lastSocketOpenState ? 0 : 8000,
       );
     }
   }
@@ -145,7 +140,7 @@ export default class Core extends Emitter {
     });
     this.ws.addEventListener("open", () => this._socketOpen());
     this.ws.addEventListener("close", () => this._socketClose());
-    this.ws.addEventListener("message", (e) => this._socketMsg(e));
+    this.ws.addEventListener("message", e => this._socketMsg(e));
     this.emit("start");
   }
 
@@ -183,18 +178,14 @@ export default class Core extends Emitter {
       },
       params: !hasBody && data,
     };
-    await axios[method || "get"](
-      fullUrl,
-      hasBody ? finalData : config,
-      hasBody && config
-    )
-      .then(async (res) => {
+    await axios[method || "get"](fullUrl, hasBody ? finalData : config, hasBody && config)
+      .then(async res => {
         const path = url.replaceAll("/", "_") + "_" + method;
         const payload = res.data;
         const result = await this.apiHandlers[path]?.(payload);
         this.emit("message", path, { data: payload, handlerResult: result });
       })
-      .catch((error) => {
+      .catch(error => {
         // TODO
         if (error.response) {
           // The request was made and the server responded with a status code
@@ -202,13 +193,12 @@ export default class Core extends Emitter {
           console.log(
             "API Error",
             error.response.status,
-            (error.response.data.error && error.response.data.message) ||
-              error.message
+            (error.response.data.error && error.response.data.message) || error.message,
           );
           toast.error(
             `API Error ${error.response.status}: ${
               (error.response.data.error && error.response.data.message) || error.message
-            }`
+            }`,
           );
           // console.log("status", error.response.status);
           // console.log("headers", error.response.headers);
@@ -264,7 +254,7 @@ export default class Core extends Emitter {
       {
         id: orderId,
       },
-      true
+      true,
     );
   }
 
@@ -276,7 +266,7 @@ export default class Core extends Emitter {
         market: undefined,
         side: undefined,
       },
-      true
+      true,
     );
     return true;
   }
@@ -318,12 +308,12 @@ export default class Core extends Emitter {
         price: data.price,
         type: data.type,
       },
-      true
+      true,
     );
   }
 
   getNetworks() {
-    this.axiosInstance.get("/networks").then((res) => {
+    this.axiosInstance.get("/networks").then(res => {
       this.emit("setNetworkList", res.data.networks);
     });
   }
@@ -332,7 +322,7 @@ export default class Core extends Emitter {
     try {
       return require(`assets/images/currency/${currency}.svg`);
     } catch (e) {
-      return require(`assets/images/currency/ZZ.webp`);
+      return require("assets/images/currency/ZZ.webp");
     }
   }
 
@@ -341,11 +331,11 @@ export default class Core extends Emitter {
   }
 
   apiHandlers = {
-    connected_ws: (payload) => {
+    connected_ws: payload => {
       this.ws.uuid = payload.uuid;
       this.ws.uuidPromiseResolve?.();
     },
-    login_post: (payload) => {
+    login_post: payload => {
       sessionStorage.setItem("access_token", payload.access_token);
     },
   };
@@ -364,4 +354,5 @@ export default class Core extends Emitter {
   static getInstance() {
     return this.instance;
   }
+
 }

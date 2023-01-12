@@ -656,15 +656,14 @@
     width: 100%;
     margin: 0;
   }
-  .bridge_coin_top{
+  .bridge_coin_top {
     flex-direction: column;
   }
   .bridge_bottom_form__right {
     flex-direction: column;
     justify-content: space-between;
   }
-  .currencyName-box{
+  .currencyName-box {
     width: 100%;
   }
-  
 }

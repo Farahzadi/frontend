@@ -19,14 +19,11 @@ export function* messageHandlerSaga(core) {
 export function* userPollingSaga(core) {
   const STEPS_TO_UPDATE_USER_CHAIN_DETAILS = 3;
   for (let i = 0; ; i = (i + 1) % STEPS_TO_UPDATE_USER_CHAIN_DETAILS) {
-    const shouldUpdateUserChainDetails =
-      i % STEPS_TO_UPDATE_USER_CHAIN_DETAILS === 0;
+    const shouldUpdateUserChainDetails = i % STEPS_TO_UPDATE_USER_CHAIN_DETAILS === 0;
     try {
       yield all([
         apply(core, core.run, ["updateUserBalancesState", true]),
-        ...(shouldUpdateUserChainDetails
-          ? [apply(core, core.run, ["updateUserChainDetailsState", true])]
-          : []),
+        ...(shouldUpdateUserChainDetails ? [apply(core, core.run, ["updateUserChainDetailsState", true])] : []),
       ]);
     } catch (err) {
       console.log("Error: Core balances and chain details update error:", err);
@@ -38,7 +35,7 @@ export function* userPollingSaga(core) {
 function* handleHydration({ payload, key }, core) {
   if (key === "api") {
     if (payload && payload.network) {
-      const user = yield select((state) => state.api?.user);
+      const user = yield select(state => state.api?.user);
       yield apply(core, core.run, ["setNetwork", payload.network.name]);
 
       if (user?.address) {
@@ -50,10 +47,7 @@ function* handleHydration({ payload, key }, core) {
       }
     } else {
       console.log(`Switching to default network "${DEFAULT_NETWORK}"`);
-      yield apply(core, core.run, [
-        "setNetwork",
-        DEFAULT_NETWORK ?? "ethereum",
-      ]);
+      yield apply(core, core.run, ["setNetwork", DEFAULT_NETWORK ?? "ethereum"]);
     }
   }
 }
@@ -65,9 +59,5 @@ export function* hydrationHandlerSaga(core) {
 }
 
 export default function* apiSaga(core) {
-  yield all([
-    userPollingSaga(core),
-    messageHandlerSaga(core),
-    hydrationHandlerSaga(core),
-  ]);
+  yield all([userPollingSaga(core), messageHandlerSaga(core), hydrationHandlerSaga(core)]);
 }

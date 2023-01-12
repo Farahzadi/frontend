@@ -13,14 +13,14 @@ export const NotificationDrawer = () => {
   const [right, setRight] = useState(false);
   const [notifData, setnotifData] = useState(["error", "warning", "info", "success"]);
 
-  const toggleDrawer = (open) => (event) => {
+  const toggleDrawer = open => event => {
     if (event && event.type === "keydown" && (event.key === "Tab" || event.key === "Shift")) {
       return;
     }
     setRight(open);
   };
-  const deletNotif = (deleteNotifData) => {
-    const temp = notifData.filter((t) => {
+  const deletNotif = deleteNotifData => {
+    const temp = notifData.filter(t => {
       // console.log(t===deleteNotifData);
 
       return t !== deleteNotifData;
@@ -35,10 +35,10 @@ export const NotificationDrawer = () => {
     minHeight: "70px",
     borderRadius: "14px",
     color: "#000",
-    border: 0
+    border: 0,
   };
 
-  const list = (anchor) => (
+  const list = anchor => (
     <Box sx={{ width: 350 }} role="presentation">
       <List sx={{ borderColor: "red" }}>
         <h5>Notifications</h5>
@@ -49,8 +49,8 @@ export const NotificationDrawer = () => {
             <ListItemButton
               sx={{
                 "&:hover": {
-                  bgcolor: "#0c2347"
-                }
+                  bgcolor: "#0c2347",
+                },
               }}>
               <ListItemText>
                 {/* <NotifictionCard> */}

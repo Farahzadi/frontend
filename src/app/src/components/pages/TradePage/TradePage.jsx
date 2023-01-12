@@ -24,7 +24,7 @@ import {
   currentMarketSelector,
   setCurrentMarket,
   uuidSelector,
-  userSelector
+  userSelector,
 } from "lib/store/features/api/apiSlice";
 import "./style.css";
 import { getFillDetailsWithoutFee } from "lib/utils";
@@ -75,16 +75,16 @@ const TradePage = () => {
   //     Core.run("connectWallet");
   // }, [uuid, network, providerState]);
 
-  const updateMarketChain = (market) => {
+  const updateMarketChain = market => {
     dispatch(setCurrentMarket(market));
   };
 
-  const updateMarketForPriceTable = (market) => {
+  const updateMarketForPriceTable = market => {
     dispatch(setCurrentMarket(market));
     window.scrollTo(0, 0);
   };
 
-  Object.keys(lastPrices).forEach((market) => {
+  Object.keys(lastPrices).forEach(market => {
     //change this feild when NBX token is create
     if (market !== "DAI-USDT") {
       markets.push(market);
@@ -101,11 +101,11 @@ const TradePage = () => {
   //There's a bunch of user trades in this list that are too old to display
   const fillData = [];
   const liveOrderStatuses = ["e", "r", "c"];
-  const maxFillId = Math.max(...Object.values(marketFills).map((f) => f.id));
+  const maxFillId = Math.max(...Object.values(marketFills).map(f => f.id));
   Object.values(marketFills)
-    .filter((fill) => fill.id > maxFillId - 500)
+    .filter(fill => fill.id > maxFillId - 500)
     .sort((a, b) => b.id - a.id)
-    .forEach((fill) => {
+    .forEach(fill => {
       if (!liveOrderStatuses.includes(fill.status)) {
         const fillWithoutFee = getFillDetailsWithoutFee(fill);
         fillData.push({
@@ -113,7 +113,7 @@ const TradePage = () => {
           remaining: fillWithoutFee.baseQuantity,
           quoteQuantity: fillWithoutFee.quoteQuantity,
           side: fill.takerSide,
-          time: fillWithoutFee.time
+          time: fillWithoutFee.time,
         });
       }
     });
@@ -135,23 +135,23 @@ const TradePage = () => {
   const askBins =
     allOrders !== {}
       ? Object.values(allOrders)
-          .filter((order) => order.side === "s")
-          .reverse()
+        .filter(order => order.side === "s")
+        .reverse()
       : [];
 
   const bidBins =
     allOrders !== {}
       ? Object.values(allOrders)
-          .filter((order) => order.side === "b")
-          .reverse()
+        .filter(order => order.side === "b")
+        .reverse()
       : [];
 
   const activeLimitAndMarketOrders = Object.values(userOrders).filter(
-    (order) => activeOrderStatuses.includes(order.status) && order.type === "l"
+    order => activeOrderStatuses.includes(order.status) && order.type === "l",
   );
 
   const activeSwapOrders = Object.values(userOrders).filter(
-    (order) => activeOrderStatuses.includes(order.status) && order.type === "s"
+    order => activeOrderStatuses.includes(order.status) && order.type === "s",
   );
 
   let tradingViewMarket = currentMarket;
@@ -245,9 +245,7 @@ const TradePage = () => {
                         )}
                         <div>
                           {/* Trade Price Second Head */}
-                          {marketDataTab !== "fills" ? (
-                            <TradePriceHeadSecond marketSummary={marketSummary} />
-                          ) : null}
+                          {marketDataTab !== "fills" ? <TradePriceHeadSecond marketSummary={marketSummary} /> : null}
                         </div>
                         {!showMarketTable && (
                           <div className="bids-trade-price-sell sell-book">
@@ -306,9 +304,7 @@ const TradePage = () => {
               <Footer userFills={userFills} userOrders={userOrders} user={user} />
             </div>
             <div className="footer-trade-tables d-flex flex-column flex-lg-row text-center justify-content-center justify-content-lg-around">
-              <div className="mt-3 mt-lg-0 d-flex align-items-center justify-content-center">
-                Powered By Dexpresso
-              </div>
+              <div className="mt-3 mt-lg-0 d-flex align-items-center justify-content-center">Powered By Dexpresso</div>
               <div className="mt-3 mt-lg-0 d-flex align-items-center justify-content-center">
                 <p>v1.1.0</p>{" "}
               </div>

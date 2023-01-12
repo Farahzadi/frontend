@@ -1,16 +1,14 @@
 import React from "react";
 import "./TradePriceHeadSecond.css";
 
-const TradePriceHeadSecond = (props) => {
+const TradePriceHeadSecond = props => {
   return (
     <>
       <div className="trade-price-head-2">
         <div>
           <h2
-            className={ `mt-3
-              ${props.marketSummary.priceChange < 0 ? "down_value" : "up_value"}`
-            }
-          >
+            className={`mt-3
+              ${props.marketSummary.priceChange < 0 ? "down_value" : "up_value"}`}>
             {props.marketSummary.price}
           </h2>
 
