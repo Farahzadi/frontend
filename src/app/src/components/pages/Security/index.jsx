@@ -1,12 +1,15 @@
 import { networkConfigSelector } from "lib/store/features/api/apiSlice";
 import React from "react";
 import { useSelector } from "react-redux";
-import { SecurityComp } from "./types.js";
+import { SecurityCompList, SecurityTypeList } from "./types.js";
 
 const Security = () => {
   const securityType = useSelector(networkConfigSelector)?.securityType;
-  const Comp = SecurityComp[securityType];
-  return <Comp />;
+  const Comp = SecurityCompList[securityType];
+  if (Comp) {
+    return <Comp />;
+  }
+  return null;
 };
 
 export default Security;

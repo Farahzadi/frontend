@@ -1,4 +1,4 @@
-import { SecurityComp } from "components/pages/Security/types";
+import { SecurityTypeList } from "components/pages/Security/types";
 import { getNetworkCurrencies, getNetworkCurrency } from "config/Currencies";
 import Decimal from "decimal.js";
 import { BigNumber, ethers } from "ethers";
@@ -18,7 +18,7 @@ export default class EthereumInterface extends NetworkInterface {
   CURRENCY = "ETH";
   CHAIN_ID = 1;
   DEX_CONTRACT = ETHEREUM_DEX_CONTRACT;
-  SECURITY_TYPE = SecurityComp.Allowance;
+  SECURITY_TYPE = SecurityTypeList.allowance;
 
   async fetchBalance(ticker, userAddress, isLayerTwo = false) {
     const currency = getNetworkCurrency(this.NETWORK, ticker);

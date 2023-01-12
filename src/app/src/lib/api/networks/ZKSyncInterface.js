@@ -2,7 +2,7 @@ import { formatBalances, fromBaseUnit, toBaseUnit } from "lib/utils";
 import ZKSyncAPIProvider from "../providers/ZKSyncAPIProvider";
 import { ethers } from "ethers";
 import EthereumInterface from "./EthereumInterface";
-import { SecurityComp } from "components/pages/Security/types";
+import { SecurityTypeList } from "components/pages/Security/types";
 import Decimal from "decimal.js";
 import NetworkInterface from "./NetworkInterface";
 import * as zksync from "zksync";
@@ -27,7 +27,7 @@ export default class ZKSyncInterface extends EthereumInterface {
   HAS_CONTRACT = false;
   HAS_BRIDGE = true;
   BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
-  SECURITY_TYPE = SecurityComp.Nonce;
+  SECURITY_TYPE = SecurityTypeList.nonce;
 
   ETHERSCAN_URL = "https://etherscan.io";
   ZKSCAN_URL = "https://zkscan.io";
