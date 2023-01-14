@@ -249,12 +249,3 @@ th {
     text-align: right;
   }
 }
-
-@media screen and (max-width: 991px) {
-  .user-info table td:before {
-    content: attr(data-label);
-    float: left;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-}

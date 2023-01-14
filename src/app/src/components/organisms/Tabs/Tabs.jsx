@@ -1,7 +1,7 @@
 import { styled } from "@mui/system";
-import React from "react";
+import React, { useRef } from "react";
 
-const Button = styled("button")(({active, theme}) => ({
+const Button = styled("button")(({ active, theme }) => ({
   border: "none",
   outline: "none",
   backgroundColor: "inherit",
@@ -17,11 +17,11 @@ const Button = styled("button")(({active, theme}) => ({
     backgroundColor: theme.palette.secondary.main,
     color: theme.palette.text.primary,
   },
-  "&:hover  span": {
+  "&:hover span": {
     backgroundColor: theme.palette.primary.main,
   },
 }));
-const Badge = styled("span")(({active, theme}) => ({
+const Badge = styled("span")(({ active, theme }) => ({
   display: "inline-block",
   marginInlineStart: "7px",
   padding: "2px 7px",
@@ -33,23 +33,49 @@ const Badge = styled("span")(({active, theme}) => ({
 const InnerBlock = styled("div")(() => ({
   padding: "0 1.5rem",
   borderInlineEnd: "1px solid #b2bfc7",
-
+}));
+export const Header = styled("div")(({ theme }) => ({
+  borderBottom: "1px solid #555c61",
+  height: "43px",
+  display: "flex",
+  flexFlow: "row nowrap",
+  whiteSpace: "nowrap",
+  overflow: "auto",
+  "&::-webkit-scrollbar:horizontal": {
+    display: "none",
+  },
 }));
 const Tabs = ({ items, selected, handleSelect, ordersNum }) => {
+  const headRef = useRef(null);
   if (!items.map) {
-    items = Object.keys(items).map(val => { return {...items[val], id: val}; });
+    items = Object.keys(items).map(val => {
+      return { ...items[val], id: val };
+    });
   }
+  const handleClick = (e, id) => {
+    const position = e.currentTarget.offsetLeft - 35;
+    handleSelect(id);
+    if (headRef?.current) {
+      headRef.current.scroll({ left: position, top: 0, behavior: "smooth" });
+    }
+  };
   return (
-    <>
+    <Header ref={headRef}>
       {items.map(({ name, id }) => (
-        <Button key={id} active={selected===id} type="button" onClick={() => handleSelect(id)}>
+        <Button
+          key={id}
+          active={selected === id}
+          type="button"
+          onClick={e => {
+            handleClick(e, id);
+          }}>
           <InnerBlock>
             {name}
-            {ordersNum?.[id] !== undefined && <Badge active={selected===id}>{ordersNum?.[id]}</Badge>}
+            {ordersNum?.[id] !== undefined && <Badge active={selected === id}>{ordersNum?.[id]}</Badge>}
           </InnerBlock>
         </Button>
       ))}
-    </>
+    </Header>
   );
 };
 export default Tabs;

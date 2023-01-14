@@ -16,7 +16,6 @@ import {
   ActionBtn,
   CancelAllOrderBtn,
   CancelOrderBtn,
-  Header,
   InnerTh,
   MainContainer,
   Table,
@@ -28,7 +27,7 @@ import {
 } from "./OrderHistory.style.module";
 import OrderList from "./OrderList";
 import AssetList from "./AssetList";
-import { Modal } from 'components/atoms/Modal';
+import { Modal } from "components/atoms/Modal";
 
 const OrderHistory = () => {
   const [selectedTab, setSelectedTab] = useState("orders");
@@ -108,12 +107,7 @@ const OrderHistory = () => {
   }, [selectedTab, openOrders, userFillOrders, lastUserOrders, balances]);
   return (
     <MainContainer>
-      {/* {openOrders.length > 1 && selectedTab === "orders" && (
-        <CancelAllOrderBtn onClick={handleOpen}>cancel all orders</CancelAllOrderBtn>
-      )} */}
-      <Header>
-        <Tabs items={tabs} ordersNum={orderNum} handleSelect={val => setSelectedTab(val)} selected={selectedTab}></Tabs>
-      </Header>
+      <Tabs items={tabs} ordersNum={orderNum} handleSelect={val => setSelectedTab(val)} selected={selectedTab}></Tabs>
       {openOrders.length > 1 && selectedTab === "orders" && (
         <ActionBar>
           <ActionBtn onClick={handleCancelAll}>cancel all order</ActionBtn>

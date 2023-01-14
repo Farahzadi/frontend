@@ -50,6 +50,9 @@ html {
   border: 1px solid rgba(255,255,255,0.2);
   border-radius: 10px;
 }
+*::-webkit-scrollbar:horizontal {
+  height: 7px;
+}
 .up_value {
   color: #3fe199 !important;
 }
