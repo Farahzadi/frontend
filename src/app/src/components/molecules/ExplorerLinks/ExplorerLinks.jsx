@@ -16,11 +16,16 @@ const ExplorerLink = styled("a")(({ theme }) => ({
 export const UserAddressExplorerLink = () => {
   const user = useSelector(userSelector);
   const network = useSelector(networkSelector);
-  return (
-    <ExplorerLink href={getExplorerUserAddressDetails(network, user.address)} target="_blank" rel="noreferrer">
-      View Account on Explorer
-    </ExplorerLink>
-  );
+
+  {
+    return (
+      user.address && (
+        <ExplorerLink href={getExplorerUserAddressDetails(network, user.address)} target="_blank" rel="noreferrer">
+          View Account on Explorer
+        </ExplorerLink>
+      )
+    );
+  }
 };
 
 export const TxExplorerLink = ({ txHash = "" }) => {

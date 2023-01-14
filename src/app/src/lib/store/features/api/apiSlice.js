@@ -535,24 +535,24 @@ export const bridgeReceiptsStatusSelector = state => state.api.bridgeReceiptsSta
 
 export const networkListSelector = state => state.api.networks;
 export const userOpenOrdersSelector = state =>
-  !!state.api.userOrders &&
+  state.api.userOrders &&
   Object.values(state.api.userOrders)
     .sort((a, b) => b.id - a.id)
     .filter(order => order.status === "o" && order.market === state.api.currentMarket);
 export const userFillOrdersSelector = state =>
-  !!state.api.userFills &&
+  state.api.userFills &&
   Object.values(state.api.userFills)
     .sort((a, b) => b.id - a.id)
     .filter(fill => fillStatusList.includes(fill.status));
 export const getLastOrdersSelector = state =>
-  !!state.api.userOrders &&
+  state.api.userOrders &&
   Object.values(state.api.userOrders)
     .slice(-25)
     .sort((a, b) => b.id - a.id)
     .filter(order => order.status !== "o");
 
 export const userBalanceByTokenSelector = state =>
-  !!state.api.user.balances &&
+  state.api.user.balances &&
   Object.keys(state.api.user.balances).map(val => {
     return {
       [val]: state.api.user.balances[val].valueReadable,

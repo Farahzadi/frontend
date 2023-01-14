@@ -14,7 +14,7 @@ const AssetList = ({ orders, tabs, selectedTab }) => {
   const cols = ["token", "balances"];
   return (
     <tbody>
-      {balances.map(asset => {
+      {balances?.map(asset => {
         if (!asset) return null;
         return (
           <Tr key={getObjKey(asset)}>
