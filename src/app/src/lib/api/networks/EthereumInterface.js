@@ -201,4 +201,20 @@ export default class EthereumInterface extends NetworkInterface {
     return tx;
   }
 
+  async wrapToken({ amount, currency = "WETH" }) {
+    const contractAddr = getNetworkCurrency(this.NETWORK, currency).info.contract;
+    return await this.apiProvider.wrap({ amount, contractAddr });
+  }
+
+  async unwrapToken({ amount, currency = "WETH" }) {
+    const contractAddr = getNetworkCurrency(this.NETWORK, currency).info.contract;
+    return await this.apiProvider.unwrap({ amount, contractAddr });
+  }
+
+  async getEvent({ eventName = "deposit" || "withdraw", fromBlock = 0, toBlock = "latest" }) {
+    const contractAddr = getNetworkCurrency(this.NETWORK, currency).info.contract;
+    const event = await this.apiProvider?.getEvents({ contractAddr, eventName, fromBlock, toBlock });
+    return event;
+  }
+
 }

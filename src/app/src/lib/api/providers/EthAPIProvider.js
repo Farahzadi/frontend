@@ -8,6 +8,7 @@ import Web3Modal, { providers } from "web3modal";
 import APIProvider from "./APIProvider";
 import erc20ContractABI from "lib/contracts/ERC20.json";
 import binanceLogo from "../../../assets/images/binance-smart-chain.png";
+import WETHContractABI from "lib/contracts/WETH.json";
 
 export default class EthAPIProvider extends APIProvider {
 
@@ -222,6 +223,24 @@ export default class EthAPIProvider extends APIProvider {
   async signOrder({ orderHash }) {
     const result = await this.wallet.signMessage(ethers.utils.arrayify(orderHash));
     return result;
+  }
+
+  async wrap({ amount, contractAddr }) {
+    const contract = new ethers.Contract(contractAddr, WETHContractABI, this.wallet);
+    const tx = await contract.deposit(amount);
+    await tx.wait();
+  }
+
+  async unwrap({ amount, contractAddr }) {
+    const contract = new ethers.Contract(contractAddr, WETHContractABI, this.wallet);
+    const tx = await contract.withdraw(amount);
+    await tx.wait();
+  }
+
+  async getEvent({ contractAddr, eventName, fromBlock = 0, toBlock = "latest" }) {
+    const contract = new ethers.Contract(contractAddr, erc20ContractABI, this.provider);
+    const event = await contract.queryFilter(eventName, fromBlock, toBlock);
+    return event;
   }
 
   onAccountChange = cb => {

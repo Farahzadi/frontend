@@ -312,6 +312,28 @@ export default class Core extends Emitter {
     );
   }
 
+  async wrapToken(data) {
+    if (!this.isSignedIn()) return;
+
+    await this.networkInterface.wrap(data);
+
+    return true;
+  }
+
+  async unwrapToken(data) {
+    if (!this.isSignedIn()) return;
+
+    await this.networkInterface.unwrap(data);
+
+    return true;
+  }
+
+  async getEvent(data) {
+    const event = await this.networkInterface.getEvent(data);
+
+    return event;
+  }
+
   getNetworks() {
     this.axiosInstance.get("/networks").then(res => {
       this.emit("setNetworkList", res.data.networks);

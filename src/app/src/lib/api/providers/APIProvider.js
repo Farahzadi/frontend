@@ -59,6 +59,18 @@ export default class APIProvider {
     return notImplemented("withdrawL2Fee");
   }
 
+  async wrap() {
+    return notImplemented("wrap");
+  }
+
+  async unwrap() {
+    return notImplemented("unwrap");
+  }
+
+  async getEvent() {
+    return notImplemented("getEvent");
+  }
+
   async getBalances() {
     return notImplemented("getBalances");
   }
