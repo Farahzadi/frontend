@@ -2,12 +2,7 @@ import React from "react";
 import { styled } from "@mui/system";
 import Decimal from "decimal.js";
 import { OrderSide, OrderStatus, OrderType } from "lib/interface";
-import {
-  getFillDetailsWithoutFee,
-  getOrderDetailsWithoutFee,
-  hasOneDayPassed,
-  isZKSYNCNet,
-} from "lib/utils";
+import { getFillDetailsWithoutFee, getOrderDetailsWithoutFee, hasOneDayPassed, isZKSYNCNet } from "lib/utils";
 import loadingGif from "assets/icons/loading.svg";
 
 export const OrderStatusColors = {
@@ -16,7 +11,8 @@ export const OrderStatusColors = {
   f: "#3fe199",
 };
 const OrderStatusItem = styled("span")(({ theme, orderStatus }) => ({
-  color: OrderStatusColors[orderStatus],
+  color: orderStatus === "r" ? "#c4384e" : orderStatus === "m" ? "rgb(240, 185, 11)" : "f" ? "#3fe199" : "inherit",
+  //  OrderStatusColors[orderStatus], different scope of issue
 }));
 const OrderSideItem = styled("span")(({ side, theme }) => ({
   color: side === "b" ? theme.palette.success.main : theme.palette.error.main,
@@ -94,11 +90,10 @@ export const OpenOrderPropMap = {
 export const FillOrdersPropMap = {
   ...OrderPropMap,
   detail: (fill, network) => {
-    console.log(fill);
     if (!fill) return;
     const { isTaker, side } = fill;
     let amount = new Decimal(fill.amount || 0);
-    let baseQuantity = fill.baseQuantity;
+    // let baseQuantity = fill.baseQuantity;
     let price = fill.price;
     const baseCurrency = fill.market.split("-")[0];
     const quoteCurrency = fill.market.split("-")[1];
@@ -117,17 +112,16 @@ export const FillOrdersPropMap = {
     } else {
       feeText = fee.toFixed() + " " + feeCurrency;
     }
-    baseQuantity = baseQuantity.toPrecision(6) / 1;
+    amount = amount.toPrecision(6) / 1;
     price = price.toPrecision(6) / 1;
 
     return {
       price,
-      volume: baseQuantity + " " + baseCurrency,
+      volume: amount + " " + baseCurrency,
       fee: feeText,
     };
   },
 };
-
 
 export const mapColsTitleToProp = {
   history: val => {
@@ -137,6 +131,11 @@ export const mapColsTitleToProp = {
     return val;
   },
   orders: val => val,
-  fills: val => val,
+  fills: val => {
+    if (val === "time") {
+      return "createdAt";
+    }
+    return val;
+  },
   balances: val => val,
 };
