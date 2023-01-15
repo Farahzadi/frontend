@@ -10,7 +10,7 @@ import {
   lastPricesSelector,
   networkSelector,
 } from "lib/store/features/api/apiSlice";
-import { Modal } from "../../atoms/Modal";
+import Modal from "../../atoms/Modal";
 import {
   getFillDetailsWithoutFee,
   getOrderDetailsWithoutFee,

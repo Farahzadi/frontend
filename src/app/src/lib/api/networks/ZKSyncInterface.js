@@ -192,7 +192,15 @@ export default class ZKSyncInterface extends EthereumInterface {
     const decimals = Currencies[token].decimals;
     amount = ethers.BigNumber.from(toBaseUnit(amount, decimals));
 
-    const transfer = await this.apiProvider?.[type === "deposit" ? "depositL2" : "withdrawL2"](amount, address, token);
+    let transfer;
+    try {
+      transfer = await this.apiProvider?.[type === "deposit" ? "depositL2" : "withdrawL2"](amount, address, token);
+      if (!transfer) throw new Error();
+    } catch (err) {
+      throw new Error(
+        err.code === 4001 ? "You've rejected the signing process." : "Error occurred in bridge transfer operation",
+      );
+    }
 
     const receipt = await this.apiProvider?.getBridgeReceiptStatus(transfer, type);
     const readableAmount = fromBaseUnit(amount.toString(), decimals);
