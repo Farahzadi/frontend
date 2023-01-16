@@ -134,6 +134,8 @@ export const mapColsTitleToProp = {
   fills: val => {
     if (val === "time") {
       return "createdAt";
+    } else if (val === "side") {
+      return "takerSide";
     }
     return val;
   },
