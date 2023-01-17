@@ -10,19 +10,18 @@ import {
 } from "lib/store/features/api/apiSlice";
 import Loader from "react-loader-spinner";
 import ethLogo from "assets/images/currency/ETH.svg";
-import cx from "classnames";
 import BridgeReceipts from "../BridgeReceipts/BridgeReceipts";
-import { BiError } from "react-icons/bi";
-import { MdSwapCalls } from "react-icons/md";
-import darkPlugHead from "assets/icons/dark-plug-head.png";
 import zkLogo from "assets/images/zk.jpg";
 import BridgeSwapInput from "../BridgeSwapInput/BridgeSwapInput";
 import { networks } from "./utils";
 import Currencies from "config/Currencies";
 import FeeIcon from "assets/icons/fee.png";
 import TimeIcon from "assets/icons/clock.png";
+import BridgeModal from "../BridgeModal/BridgeModal";
 
 import Core from "lib/api/Core";
+import Modal from "components/atoms/Modal";
+import { toast } from "react-toastify";
 
 const defaultTransfer = {
   type: "deposit",
@@ -35,7 +34,6 @@ const Bridge = () => {
   const userBalances = useSelector(userBalancesSelector);
   const userAllowances = userChainDetails?.allowances;
   const networkConfig = useSelector(networkConfigSelector);
-  const [loading, setLoading] = useState(false);
   const [isApproving, setApproving] = useState(false);
   const [formErr, setFormErr] = useState("");
   const [bridgeFee, setBridgeFee] = useState(null);
@@ -175,20 +173,9 @@ const Bridge = () => {
       <p className="">Ethereum L1</p>
     </div>
   );
-  const ethLayer1HeaderDetails = (
-    <div className="bridge_coin_details">
-      <p>Ethereum L1</p>
-    </div>
-  );
-
   const zkSyncLayer2Header = (
     <div className="bridge_coin_details ">
       <p className={" "}>zkSync(V1) L2</p>
-    </div>
-  );
-  const zkSyncLayer2HeaderDetails = (
-    <div className="bridge_coin_details mx-auto">
-      <p>zkSync(V1) L2</p>
     </div>
   );
 
@@ -213,20 +200,21 @@ const Bridge = () => {
       });
   };
 
-  const doTransfer = async e => {
-    e.preventDefault();
-
-    setLoading(true);
-
-    if (transfer.type === "deposit") await Core.run("depositL2", swapDetails.amount, swapDetails.currency);
-    else await Core.run("withdrawL2", swapDetails.amount, swapDetails.currency);
-
-    setLoading(false);
+  const doTransfer = async () => {
+    try {
+      if (transfer.type === "deposit") await Core.run("depositL2", swapDetails.amount, swapDetails.currency);
+      else await Core.run("withdrawL2", swapDetails.amount, swapDetails.currency);
+    } catch (err) {
+      toast.error(err.message);
+    }
+    // await new Promise((res, rej) => setTimeout(() => res(), 2000));
   };
+
   function getWindowSize() {
     const { innerWidth, innerHeight } = window;
     return { innerWidth, innerHeight };
   }
+
   const availableBalanceOnSelectedSide = (
     <>
       <div className=" bridge_coin_title align-self-lg-end align-self-auto">
@@ -328,7 +316,33 @@ const Bridge = () => {
                 </div>
               </div>
               <div className="accept-btn">
-                <button onClick={() => setShowModal(true)}> ACCEPT</button>
+                <button
+                  onClick={() =>
+                    Modal.open({
+                      children: (
+                        <BridgeModal
+                          {...{
+                            transfer,
+                            doTransfer,
+                            approveSpend,
+                            swapDetails,
+                            bridgeFee,
+                            formErr,
+                            userAddress,
+                            balances,
+                            userChainDetails,
+                            disconnect,
+                            hasError,
+                            hasAllowance,
+                            activationFee,
+                            usdFee,
+                          }}
+                        />
+                      ),
+                    })
+                  }>
+                  ACCEPT
+                </button>
               </div>
             </div>
           </div>
