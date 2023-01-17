@@ -6,32 +6,24 @@ import "./Modal.css";
 
 export class ModalComponent extends React.Component {
 
+  initialState = {
+    show: false,
+    title: undefined,
+    children: undefined,
+    alert: undefined,
+    cancelText: "Cancel",
+    proceed: undefined,
+    proceedText: "OK",
+    cancel: undefined,
+  };
+
   constructor() {
     super();
-    // this.resetState();
-    this.state = {
-      show: false,
-      title: undefined,
-      children: undefined,
-      alert: undefined,
-      cancelText: "Cancel",
-      proceed: undefined,
-      proceedText: "OK",
-      cancel: undefined,
-    };
+    this.state = { ...this.initialState };
   }
 
   resetState = () => {
-    this.setState({
-      show: false,
-      title: undefined,
-      children: undefined,
-      alert: undefined,
-      cancelText: "Cancel",
-      proceed: undefined,
-      proceedText: "OK",
-      cancel: undefined,
-    });
+    this.setState({ ...this.initialState });
   };
 
   onEscapeKeyDown = e => {
@@ -47,7 +39,7 @@ export class ModalComponent extends React.Component {
   }
 
   updateState = data => {
-    this.setState(data);
+    this.setState({ ...this.initialState, ...data });
   };
 
   proceed = () => {
@@ -63,12 +55,9 @@ export class ModalComponent extends React.Component {
   };
 
   render() {
-    if (!this.state) {
-      console.log("fk", this.state);
-      return <></>;
-    }
+    if (!this.state) return <></>;
+
     const { show, title, children, alert, cancelText, proceed, proceedText, cancel } = this.state;
-    console.log("shw", show, title, this.state);
 
     return ReactDOM.createPortal(
       <CSSTransition in={show} unmountOnExit timeout={{ enter: 0, exit: 300 }}>

@@ -190,7 +190,8 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
         amount,
       });
     } catch (err) {
-      console.log(err);
+      console.log("ZKSync L2 withdraw error:", err);
+      throw err;
     }
   }
 
@@ -203,7 +204,8 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
         amount,
       });
     } catch (err) {
-      console.log(err);
+      console.log("ZKSync L2 deposit error:", err);
+      throw err;
     }
   }
 

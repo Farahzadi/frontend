@@ -10,7 +10,14 @@ import {
   lastPricesSelector,
   networkSelector,
 } from "lib/store/features/api/apiSlice";
-import { Modal } from "../../atoms/Modal";
+import Modal from "../../atoms/Modal";
+import {
+  getFillDetailsWithoutFee,
+  getOrderDetailsWithoutFee,
+  getExplorerLink,
+  hasOneDayPassed,
+  getExplorerUserAddressDetails,
+} from "lib/utils";
 import Core from "lib/api/Core";
 import Tabs from "../Tabs/Tabs";
 import { activeFillStatus, activeOrderStatus } from "lib/interface";

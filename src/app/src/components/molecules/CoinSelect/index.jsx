@@ -115,7 +115,7 @@ const CoinSelect = ({ currency, handleCurrencyChange }) => {
       })
       .sort();
     setTickers(tickers);
-  }, [userChainDetails.userId, network]);
+  }, [userChainDetails?.userId, network]);
   useEffect(() => {
     if (currency) {
       setCoin(Currencies[currency]);

@@ -3,7 +3,7 @@ import Provider from "lib/Provider";
 
 import AppRoutes from "AppRoutes";
 import { ToastContainer } from "react-toastify";
-import { Modal } from "components";
+import Modal from "components/atoms/Modal";
 
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 import "App.css";

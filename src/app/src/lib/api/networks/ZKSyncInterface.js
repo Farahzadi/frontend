@@ -2,7 +2,7 @@ import { formatBalances, fromBaseUnit, toBaseUnit } from "lib/utils";
 import ZKSyncAPIProvider from "../providers/ZKSyncAPIProvider";
 import { ethers } from "ethers";
 import EthereumInterface from "./EthereumInterface";
-import { SecurityComp } from "components/pages/Security/types";
+import { SecurityTypeList } from "components/pages/Security/types";
 import Decimal from "decimal.js";
 import NetworkInterface from "./NetworkInterface";
 import * as zksync from "zksync";
@@ -27,7 +27,7 @@ export default class ZKSyncInterface extends EthereumInterface {
   HAS_CONTRACT = false;
   HAS_BRIDGE = true;
   BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
-  SECURITY_TYPE = SecurityComp.Nonce;
+  SECURITY_TYPE = SecurityTypeList.nonce;
 
   ETHERSCAN_URL = "https://etherscan.io";
   ZKSCAN_URL = "https://zkscan.io";
@@ -192,7 +192,15 @@ export default class ZKSyncInterface extends EthereumInterface {
     const decimals = Currencies[token].decimals;
     amount = ethers.BigNumber.from(toBaseUnit(amount, decimals));
 
-    const transfer = await this.apiProvider?.[type === "deposit" ? "depositL2" : "withdrawL2"](amount, address, token);
+    let transfer;
+    try {
+      transfer = await this.apiProvider?.[type === "deposit" ? "depositL2" : "withdrawL2"](amount, address, token);
+      if (!transfer) throw new Error();
+    } catch (err) {
+      throw new Error(
+        err.code === 4001 ? "You've rejected the signing process." : "Error occurred in bridge transfer operation",
+      );
+    }
 
     const receipt = await this.apiProvider?.getBridgeReceiptStatus(transfer, type);
     const readableAmount = fromBaseUnit(amount.toString(), decimals);
