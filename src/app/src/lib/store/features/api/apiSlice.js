@@ -81,8 +81,9 @@ export const apiSlice = createSlice({
     network: {
       name: null,
       hasBridge: null,
-      securityType: null,
       hasContract: null,
+      hasWrapper: null,
+      securityType: null,
     },
     providerState: "DISCONNECTED",
     currentMarket: null,
@@ -90,6 +91,7 @@ export const apiSlice = createSlice({
     marketFills: {},
     bridgeReceipts: [],
     bridgeReceiptsStatus: [],
+    eventLogs: [],
     lastPrices: {},
     marketSummary: {},
     marketinfo: {},
@@ -423,6 +425,16 @@ export const apiSlice = createSlice({
         }
       }
     },
+    addEventLogs(state, { payload }) {
+      payload.forEach(event => {
+        state.eventLogs.unshift({
+          eventName: event.event,
+          from: event.args.dst,
+          amount: event.args.wad.toString(),
+          txHash: event.transactionHash,
+        });
+      });
+    },
     resetData(state) {
       state.marketFills = {};
       state.marketSummary = {};
@@ -492,6 +504,7 @@ export const {
   setBalances,
   addBridgeReceipt,
   addbridgeReceiptStatus,
+  addEventLogs,
   setCurrentMarket,
   resetData,
   clearUserOrders,
@@ -525,6 +538,7 @@ export const marketInfoSelector = state => state.api.marketinfo;
 export const liquiditySelector = state => state.api.liquidity;
 export const currentMarketSelector = state => state.api.currentMarket;
 export const bridgeReceiptsSelector = state => state.api.bridgeReceipts;
+export const eventLogsSelector = state => state.api.eventLogs;
 export const orderTypeSelector = state => state.api.orderType;
 export const unbroadcastedSelector = state => state.api.unbroadcasted;
 export const rangePriceSelector = state => state.api.rangePrice;
