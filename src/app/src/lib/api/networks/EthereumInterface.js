@@ -21,6 +21,7 @@ export default class EthereumInterface extends NetworkInterface {
   HAS_WRAPPER = true;
   DEX_CONTRACT = ETHEREUM_DEX_CONTRACT;
   SECURITY_TYPE = SecurityTypeList.allowance;
+  EVENTS_NAME = ["Deposit", "Withdrawal"];
 
   async fetchBalance(ticker, userAddress, isLayerTwo = false) {
     const currency = getNetworkCurrency(this.NETWORK, ticker);
@@ -213,10 +214,14 @@ export default class EthereumInterface extends NetworkInterface {
     return await this.apiProvider.unwrap({ amount, contractAddr });
   }
 
-  async getEvent(currency = "WETH", eventName = "Deposit", fromBlock = "0xFD17A", toBlock = "0x3E585E") {
+  async getEvent(currency = "WETH", eventName, fromBlock = 0, toBlock = "latest") {
     const contractAddr = getNetworkCurrency(this.NETWORK, currency).info.contract;
-    const event = await this.apiProvider?.getEvents(contractAddr, eventName, fromBlock, toBlock);
-    this.emit("eventLogs", event);
+    if (eventName) this.emit("eventLogs", await this.apiProvider?.getEvents(contractAddr, name, fromBlock, toBlock));
+    else {
+      this.EVENTS_NAME.map(async name => {
+        this.emit("eventLogs", await this.apiProvider?.getEvents(contractAddr, name, fromBlock, toBlock));
+      });
+    }
   }
 
 }

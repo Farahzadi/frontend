@@ -60,6 +60,7 @@ export default class NetworkInterface {
   SECURITY_TYPE = null;
   BRIDGE_CONTRACT = null;
   DEX_CONTRACT = null;
+  EVENT_NAMES = null;
 
   core = null;
 

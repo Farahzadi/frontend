@@ -429,7 +429,8 @@ export const apiSlice = createSlice({
       payload.forEach(event => {
         state.eventLogs.unshift({
           eventName: event.event,
-          from: event.args.dst,
+          from: event.args.dst || event.args.src,
+          to: event.address,
           amount: event.args.wad.toString(),
           txHash: event.transactionHash,
         });

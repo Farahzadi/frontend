@@ -239,8 +239,9 @@ export default class EthAPIProvider extends APIProvider {
 
   async getEvents(contractAddr, eventName, fromBlock, toBlock) {
     const contract = new ethers.Contract(contractAddr, WETHContractABI, this.provider);
-    const event = await contract.queryFilter(eventName, fromBlock, toBlock);
-    return event;
+    let filterFromMe = contract.filters[eventName](await this.getAddress(), null);
+    const logs = await contract.queryFilter(filterFromMe, fromBlock, toBlock);
+    return logs;
   }
 
   async subscribeToEvent(contractAddr) {
