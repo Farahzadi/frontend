@@ -237,10 +237,21 @@ export default class EthAPIProvider extends APIProvider {
     await tx.wait();
   }
 
-  async getEvent({ contractAddr, eventName, fromBlock = 0, toBlock = "latest" }) {
-    const contract = new ethers.Contract(contractAddr, erc20ContractABI, this.provider);
+  async getEvents(contractAddr, eventName, fromBlock, toBlock) {
+    const contract = new ethers.Contract(contractAddr, WETHContractABI, this.provider);
     const event = await contract.queryFilter(eventName, fromBlock, toBlock);
     return event;
+  }
+
+  async subscribeToEvent(contractAddr) {
+    const contract = new ethers.Contract(contractAddr, WETHContractABI, this.provider);
+    contract.on("Deposit", (dst, wad, event) => {
+      return {
+        from: dst,
+        amount: wad.toString(),
+        event,
+      };
+    });
   }
 
   onAccountChange = cb => {

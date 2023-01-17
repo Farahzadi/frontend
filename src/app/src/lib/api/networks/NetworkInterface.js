@@ -54,8 +54,9 @@ export default class NetworkInterface {
 
   NETWORK = "unknown";
   CURRENCY = "CURRENCY_SYMBOL";
-  HAS_CONTRACT = true;
+  HAS_CONTRACT = false;
   HAS_BRIDGE = false;
+  HAS_WRAPPER = false;
   SECURITY_TYPE = null;
   BRIDGE_CONTRACT = null;
   DEX_CONTRACT = null;

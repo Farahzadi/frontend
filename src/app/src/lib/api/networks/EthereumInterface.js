@@ -12,11 +12,13 @@ import NetworkInterface from "./NetworkInterface";
 const ETHEREUM_DEX_CONTRACT = process.env.REACT_APP_ETHEREUM_DEX_CONTRACT;
 export default class EthereumInterface extends NetworkInterface {
 
-  static Actions = [...super.Actions, "approve"];
+  static Actions = [...super.Actions, "approve", "getEvent"];
   static Provider = EthAPIProvider;
   NETWORK = "ethereum";
   CURRENCY = "ETH";
   CHAIN_ID = 1;
+  HAS_CONTRACT = true;
+  HAS_WRAPPER = true;
   DEX_CONTRACT = ETHEREUM_DEX_CONTRACT;
   SECURITY_TYPE = SecurityTypeList.allowance;
 
@@ -211,10 +213,10 @@ export default class EthereumInterface extends NetworkInterface {
     return await this.apiProvider.unwrap({ amount, contractAddr });
   }
 
-  async getEvent({ eventName = "deposit" || "withdraw", fromBlock = 0, toBlock = "latest" }) {
+  async getEvent(currency = "WETH", eventName = "Deposit", fromBlock = "0xFD17A", toBlock = "0x3E585E") {
     const contractAddr = getNetworkCurrency(this.NETWORK, currency).info.contract;
-    const event = await this.apiProvider?.getEvents({ contractAddr, eventName, fromBlock, toBlock });
-    return event;
+    const event = await this.apiProvider?.getEvents(contractAddr, eventName, fromBlock, toBlock);
+    this.emit("eventLogs", event);
   }
 
 }
