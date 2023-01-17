@@ -18,7 +18,7 @@ export const FAQList = [
   {
     question: 'How do I deposit & withdraw from Layer 2?',
     answer:
-      'In order to transfer funds between layer 1 and layer 2 networks, users have to interact with the smart contract of the Layer 2 platform in the layer1 blockchain. For instance, to withdraw/deposit assets from/to zkSync network, users must trigger respected functions of official zkSync’s smart contract on Ethereum mainnet. To make this more convenient for users, zkSync wallet provides this functionality. On the other hand, {dex-name} has also implemented a very user-friendly interface (the “bridge” tool) to ease-up the overall experience for you.',
+      'In order to transfer funds between layer 1 and layer 2 networks, users have to interact with the smart contract of the Layer 2 platform in the layer1 blockchain. For instance, to withdraw/deposit assets from/to zkSync network, users must trigger respected functions of official zkSync’s smart contract on Ethereum mainnet. To make this more convenient for users, zkSync wallet provides this functionality. On the other hand, Dexpresso has also implemented a very user-friendly interface (the “bridge” tool) to ease-up the overall experience for you.',
   },
   {
     question: 'How does Layer 2 impact privacy?',
@@ -28,12 +28,12 @@ export const FAQList = [
   {
     question: 'Which wallets support the zkSync Layer 2 system?',
     answer:
-      '{dex-name} platform is implemented with user’s point-of-view in mind. Therefore, it is compatible with the most common non-custodial wallets, such as Metamask that most of DeFi enthusiasts use. On the other hand, it is also compatible with Wallet-Connect protocol that is supported in a wide range of non-custodial wallets, such as Trust-wallet, {wal1}, {wal2}, etc. However, for a seamless and perfect interaction with {dex-name} we advise users to use Metamask, which is completely opensource and community-developed wallet that has been available for a long time on many platforms, including Android and IOS, or as a Browser-Extension on various browsers, such as Chrome and FireFox.',
+      'Dexpresso platform is implemented with user’s point-of-view in mind. Therefore, it is compatible with the most common non-custodial wallets, such as Metamask that most of DeFi enthusiasts use. On the other hand, it is also compatible with Wallet-Connect protocol that is supported in a wide range of non-custodial wallets, such as Trust-wallet, {wal1}, {wal2}, etc. However, for a seamless and perfect interaction with Dexpresso we advise users to use Metamask, which is completely open-source and community-developed wallet that has been available for a long time on many platforms, including Android and IOS, or as a Browser-Extension on various browsers, such as Chrome and FireFox.',
   },
   {
-    question: 'What price oracles does {dex-name} use?',
+    question: 'What price oracles does Dexpresso use?',
     answer:
-      'In order to ensure accuracy of live prices, {dex-name} uses CCXT protocol to get mutiple exact market prices of mutiple centralized and decentralized exchanges and combines them to achieve final price.',
+      'In order to ensure accuracy of live prices, Dexpresso uses CCXT protocol to get multiple exact market prices of multiple centralized and decentralized exchanges and combines them to achieve final price.',
   },
   {
     question: 'How will Layer 1 and Layer 2 interact?',
@@ -45,7 +45,7 @@ export const FAQList = [
   {
     question: 'The platform does not show my Metamask balance:',
     answer:
-      '{dex-name} is a multi-chain platform. If you are using Metamask, make sure that your assets are available in the selected chain in {dex-name}. This may happen especially if you want to trade in a Layer2 chain, such as zkSync V1, that does not show its value on Metamask. When connected to DEX platform, your assets on Layer1 and Layer2 are shown using the wallet balance popup (through clicking on your address in the trading platform).',
+      'Dexpresso is a multi-chain platform. If you are using Metamask, make sure that your assets are available in the selected chain in Dexpresso. This may happen especially if you want to trade in a Layer2 chain, such as zkSync V1, that does not show its value on Metamask. When connected to DEX platform, your assets on Layer1 and Layer2 are shown using the wallet balance popup (through clicking on your address in the trading platform).',
   },
   {
     question: 'Platform asks my permission for approval to my wallet:',

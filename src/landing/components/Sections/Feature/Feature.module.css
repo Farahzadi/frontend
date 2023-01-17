@@ -1,9 +1,10 @@
 .cardsContainer {
   display: flex;
+  flex-flow: wrap;
   justify-content: center;
   text-align: center;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: center;
   align-items: center;
   min-width: min(1500px - 160px, 100% - 160px);
   max-width: 30rem;
@@ -12,7 +13,7 @@
 .card {
   max-width: 100%;
   border: 2px solid var(--mainColor);
-  margin: 0.9375rem 0;
+  margin: 0.9375rem;
   text-align: left;
   padding: 2rem;
   border-radius: 50px;
@@ -22,7 +23,7 @@
   flex-flow: row-reverse;
 }
 .card:hover {
-  box-shadow: 0 0 24px rgba(151, 71, 255, 0.3);
+  box-shadow: 0 0 24px var(--mainColor);
 }
 .cardHeader {
   display: flex;
@@ -47,7 +48,7 @@
     max-width: 350px;
     min-width: 260px;
     flex-flow: column;
-    margin: 0 0.8rem;
+    margin: 0 0.8rem 1.3rem;
   }
   .cardBody h2 {
     display: none;
@@ -57,6 +58,7 @@
   }
   .cardHeader h2 {
     display: block;
+    white-space: nowrap;
   }
 }
 

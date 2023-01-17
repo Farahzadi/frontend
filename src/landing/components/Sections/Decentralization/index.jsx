@@ -21,10 +21,10 @@ const Decentralization = () => {
 
                 <h1>Best of Both Worlds! </h1>
                 <p>
-                  Trustless off-chain orderbooks offer users with a centralized-level order matching speed, 
+                  Trustless off-chain orderbooks offer users with a centralized-level order matching speed,
                   while their assets are kept freely in user wallets. Users do not need to complete any KYC
-                  process to enjoy seamless trading in multi-chain markets of Dexpresso. On the other hand, 
-                  unlike most DEX platforms, the off-chain orderbook method allows users to place unlimitted/simultaneous 
+                  process to enjoy seamless trading in multi-chain markets of Dexpresso. On the other hand,
+                  unlike most DEX platforms, the off-chain orderbook method allows users to place unlimited/simultaneous
                   and free-of-charge orders in multiple markets and blockchains.
                 </p>
               </div>

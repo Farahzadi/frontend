@@ -18,7 +18,7 @@ const FeatureSection = () => {
     {
       id: '2',
       title: 'Secure',
-      description: `Users do not need to transfer their assets to any entity on-chain for order submission. 
+      description: `Users do not need to transfer their assets to any entity on-chain for order submission.
         Therefore, the security of user assets are not compromised, while using Dexpresso.`,
       img: secure,
     },
@@ -26,7 +26,7 @@ const FeatureSection = () => {
       id: '3',
       title: 'Layer 2 Support',
       description: `Dexpresso supports multiple Ethereum layer 2 blockchains, including zkSync v1 & v2, Arbitrum, Optimism, etc.
-        Such blockchains offer users with lower fees and ultr-fast transactions.`,
+        Such blockchains offer users with lower fees and ultra-fast transactions.`,
       img: layer2,
     },
     {
@@ -38,7 +38,7 @@ const FeatureSection = () => {
     },
     {
       id: '5',
-      title: 'Based on Zero-knowledge',
+      title: 'Zero-knowledge',
       description: `Dexpresso v2 contracts are developed based on zero-knowledge proofs (ZKPs) to further decrease user-side fees
         and improve users privacy.`,
       img: layer2,
@@ -54,7 +54,7 @@ const FeatureSection = () => {
         {features.map((val) => (
           <div key={val.id} className={styles.card}>
             <div className={styles.cardHeader}>
-              <Image src={val.img} width={80} height={80} alt='' />
+              <Image src={val.img} width={80} height={80} alt={val.title} />
               <h2>{val.title}</h2>
             </div>
             <div className={styles.cardBody}>

@@ -15,10 +15,10 @@ const IntroSection = () => {
         <h1 className={styles.title}>
           Dexpresso,
           <br />
-          Exhcange it hot!
+          Exchange it hot!
         </h1>
         <p className={styles.description}>
-          Enjoy Centralized-level fast multichain orderbook in a trustless decentralized exchange.
+          Enjoy centralized-level fast multichain orderbook in a trustless decentralized exchange.
         </p>
       </div>
       <div className={styles.background}>

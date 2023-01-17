@@ -17,7 +17,7 @@ const GuideSection = () => {
     {
       id: 3,
       title: 'Drink Coffee',
-      description: 'Enjoy your coffee and whatch the orderbook.',
+      description: 'Enjoy your coffee and watch the orderbook.',
     },
   ];
   return (
