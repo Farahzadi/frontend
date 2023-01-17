@@ -13,6 +13,12 @@ const ExplorerLink = styled("a")(({ theme }) => ({
     color: theme.palette.primary.main,
   },
 }));
+const TxLink = styled("a")(({ theme }) => ({
+  color: theme.palette.primary.main,
+  "&:hover": {
+    color: theme.palette.primary.main,
+  },
+}));
 export const UserAddressExplorerLink = () => {
   const user = useSelector(userSelector);
   const network = useSelector(networkSelector);
@@ -30,9 +36,12 @@ export const UserAddressExplorerLink = () => {
 
 export const TxExplorerLink = ({ txHash = "" }) => {
   const network = useSelector(networkSelector);
+  if (!txHash) {
+    return null;
+  }
   return (
-    <a href={getExplorerLink(network) + txHash} target="_blank" rel="noreferrer">
+    <TxLink href={getExplorerLink(network) + txHash} target="_blank" rel="noreferrer">
       View Tx
-    </a>
+    </TxLink>
   );
 };

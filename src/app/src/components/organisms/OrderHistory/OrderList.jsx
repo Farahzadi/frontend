@@ -9,18 +9,6 @@ import { Tr, Td, CancelOrderBtn } from "./OrderHistory.style.module";
 const OrderList = ({ orders, tabs, selectedTab, mapsFn }) => {
   const network = useSelector(networkSelector);
 
-  const getActionCell = (status, id, remaining, txHash, key) => {
-    if (selectedTab === "orders") {
-      return (
-        (status === "o" || (status === "pm" && remaining > 0)) && (
-          <CancelOrderBtn onClick={() => Core.run("cancelOrder", id)}>Cancel</CancelOrderBtn>
-        )
-      );
-    } else if (selectedTab === "fills" && txHash) {
-      return <TxExplorerLink txHash={txHash} />;
-    }
-  };
-
   return (
     <tbody>
       {orders.map(order => {
@@ -34,10 +22,13 @@ const OrderList = ({ orders, tabs, selectedTab, mapsFn }) => {
               let data;
               if (col === "expiry") {
                 data = colMapFn(order.status, order.expires);
-              } else if (Object.keys(mapFn).includes(col)) {
-                data = colMapFn(order?.[mapColsTitleToProp[selectedTab](col)]);
+              } else if (col === "side" && selectedTab === "fills") {
+                data = mapFn["takerSide"](order);
               } else if (col === "action") {
-                data = getActionCell(order.status, order.id, detail?.remaining, order.txHash, col);
+                data = colMapFn(order, detail?.remaining);
+              } else if (Object.keys(mapFn).includes(col)) {
+                const value = order?.[mapColsTitleToProp[selectedTab](col)];
+                data = colMapFn(value);
               } else {
                 data = detail?.[col];
               }

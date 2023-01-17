@@ -4,15 +4,19 @@ import Decimal from "decimal.js";
 import { OrderSide, OrderStatus, OrderType } from "lib/interface";
 import { getFillDetailsWithoutFee, getOrderDetailsWithoutFee, hasOneDayPassed, isZKSYNCNet } from "lib/utils";
 import loadingGif from "assets/icons/loading.svg";
+import { TxExplorerLink } from "components/molecules/ExplorerLinks/ExplorerLinks";
+import { CancelOrderBtn } from "./OrderHistory.style.module";
+import Core from "lib/api/Core";
 
 export const OrderStatusColors = {
   r: "#c4384e",
   m: "rgb(240, 185, 11)",
+  pm: "rgb(240, 185, 11)",
   f: "#3fe199",
+  c: "#b9848d",
 };
-const OrderStatusItem = styled("span")(({ theme, orderStatus }) => ({
-  color: orderStatus === "r" ? "#c4384e" : orderStatus === "m" ? "rgb(240, 185, 11)" : "f" ? "#3fe199" : "inherit",
-  //  OrderStatusColors[orderStatus], different scope of issue
+const OrderStatusItem = styled("span")(({ status, theme }) => ({
+  color: OrderStatusColors[status],
 }));
 const OrderSideItem = styled("span")(({ side, theme }) => ({
   color: side === "b" ? theme.palette.success.main : theme.palette.error.main,
@@ -21,7 +25,7 @@ const LoadingGif = styled("img")(() => ({
   width: "30px",
   height: "30px",
 }));
-const renderLoading = ({ orderStatus }) => {
+const renderLoading = orderStatus => {
   const pendingStats = ["b", "m", "pm"];
   if (pendingStats.includes(orderStatus)) {
     return <LoadingGif className="loading-gif" src={loadingGif} alt="Pending" />;
@@ -63,6 +67,11 @@ export const OrderPropMap = {
   ),
   time: val => hasOneDayPassed(val),
   expiry: (status, expires) => (status !== "f" && status !== "c" ? formatTimeInSec(expires) : "--"),
+  action: ({ status, id }, remaining) => {
+    if (status === "o" || (status === "pm" && remaining > 0)) {
+      return <CancelOrderBtn onClick={() => Core.run("cancelOrder", id)}>Cancel</CancelOrderBtn>;
+    }
+  },
 };
 export const OpenOrderPropMap = {
   ...OrderPropMap,
@@ -89,11 +98,15 @@ export const OpenOrderPropMap = {
 };
 export const FillOrdersPropMap = {
   ...OrderPropMap,
+  takerSide: order => {
+    const { side, takerSide, isTaker } = order;
+    const val = side || takerSide || isTaker ? "s" : "b";
+    return <OrderSideItem side={val}>{OrderSide[val]}</OrderSideItem>;
+  },
   detail: (fill, network) => {
     if (!fill) return;
     const { isTaker, side } = fill;
     let amount = new Decimal(fill.amount || 0);
-    // let baseQuantity = fill.baseQuantity;
     let price = fill.price;
     const baseCurrency = fill.market.split("-")[0];
     const quoteCurrency = fill.market.split("-")[1];
@@ -120,6 +133,9 @@ export const FillOrdersPropMap = {
       volume: amount + " " + baseCurrency,
       fee: feeText,
     };
+  },
+  action: order => {
+    return <TxExplorerLink txHash={order?.txHash} />;
   },
 };
 

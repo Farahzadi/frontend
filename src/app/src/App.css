@@ -53,6 +53,12 @@ html {
 *::-webkit-scrollbar:horizontal {
   height: 7px;
 }
+a {
+  color: var(--dexpressoPrimery);
+}
+a:hover {
+  color: var(--dexpressoPrimery);
+}
 .up_value {
   color: #3fe199 !important;
 }
