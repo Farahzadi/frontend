@@ -11,7 +11,7 @@ const Layer2Trade = () => {
       <div className={styles.container}>
         <h1 className={styles.titleXS}>Trade over Layer 2</h1>
         <div className={styles.imgContainer}>
-          <Image src={sampImg} width={1000} height={800} alt='' />
+          <Image src={sampImg} width={600} height={500} alt='' />
         </div>
         <div className={styles.textContainer}>
           <h1 className={styles.title}>Trade over Layer 2</h1>

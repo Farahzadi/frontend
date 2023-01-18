@@ -17,6 +17,7 @@
   --red: 217, 84, 54;
   --palePink: 242, 170, 128;
   --pastelBlue: 101, 166, 166;
+  --green: #65A6A6;
 }
 body {
   background-color: var(--darkBG);
@@ -203,7 +204,7 @@ video {
 @media (min-width: 768px) {
   section {
     padding: 3.7rem 4.5rem;
-    min-height: 670px;
+    min-height: 570px;
   }
   .md {
     display: none;
