@@ -70,7 +70,12 @@ export class Stage {
     this._finishEventHandlers = [];
   }
 
-  triggerStart(parent) {
+  /**
+   * @param {string?} parent
+   * Parent name to trigger this node as its child.
+   * Empty for triggering when this node doesn't have any paretns
+   */
+  triggerStart(parent = null) {
     if (parent && this.parents.includes(parent)) this.finishedParents.add(parent);
     if (this.status === "INITIAL" && this.finishedParents.size() === this.parents.length) this._start();
   }
@@ -149,15 +154,18 @@ export class Stage {
 export class StageManager {
 
   stages;
+  entry;
 
   /** @type {EventEmitter} */
   emitter;
 
   /**
    * @param {{name:Stage}} stages
+   * @param {string} entry Starting stage node
    */
-  constructor(stages) {
+  constructor(stages, entry = null) {
     this.stages = Object.fromEntries(Object.entries(stages).map(([name, stage]) => [name, stage.copy(name)]));
+    this.entry = this.stages[entry] && entry;
     Object.values(this.stages).forEach(stage => {
       stage.children.forEach(child => {
         this.stages[child].addParent(stage);
@@ -176,6 +184,16 @@ export class StageManager {
     this.emitter = new EventEmitter();
     Object.values(this.stages).forEach(stage => stage.setEventSource(this.emitter));
     this.emitter.on("STAGE_FINISHED", stage => this.stages[stage].triggerStart(stage));
+  }
+
+  /**
+   * @param {string?} entry Starting stage node
+   * @throws Will throw an error when no source of an entry point was found.
+  */
+  start(entry = null) {
+    entry = (this.stages[entry] && entry) || this.entry;
+    if (!entry) throw new Error("No entry point found to start the staging process");
+    this.stages[entry].triggerStart();
   }
 
   emit(event, ...args) {
