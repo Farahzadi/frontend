@@ -213,6 +213,18 @@ const Bridge = () => {
     // await new Promise((res, rej) => setTimeout(() => res(), 2000));
   };
 
+  const doWrap = async () => {
+    try {
+      if (transfer.type === "deposit") await Core.run("wrapToken", swapDetails.amount);
+      else await Core.run("unwrapToken", swapDetails.amount);
+    } catch (err) {
+      toast.error(err.message);
+    }
+    // await new Promise((res, rej) => setTimeout(() => res(), 2000));
+  };
+
+  const tokenTransfer = hasBridge ? doTransfer : doWrap;
+
   function getWindowSize() {
     const { innerWidth, innerHeight } = window;
     return { innerWidth, innerHeight };
@@ -326,7 +338,7 @@ const Bridge = () => {
                         <BridgeModal
                           {...{
                             transfer,
-                            doTransfer,
+                            tokenTransfer,
                             approveSpend,
                             swapDetails,
                             bridgeFee,

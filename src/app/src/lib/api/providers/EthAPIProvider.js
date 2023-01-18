@@ -225,15 +225,17 @@ export default class EthAPIProvider extends APIProvider {
     return result;
   }
 
-  async wrap({ amount, contractAddr }) {
+  async wrap(amount, contractAddr, decimals) {
     const contract = new ethers.Contract(contractAddr, WETHContractABI, this.wallet);
-    const tx = await contract.deposit(amount);
+    const bigNumAmount = ethers.BigNumber.from(amount * 10 ** decimals);
+    const tx = await contract.deposit(bigNumAmount);
     await tx.wait();
   }
 
-  async unwrap({ amount, contractAddr }) {
+  async unwrap(amount, contractAddr, decimals) {
     const contract = new ethers.Contract(contractAddr, WETHContractABI, this.wallet);
-    const tx = await contract.withdraw(amount);
+    const bigNumAmount = ethers.BigNumber.from(amount * 10 ** decimals);
+    const tx = await contract.withdraw(bigNumAmount);
     await tx.wait();
   }
 

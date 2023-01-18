@@ -11,7 +11,7 @@ import { networkConfigSelector } from "lib/store/features/api/apiSlice";
 
 const BridgeModal = ({
   transfer,
-  doTransfer,
+  tokenTransfer,
   approveSpend,
   swapDetails,
   bridgeFee,
@@ -30,7 +30,7 @@ const BridgeModal = ({
   const handleAccept = async e => {
     e.preventDefault();
     setLoading(true);
-    await doTransfer?.();
+    await tokenTransfer?.();
     setLoading(false);
     Modal.close();
   };
