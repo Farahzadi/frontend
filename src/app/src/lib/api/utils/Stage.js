@@ -1,6 +1,6 @@
 import Emitter from "tiny-emitter";
 
-class Stage {
+export class Stage {
 
   /** @type {string} */
   name = "";
@@ -32,19 +32,19 @@ class Stage {
   _eventsToFinish = [];
 
   /**
-   * @param {string} name
    * @param {[string]} parents
    * @param {[[event: string, checker: function(object):boolean]]} eventsToFinish
    * @param {function} onStart
    * @param {function} onFinish
    * @param {[string]} children
+   * @param {string} name
    */
-  constructor(name, parents = [], eventsToFinish = [], onStart = () => {}, onFinish = () => {}, children = []) {
+  constructor(parents = [], eventsToFinish = [], onStart = () => {}, onFinish = () => {}, children = [], name = null) {
     this.name = name;
     this.parents = parents || [];
     this.children = children || [];
     console.log(typeof []);
-    this._onFinish = onStart || (() => {});
+    this._onStart = onStart || (() => {});
     this._onFinish = onFinish || (() => {});
     this._eventsToFinish = eventsToFinish;
     this.reset();
@@ -109,6 +109,10 @@ class Stage {
     this.eventSource = eventSource;
   }
 
+  setName(name) {
+    this.name = name;
+  }
+
   /**
    * @param {Stage|string} parent
    */
@@ -127,23 +131,25 @@ class Stage {
 
 }
 
-class StageManager {
+export class StageManager {
 
   stages;
   emitter;
 
   /**
-   * @param {[Stage]} stages
+   * @param {{name:Stage}} stages
    */
   constructor(stages) {
-    this.stages = {};
-    stages.forEach(stage => (this.stages[stage.name] = stage));
-    stages.forEach(stage => {
+    this.stages = stages;
+    Object.entries(this.stages).forEach(([name, stage]) => {
+      if (stage.name !== name) stage.setName(name);
+    });
+    Object.values(this.stages).forEach(stage => {
       stage.children.forEach(child => {
         this.stages[child].addParent(stage);
       });
     });
-    stages.forEach(stage => {
+    Object.values(this.stages).forEach(stage => {
       stage.parents.forEach(parent => {
         this.stages[parent].addChild(parent);
       });
