@@ -547,9 +547,9 @@ export const userFillOrdersSelector = state =>
 export const getLastOrdersSelector = state =>
   state.api.userOrders &&
   Object.values(state.api.userOrders)
+    .filter(order => order.status !== "o")
     .slice(-25)
-    .sort((a, b) => b.id - a.id)
-    .filter(order => order.status !== "o");
+    .sort((a, b) => b.id - a.id);
 
 export const userBalanceByTokenSelector = state =>
   state.api.user.balances &&
