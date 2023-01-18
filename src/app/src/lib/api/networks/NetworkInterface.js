@@ -88,6 +88,7 @@ export default class NetworkInterface {
   getConfig() {
     return {
       hasBridge: this.HAS_BRIDGE,
+      hasWrapper: this.HAS_WRAPPER,
       hasContract: this.HAS_CONTRACT,
       securityType: this.SECURITY_TYPE,
     };

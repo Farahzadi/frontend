@@ -46,6 +46,7 @@ const Bridge = () => {
   const [transfer, setTransfer] = useState(defaultTransfer);
   const [coinColor, setCoinColler] = useState(true);
   const [showBridge, setShowBridge] = useState(true);
+  const [acceptWrap, setAcceptWrap] = useState(true);
   const [windowSize, setWindowSize] = useState(getWindowSize());
   const [swapDetails, _setSwapDetails] = useState(() => ({
     amount: "",
@@ -61,6 +62,8 @@ const Bridge = () => {
 
   let L1Balances = userL1Balances;
   let L2Balances = userBalances;
+
+  const { hasBridge, hasWrapper } = networkConfig;
 
   const setSwapDetails = values => {
     const details = {
@@ -128,7 +131,7 @@ const Bridge = () => {
   useEffect(() => {
     (async () => {
       // update changePubKeyFee fee if needed
-      if (userAddress && networkConfig.hasBridge) {
+      if (userAddress && hasBridge) {
         // TODO
         const usdFee = await Core.run("changePubKeyFee");
         setUsdFee(usdFee);
@@ -170,12 +173,12 @@ const Bridge = () => {
 
   const ethLayer1Header = (
     <div className="bridge_coin_details ">
-      <p className="">Ethereum L1</p>
+      <p>{hasBridge ? "Ethereum L1" : hasWrapper ? "ETH" : ""} </p>
     </div>
   );
   const zkSyncLayer2Header = (
     <div className="bridge_coin_details ">
-      <p className={" "}>zkSync(V1) L2</p>
+      <p> {hasBridge ? "zkSync(V1) L2" : hasWrapper ? "Wrapped ETH" : ""} </p>
     </div>
   );
 
@@ -258,7 +261,7 @@ const Bridge = () => {
             </div>
 
             <div className="bridge_box_bottom">
-              <div className="bridge_box_swap_wrapper">
+              <div onClick={() => (hasWrapper ? setAcceptWrap(!acceptWrap) : "")} className="bridge_box_swap_wrapper">
                 <SwapButton onClick={switchTransferType} />
               </div>
               <div className="center-form">
@@ -316,32 +319,8 @@ const Bridge = () => {
                 </div>
               </div>
               <div className="accept-btn">
-                <button
-                  onClick={() =>
-                    Modal.open({
-                      children: (
-                        <BridgeModal
-                          {...{
-                            transfer,
-                            doTransfer,
-                            approveSpend,
-                            swapDetails,
-                            bridgeFee,
-                            formErr,
-                            userAddress,
-                            balances,
-                            userChainDetails,
-                            disconnect,
-                            hasError,
-                            hasAllowance,
-                            activationFee,
-                            usdFee,
-                          }}
-                        />
-                      ),
-                    })
-                  }>
-                  ACCEPT
+                <button onClick={() => setShowModal(true)}>
+                  {hasBridge ? "ACCEPT" : hasWrapper ? (acceptWrap ? "Wrap" : "UnWrap") : ""}
                 </button>
               </div>
             </div>

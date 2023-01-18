@@ -31,11 +31,12 @@ export const Header = () => {
   const userChainDetails = useSelector(userChainDetailsSelector);
   const userAddress = useSelector(userAddressSelector);
   const networkConfig = useSelector(networkConfigSelector);
-  const hasBridge = networkConfig.hasBridge;
+  const {hasBridge,hasWrapper} = networkConfig;
   const links = [
     { name: "Trade", to: "/" },
     { name: "Bridge", to: "/bridge", isHidden: !hasBridge },
     { name: "Security", to: "/security" },
+    { name: "wrapper", to: "/wrapper" ,isHidden: !hasWrapper},
     { name: "Docs", to: getDocsLink(), target: "blank" },
   ];
   const theme = useTheme();

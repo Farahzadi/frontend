@@ -8,6 +8,7 @@ import Security from "components/pages/Security";
 export const routes = [
   { path: "/", comp: TradePage },
   { path: "/bridge/:tab?", comp: BridgePage },
+  { path: "/wrapper/:tab?", comp: BridgePage },
   {
     path: "/security",
     comp: Security,

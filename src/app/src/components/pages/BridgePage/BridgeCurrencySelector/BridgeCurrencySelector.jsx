@@ -1,56 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { networkSelector, userChainDetailsSelector } from "lib/store/features/api/apiSlice";
+import { networkSelector, userChainDetailsSelector, networkConfigSelector } from "lib/store/features/api/apiSlice";
 import styled, { css } from "@xstyled/styled-components";
 import { FiChevronDown } from "react-icons/fi";
 import { useCoinEstimator } from "components";
 import { formatUSD } from "lib/utils";
 import Currencies from "config/Currencies";
 import { styled as Newstyled } from "@mui/material";
-
-const StyledBridgeCurrencySelector = Newstyled("div")(() => ({
-  padding: "0 0 0 3px",
-  color: "#fff",
-  borderRadius: "15px",
-  display: "flex",
-  width: "100%",
-  height: "50px",
-  alignItems: "center",
-  border: "2px solid var(--dexpressoPrimery)!important",
-  cursor: "pointer",
-  userSelect: "none",
-  "& select": {
-    width: "100%",
-    height: "100%",
-    border: "none",
-    background: "transparent",
-  },
-}));
-
-const BridgeCurrencyWrapper = Newstyled("div")(() => ({
-  width: "100%",
-  "& .currencyIcon": {
-    marginLeft: "10px",
-    background: "#fff",
-    padding: "3px",
-    borderRadius: "30px",
-  },
-  "& .currencyIcon > img": {
-    width: "28px",
-    height: "28px",
-    objectFit: "contain",
-  },
-  "& .currencyName": {
-    marginLeft: " 20px",
-    fontSize: "20px",
-
-    "& svg": {
-      position: "relative",
-      top: "-1px",
-      marginLeft: " 5px",
-    },
-  },
-}));
 
 const BridgeCurrencyOptions = styled.ul`
   position: absolute;
@@ -171,6 +127,54 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
   const userChainDetails = useSelector(userChainDetailsSelector);
   const coinEstimator = useCoinEstimator();
 
+  const networkConfig = useSelector(networkConfigSelector);
+
+  const { hasBridge, hasWrapper } = networkConfig;
+
+  const StyledBridgeCurrencySelector = Newstyled("div")(() => ({
+    padding: "0 0 0 3px",
+    color: "#fff",
+    borderRadius: "15px",
+    display: "flex",
+    width: "100%",
+    height: "50px",
+    alignItems: "center",
+    border: "2px solid var(--dexpressoPrimery)!important",
+    cursor: hasBridge ? "pointer" : "",
+    userSelect: "none",
+    "& select": {
+      width: "100%",
+      height: "100%",
+      border: "none",
+      background: "transparent",
+    },
+  }));
+
+  const BridgeCurrencyWrapper = Newstyled("div")(() => ({
+    width: "100%",
+    "& .currencyIcon": {
+      marginLeft: "10px",
+      background: "#fff",
+      padding: "3px",
+      borderRadius: "30px",
+    },
+    "& .currencyIcon > img": {
+      width: "28px",
+      height: "28px",
+      objectFit: "contain",
+    },
+    "& .currencyName": {
+      marginLeft: " 20px",
+      fontSize: "20px",
+
+      "& svg": {
+        position: "relative",
+        top: "-1px",
+        marginLeft: " 5px",
+      },
+    },
+  }));
+
   useEffect(() => {
     const tickers = (currencies || Object.keys(Currencies))
       .filter(c => {
@@ -204,6 +208,9 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
   };
 
   const toggleOptions = e => {
+    if (hasWrapper) {
+      return null;
+    }
     if (e) e.preventDefault();
     e.stopPropagation();
     setShowingOptions(!showingOptions);
@@ -281,7 +288,7 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
                 </div>
               )}
             </li>
-          ),
+          )
         )}
         {!tickers.length && (
           <li
