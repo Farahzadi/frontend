@@ -7,23 +7,23 @@ const NoFiat = () => {
   const benefits = [
     {
       id: 1,
-      title: 'Low fees, no gas costs',
-      description: `Once you deposit to Layer 2, you will no longer pay fees
-        to miners for each transaction.`,
+      title: 'Low fees',
+      description: `The wide range of supported networks gives user more options to trade 
+        their desired assets in the optimal network to decrease their fee rates.`,
       img: 'square-low-fee.svg'
     },
     {
       id: 2,
       title: 'Lightning quick',
-      description: ` Trades are executed instantly and confirmed on the
-        blockchain within hours.`,
+      description: `Orders are matched instantly (off-chain) and confirmed on-chain to keep up
+        the orderbook speed, while providing a trustless trading platform for users.`,
       img: 'square-fast.svg'
     },
     {
       id: 3,
-      title: 'Fast withdrawals',
-      description: `Unlike other platforms, there is no wait required to
-        withdraw your funds from Layer 2.`,
+      title: 'Multiple Blockchain Support',
+      description: `The wide range of supported networks gives user more options to trade 
+      their desired assets in the optimal network to decrease their fee rates.`,
       img: 'square-multi-chain.svg'
     },
     {

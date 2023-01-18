@@ -11,8 +11,8 @@ const Networks = ({ networks }) => {
   };
   return (
     <section className={styles.section}>
-      <h1 className='title'>Networks</h1>
-      <p className='subtitle'>We work on different networks</p>
+      <h1 className='title'>Supported Blockchains</h1>
+      <p className='subtitle'>Dexpresso aims to provide a unique and seamless experience for users over multiple blockchains</p>
       <div className={styles.mainContainer}>
         {networks?.map((val) => (
           <div className={styles.netItem} key={val.network}>

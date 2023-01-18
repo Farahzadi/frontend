@@ -4,6 +4,7 @@
 .mainContainer {
     display: flex;
     justify-content: center;
+    flex-flow: wrap;
 }
 .netItem {
     width: 150px;

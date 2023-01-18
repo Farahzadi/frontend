@@ -31,7 +31,7 @@ export default function Home({ networks, trades, baseUrl }) {
       <CustomizedHead baseUrl={baseUrl}>
         <meta
           name='description'
-          content='Dexpresso is a decentralized exchange'
+          content='Dexpresso, one DEX to exchange them all.'
         ></meta>
       </CustomizedHead>
       <Background />

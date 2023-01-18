@@ -2,57 +2,56 @@
   padding: 7rem 2rem;
 }
 .mainContainer {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: 100px repeat(6, 1fr);
-  column-gap: 0.7rem;
-  row-gap: 0;
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  justify-content: center;
   align-items: center;
   max-width: 1071px;
+}
+.stepsContainer {
+  min-width: 200px;
+}
+.stepsList {
+  list-style: none;
+  max-width: 160px;
+}
+.descriptionContainer {
 }
 .itemTitle {
   text-align: start;
 }
 .itemSubtitle {
-  color: var(--grey2);
+  color: #65a6a6;
+  text-align: start;
 }
 .itemDescription {
-  color: var(--grey2);
+  color: #fcf5ed;
   text-align: start;
   font-size: 1.1rem;
 }
 .item {
   max-width: 320px;
+  background: linear-gradient(to bottom, #bfa38a, #fcf5ed);
+  padding: 2px;
+  border-radius: 1.875rem;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  transition: opacity 1s;
+  overflow: hidden;
+  margin: 0;
 }
-.item:nth-child(1) {
-  grid-column: 3 / 4;
-  grid-row: 2 / span 2;
-  align-self: center;
+.activeSection {
+  opacity: 1;
+  width: auto;
+  height: auto;
+  transition: all .8s;
 }
-.item:nth-child(2) {
-  grid-column: 1 / 2;
-  grid-row: 2 / span 2;
-  align-self: center;
-}
-.item:nth-child(3) {
-  grid-column: 3 / 4;
-  grid-row: 4 / span 2;
-  align-self: center;
-}
-.item:nth-child(4) {
-  grid-column: 1 / 2;
-  grid-row: 4 / span 2;
-  align-self: center;
-}
-.item:nth-child(5) {
-  grid-column: 3 / 4;
-  grid-row: 6 / span 2;
-  align-self: center;
-}
-.item:nth-child(6) {
-  grid-column: 1 / 2;
-  grid-row: 6 / span 2;
-  align-self: center;
+.innerItem {
+  background: var(--darkBG);
+  border-radius: 1.875rem;
+  padding: 2.0625rem 2rem;
 }
 .roadMapItem {
   position: relative;
@@ -61,390 +60,26 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: url('/images/roadmap-1.svg') no-repeat;
-  background-size: contain;
-  /* transform: rotate(-90deg); */
   justify-self: center;
   background-position: center;
-  flex-flow: column;
-
+  border-inline-start: 2.5px solid #bfa38a;
+  margin-bottom: 1.2rem;
+  padding: 0.5rem;
+  cursor: pointer;
 }
-.roadMapItem::before {
-  content: '';
-  position: absolute;
-  height: 5px;
-  background-color: inherit;
-  background-image: unset;
-}
-.roadMapItem:nth-child(2n)::before {
-  right: -20px;
-  left: 90%;
-}
-.roadMapItem:nth-child(2n + 1)::before {
-  left: -20px;
-  right: 90%;
-}
-.roadMapItem::after {
-  content: '';
-  position: absolute;
-  width: 15px;
-  height: 15px;
-  background: inherit;
-  border-radius: 50%;
-  left: 100%;
-}
-.roadMapItem:nth-child(2n):after {
-  right: -80px;
-  left: calc(100% + 17px);
-}
-.roadMapItem:nth-child(2n + 1):after {
-  left: -22px;
-  right: 100%;
-}
-/* .roadMapItem::after {
-    background-color: black;
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    height: auto;
-    top: 0;
-    bottom: 0;
-}
-.roadMapItem::before {
-    background-color: inherit;
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    height: auto;
-    top: 0;
-    bottom: 0;
-}
-.roadMapItem .topLine, .roadMapItem .bottomLine {
-    background-color: black;
-} */
-.roadMapItem:nth-child(7) {
-  background-image: url('/images/roadmap-1r.svg');
-  grid-column: 2 / 3;
-  grid-row: 7 / 8;
-  height: 137px;
-  width: 118px;
-}
-/* .roadMapItem:nth-child(7):after {
-    top: -1px;
-    bottom: -1px;
-    right: -3px;
-    left: auto;
-    width: 7px;
-
-}
-.roadMapItem:nth-child(8) .topLine {
-    position: absolute;
-    top: -1px;
-    bottom: auto;
-    height: 3px;
-    left: 0;
-    right: 0;
-    transform: rotate(0.5deg);
-}
-.roadMapItem:nth-child(8) .bottomLine {
-    position: absolute;
-    top: auto;
-    bottom: -1px;
-    height: 3px;
-    left: 0;
-    right: 0;
-    transform: rotate(-0.5deg);
-} */
-.roadMapItem:nth-child(7)::before {
-  background-color: #22c3bb;
-}
-.roadMapItem:nth-child(7)::after {
-  background-color: #22c3bb;
-}
-.roadMapItem:nth-child(8) {
-  background-image: url('/images/roadmap-2r.svg');
-  grid-column: 2 / 3;
-  grid-row: 6 / 7;
-  height: 146px;
-  width: 122px;
-}
-.roadMapItem:nth-child(8)::before {
-  background-color: #32b2c4;
-}
-.roadMapItem:nth-child(8)::after {
-  background-color: #32b2c4;
-}
-.roadMapItem:nth-child(9) {
-  background-image: url('/images/roadmap-3r.svg');
-  grid-column: 2 / 3;
-  grid-row: 5 / 6;
-  height: 135px;
-  width: 122px;
-}
-.roadMapItem:nth-child(9)::before {
-  background-color: #5e8edc;
-}
-.roadMapItem:nth-child(9)::after {
-  background-color: #5e8edc;
-}
-.roadMapItem:nth-child(10) {
-  background-image: url('/images/roadmap-4r.svg');
-  grid-column: 2 / 3;
-  grid-row: 4 / 5;
-  height: 144px;
-  width: 98px;
-}
-.roadMapItem:nth-child(10)::before {
-  background-color: #6a76e5;
-}
-.roadMapItem:nth-child(10)::after {
-  background-color: #6a76e5;
-}
-.roadMapItem:nth-child(11) {
-  background-image: url('/images/roadmap-5r.svg');
-  grid-column: 2 / 3;
-  grid-row: 3 / 4;
-  height: 130px;
-  width: 93px;
-}
-.roadMapItem:nth-child(11)::before {
-  background-color: #825df3;
-}
-.roadMapItem:nth-child(11)::after {
-  background-color: #825df3;
-}
-.roadMapItem:nth-child(12) {
-  background-image: url('/images/roadmap-6r.svg');
-  grid-column: 2 / 3;
-  grid-row: 1 / 3;
-  height: 215px;
-  width: 117px;
-  padding-block-end: 33px;
-  align-self: flex-end;
-  justify-content: flex-end;
-}
-.roadMapItem:nth-child(12)::before {
-  bottom: 31%;
-  left: 70%;
-  background-color: #9747ff;
-}
-.roadMapItem:nth-child(12)::after {
-  bottom: 28.5%;
-  right: calc(70% + 100px);
-  background-color: #9747ff;
-}
-@media (min-width: 426px) {
-  .roadMapItem:nth-child(2n + 1)::before {
-    left: -33px;
-  }
-  .roadMapItem:nth-child(2n + 1)::after {
-    left: -33px;
-  }
+.activeItem * {
+  color: var(--green);
+  transform: translateX(25px);
+  transition: transform 0.3s;
 }
 @media (min-width: 769px) {
   .mainContainer {
-    grid-template-columns: repeat(6, 1fr) 54px;
-    grid-template-rows: repeat(3, 1fr);
-    column-gap: 0;
-    row-gap: 0.5rem;
-    align-items: center;
-  }
-  .item {
-    max-width: 243px;
-  }
-  .itemDescription {
-    font-size: 0.95rem;
-  }
-  .roadMapItem {
-    position: relative;
-    font-size: 0.92rem;
-    font-weight: bold;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 33px 0;
-    background: url('/images/roadmap-1r.svg') no-repeat;
-    background-size: contain;
+    min-width: 600px;
     flex-flow: row;
-  }
-  .item:nth-child(1) {
-    grid-column: 1 / span 2;
-    grid-row: 1 / 2;
-  }
-  .item:nth-child(2) {
-    grid-column: 3 / span 2;
-    grid-row: 1 / 2;
-  }
-  .item:nth-child(3) {
-    grid-column: 5 / span 2;
-    grid-row: 1 / 2;
-  }
-  .item:nth-child(4) {
-    grid-column: 1 / span 2;
-    grid-row: 3 / 4;
-  }
-  .item:nth-child(5) {
-    grid-column: 3 / span 2;
-    grid-row: 3 / 4;
-  }
-  .item:nth-child(6) {
-    grid-column: 5 / span 2;
-    grid-row: 3 / 4;
-  }
-  .roadMapItem::before {
-    content: '';
-    position: absolute;
-    width: 5px;
-    background-color: inherit;
-    background-image: unset;
-    bottom: 100%;
-    height: auto;
-  }
-  .roadMapItem:nth-child(2n)::before {
-    bottom: -70px;
-    top: 80%;
-    left: auto;
-    right: auto;
-  }
-  .roadMapItem:nth-child(2n + 1)::before {
-    top: -70px;
-    bottom: 90%;
-    left: auto;
-    right: auto;
-  }
-  .roadMapItem:nth-child(7)::before {
-    top: -50%;
-  }
-  .roadMapItem:nth-child(9)::before {
-    top: -53%;
-  }
-  .roadMapItem:nth-child(11)::before {
-    top: -75%;
-  }
-
-
-  .roadMapItem::after {
-    content: '';
-    position: absolute;
-    width: 15px;
-    height: 15px;
-    background: inherit;
-    border-radius: 50%;
-    bottom: 100%;
-  }
-  .roadMapItem:nth-child(2n):after {
-    bottom: -80px;
-    left: auto;
-    right: auto;
-  }
-  .roadMapItem:nth-child(2n + 1):after {
-    top: -70px;
-    bottom: 100%;
-    left: auto;
-    right: auto;
-  }
-  .roadMapItem:nth-child(7)::after {
-    top: -50%;
-  }
-  .roadMapItem:nth-child(9)::after {
-    top: -53%;
-  }
-  .roadMapItem:nth-child(11)::after {
-    top: -75%;
-  }
-  .roadMapItem:nth-child(7) {
-    grid-column: 1 / span 1;
-    grid-row: 2 / 3;
-    height: 101px;
-    width: 115px;
-    background-image: url('/images/roadmp-1.svg');
-
-  }
-  .roadMapItem:nth-child(8) {
-    grid-column: 2 / span 1;
-    grid-row: 2 / 3;
-    height: 98px;
-    width: 119px;
-    background-image: url('/images/roadmp-2.svg');
-  }
-  .roadMapItem:nth-child(9) {
-    grid-column: 3 / span 1;
-    grid-row: 2 / 3;
-    height: 95px;
-    width: 113px;
-    background-image: url('/images/roadmp-3.svg');
-  }
-  .roadMapItem:nth-child(10) {
-    grid-column: 4 / span 1;
-    grid-row: 2 / 3;
-    height: 87px;
-    width: 113px;
-    background-image: url('/images/roadmp-4.svg');
-  }
-  .roadMapItem:nth-child(11) {
-    grid-column: 5 / span 1;
-    grid-row: 2 / 3;
-    height: 76px;
-    width: 113px;
-    background-image: url('/images/roadmp-5.svg');
-  }
-  .roadMapItem:nth-child(12) {
-    height: 78px;
-    width: 175px;
-    background-image: url('/images/roadmp-6.svg');
-    grid-column: 6 / span 2;
-    grid-row: 2 / 3;
-    justify-content: flex-start;
-    padding-inline-start: 13px;
-    align-self: flex-end;
-  }
-  .roadMapItem:nth-child(12)::before {
-    top: 50%;
-    left: 30%;
-    bottom: -50px;
-    background-color: #9747ff;
-  }
-  .roadMapItem:nth-child(12)::after {
-    left: 27%;
-    top: calc(100% + 50px);
-    background-color: #9747ff;
   }
 }
 @media (min-width: 1440px) {
   .mainContainer {
-    grid-template-columns: repeat(6, 1fr) 122px;
-  }
-  .item {
-    max-width: 320px;
-  }
-  .roadMapItem:nth-child(7) {
-    height: 137px;
-    width: 159px;
-  }
-  .roadMapItem:nth-child(8) {
-    height: 136px;
-    width: 167px;
-  }
-  .roadMapItem:nth-child(9) {
-    height: 132px;
-    width: 159px;
-  }
-  .roadMapItem:nth-child(10) {
-    height: 124px;
-    width: 166px;
-  }
-  .roadMapItem:nth-child(11) {
-    height: 110px;
-    width: 167px;
-  }
-  .roadMapItem:nth-child(12) {
-    height: 110px;
-    width: 284px;
-    padding-inline-start: 23px;
-    justify-self: self-start;
-    /* align-items: flex-end; */
-  }
-  .roadMapItem:nth-child(12)::after {
-    left: 28.5%;
+    min-width: 800px;
   }
 }
