@@ -16,9 +16,7 @@ import { toast } from "react-toastify";
 import APIProvider from "../providers/APIProvider";
 
 export default class NetworkInterface {
-
   static State = class extends State {
-
     static DISCONNECTED = "DISCONNECTED";
     static PROVIDER_CONNECTING = "PROVIDER_CONNECTING";
     static PROVIDER_CONNECTED = "PROVIDER_CONNECTED";
@@ -29,7 +27,6 @@ export default class NetworkInterface {
     static PROVIDER_DISCONNECTING = "PROVIDER_DISCONNECTING";
 
     _state = "DISCONNECTED";
-
   };
 
   static Actions = [
@@ -60,7 +57,6 @@ export default class NetworkInterface {
   SECURITY_TYPE = null;
   BRIDGE_CONTRACT = null;
   DEX_CONTRACT = null;
-  EVENT_NAMES = null;
 
   core = null;
 
@@ -158,7 +154,7 @@ export default class NetworkInterface {
             {" "}
             go to wallet.zksync.io
           </a>
-        </>,
+        </>
       );
       throw new Error();
     }
@@ -378,7 +374,7 @@ export default class NetworkInterface {
       }
       if (price.eq(0))
         throw new VError(
-          type === "l" ? "Price should not be equal to 0" : "There is no orders in the orderbook to match",
+          type === "l" ? "Price should not be equal to 0" : "There is no orders in the orderbook to match"
         );
 
       if (side === "buy") side = "b";
@@ -417,7 +413,7 @@ export default class NetworkInterface {
       const minOrderSize = new Decimal(toBaseUnit(configSelector(state).minOrderSize, baseDecimals));
       if (amount.lt(minOrderSize))
         throw new VError(
-          `Minimum order size is ${minOrderSize.div(Decimal.pow(10, baseDecimals)).toFixed()} ${baseCurrency}`,
+          `Minimum order size is ${minOrderSize.div(Decimal.pow(10, baseDecimals)).toFixed()} ${baseCurrency}`
         );
 
       const lastPrice = new Decimal(lastPricesSelector(state)[market]?.price ?? price);
@@ -497,5 +493,4 @@ export default class NetworkInterface {
       quote: useToBase ? toBaseUnit(price, quoteDecimals) : price,
     };
   }
-
 }
