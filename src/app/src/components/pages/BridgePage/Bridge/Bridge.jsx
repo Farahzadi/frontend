@@ -76,7 +76,7 @@ const Bridge = () => {
     const setFee = bridgeFee => {
       setBridgeFee(bridgeFee);
 
-      const bals = transfer.type === "deposit" ? L1Balances : L2Balances;
+      const bals = transfer.type === "deposit" ? (hasBridge ? L1Balances : L2Balances) : L2Balances;
       const detailBalance = Number(bals?.[details.currency]?.valueReadable ?? 0);
       const input = Number(details.amount || 0);
       if (input > 0) {
@@ -182,8 +182,8 @@ const Bridge = () => {
     </div>
   );
 
-  const balances = transfer.type === "deposit" ? L1Balances : L2Balances;
-  const altBalances = transfer.type === "deposit" ? L2Balances : L1Balances;
+  const balances = transfer.type === "deposit" ? (hasBridge ? L1Balances : L2Balances) : L2Balances;
+  const altBalances = transfer.type === "deposit" ? L2Balances : hasBridge ? L1Balances : L2Balances;
   const hasAllowance = true; // TODO: make chain specific!
   // new Decimal(userAllowances?.[swapDetails.currency]?.value || 0).greaterThan(
   //   maxAllowance.div(3).toString()
@@ -235,7 +235,10 @@ const Bridge = () => {
       <div className=" bridge_coin_title align-self-lg-end align-self-auto">
         <p className="bridge_bottom_form__right-title">Available balance</p>
         <p>
-          {balances?.[swapDetails.currency]?.valueReadable}
+          {
+            balances?.[hasBridge ? swapDetails.currency : transfer.type === "deposit" ? swapDetails.currency : "WETH"]
+              ?.valueReadable
+          }
           {` ${swapDetails.currency}`}
         </p>
       </div>
@@ -287,7 +290,13 @@ const Bridge = () => {
                       <div className=" bridge_coin_title align-self-lg-end align-self-auto">
                         <p className="bridge_bottom_form__right-title">Available balance</p>
                         <p>
-                          {altBalances?.[swapDetails.currency]?.valueReadable.toString()}
+                          {altBalances?.[
+                            hasBridge
+                              ? swapDetails.currency
+                              : transfer.type === "deposit"
+                                ? "WETH"
+                                : swapDetails.currency
+                          ]?.valueReadable.toString()}
                           {` ${swapDetails.currency}`}
                         </p>
                       </div>
