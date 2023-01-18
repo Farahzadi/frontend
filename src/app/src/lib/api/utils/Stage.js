@@ -129,6 +129,18 @@ export class Stage {
     if (!this.children.includes(child) && child !== this.name) this.children.push(child);
   }
 
+  /** @param {string?} name */
+  copy(name = null) {
+    return new Stage(
+      [...this.parents],
+      [...this._eventsToFinish],
+      this._onStart,
+      this._onFinish,
+      [...this.children],
+      name ?? this.name,
+    );
+  }
+
 }
 
 export class StageManager {
@@ -140,10 +152,7 @@ export class StageManager {
    * @param {{name:Stage}} stages
    */
   constructor(stages) {
-    this.stages = stages;
-    Object.entries(this.stages).forEach(([name, stage]) => {
-      if (stage.name !== name) stage.setName(name);
-    });
+    this.stages = Object.fromEntries(Object.entries(stages).map(([name, stage]) => [name, stage.copy(name)]));
     Object.values(this.stages).forEach(stage => {
       stage.children.forEach(child => {
         this.stages[child].addParent(stage);
