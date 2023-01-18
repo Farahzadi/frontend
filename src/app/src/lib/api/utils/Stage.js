@@ -1,4 +1,4 @@
-import Emitter from "tiny-emitter";
+import { EventEmitter } from "events";
 
 export class Stage {
 
@@ -149,6 +149,8 @@ export class Stage {
 export class StageManager {
 
   stages;
+
+  /** @type {EventEmitter} */
   emitter;
 
   /**
@@ -171,7 +173,7 @@ export class StageManager {
 
   reset() {
     Object.values(this.stages).forEach(stage => stage._reset());
-    this.emitter = new Emitter();
+    this.emitter = new EventEmitter();
     Object.values(this.stages).forEach(stage => stage.setEventSource(this.emitter));
     this.emitter.on("STAGE_FINISHED", stage => this.stages[stage].triggerStart(stage));
   }
