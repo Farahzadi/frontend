@@ -319,7 +319,31 @@ const Bridge = () => {
                 </div>
               </div>
               <div className="accept-btn">
-                <button onClick={() => setShowModal(true)}>
+                <button
+                  onClick={() =>
+                    Modal.open({
+                      children: (
+                        <BridgeModal
+                          {...{
+                            transfer,
+                            doTransfer,
+                            approveSpend,
+                            swapDetails,
+                            bridgeFee,
+                            formErr,
+                            userAddress,
+                            balances,
+                            userChainDetails,
+                            disconnect,
+                            hasError,
+                            hasAllowance,
+                            activationFee,
+                            usdFee,
+                          }}
+                        />
+                      ),
+                    })
+                  }>
                   {hasBridge ? "ACCEPT" : hasWrapper ? (acceptWrap ? "Wrap" : "UnWrap") : ""}
                 </button>
               </div>
