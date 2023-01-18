@@ -228,7 +228,7 @@ export default class EthAPIProvider extends APIProvider {
   async wrap(amount, contractAddr, decimals) {
     const contract = new ethers.Contract(contractAddr, WETHContractABI, this.wallet);
     const bigNumAmount = ethers.BigNumber.from(amount * 10 ** decimals);
-    const tx = await contract.deposit(bigNumAmount);
+    const tx = await contract.deposit({ value: bigNumAmount });
     await tx.wait();
   }
 
