@@ -33,7 +33,10 @@ export class Stage {
 
   /**
    * @param {[string]} parents
-   * @param {[[event: string, checker: function(object):boolean]]} eventsToFinish
+   * @param {[string | [event: string, checker: function(object):boolean]]} eventsToFinish
+   * Single string for triggering finish when the event happenes.
+   * Or list of string and a checker function to run the checker whenever the event happenes
+   * and trigger finish if the returned value was true.
    * @param {function} onStart
    * @param {function} onFinish
    * @param {[string]} children
@@ -46,7 +49,7 @@ export class Stage {
     console.log(typeof []);
     this._onStart = onStart || (() => {});
     this._onFinish = onFinish || (() => {});
-    this._eventsToFinish = eventsToFinish;
+    this._eventsToFinish = eventsToFinish.map(item => (item instanceof Array ? item : [item, () => true]));
     this.reset();
   }
 
