@@ -55,7 +55,7 @@ const OrderHistory = () => {
       name: "order history",
       id: "history",
       cols: ["market", "type", "time", "price", "volume", "side", "status"],
-      map: OpenOrderPropMap,
+      map: OrderPropMap,
     },
     balances: { name: "assets", id: "balances", cols: ["token", "balances"] },
   };
