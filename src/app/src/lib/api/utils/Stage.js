@@ -8,12 +8,13 @@ export class Stage {
   /** @type {[string]} */
   parents = [];
 
-  /** @enum {string} status "INITIAL" | "RUNNING" | "FINISHED" */
-  status = "INITIAL";
+  /** @enum {string} status "READY" | "RUNNING" | "FINISHED" */
+  status = "READY";
 
   /** @type {[string]} */
   children = [];
 
+  _onReady;
   _onStart;
   _onFinish;
 
@@ -25,11 +26,16 @@ export class Stage {
   _startPromiseReject;
   _finishPromiseReject;
 
-  _finishedParents;
+  /** @type {EventEmitter} */
+  _eventSource;
+  /** @type {EventEmitter} */
+  _eventSink;
 
-  eventSource;
-
+  _eventsToStart = [];
   _eventsToFinish = [];
+
+  _startEventHandlers = [];
+  _finishEventHandlers = [];
 
   /**
    * @param {[string]} parents
@@ -46,25 +52,31 @@ export class Stage {
    */
   constructor(
     parents = [],
+    eventsToStart = [],
     eventsToFinish = [],
-    onStart = skip => {},
+    onReady = skip => {},
+    onStart = () => {},
     onFinish = skipped => {},
-    children = [],
+    route = null,
+    sideRoutes = [],
     name = null,
   ) {
     this.name = name;
     this.parents = parents || [];
-    this.children = children || [];
+    this.route = route || null;
+    this._onReady = onReady || (skip => {});
     this._onStart = onStart || (() => {});
-    this._onFinish = onFinish || (() => {});
-    this._eventsToFinish = eventsToFinish.map(item => (item instanceof Array ? item : [item, () => true]));
+    this._onFinish = onFinish || (skipped => {});
+    this._eventsToStart = Stage.formatEvents(eventsToStart);
+    this._eventsToFinish = Stage.formatEvents(eventsToFinish);
+    this._sideRoutes = sideRoutes;
     this.reset();
   }
 
   reset() {
-    this.status = "INITIAL";
-    // this._startPromiseReject?.();
-    // this._finishPromiseReject?.();
+    this.status = "READY";
+    this._startPromiseResolve?.(false);
+    this._finishPromiseResolve?.(false);
     this.startPromise = new Promise((res, rej) => {
       this._startPromiseResolve = res;
       this._startPromiseReject = rej;
@@ -73,56 +85,84 @@ export class Stage {
       this._finishPromiseResolve = res;
       this._finishPromiseReject = rej;
     });
-    this.finishedParents = new Set();
+    this._removeStartEventHandlers();
+    this._startEventHandlers = [];
     this._removeFinishEventHandlers();
     this._finishEventHandlers = [];
   }
 
   /**
-   * @param {string?} parent
-   * Parent name to trigger this node as its child.
-   * Empty for triggering when this node doesn't have any paretns
+   * Triggers the ready state of the stage.
+   * Also resets the stage to be able to behave normally if it's being reached again.
    */
-  triggerStart(parent = null) {
-    if (parent && this.parents.includes(parent)) this.finishedParents.add(parent);
-    if (this.status === "INITIAL" && this.finishedParents.size === this.parents.length) this._start();
+  trigger() {
+    this.reset();
+    this._ready();
   }
 
-  // triggerFinish(eventName, data = undefined) {
-  //   if (this.status === "RUNNING" && this._eventsToFinish?.[eventName]?.(data)) this._finish();
-  // }
+  _ready() {
+    this._addStartEventHandlers();
+    this.status = "READY";
+    this._onReady?.(() => {
+      this._finish(true);
+    });
+    this._eventSink?.emit("STAGE_READY", this.name);
+    if (this._eventsToStart.length === 0) this._start();
+  }
+
+  _start() {
+    this._removeStartEventHandlers();
+    this._addFinishEventHandlers();
+    this.status = "RUNNING";
+    this._startPromiseResolve(true);
+    this._onStart?.();
+    this._eventSink?.emit("STAGE_STARTED", this.name);
+    if (this._eventsToFinish.length === 0) this._finish();
+  }
+
+  _finish(skipped = false) {
+    this._removeFinishEventHandlers();
+    this.status = "FINISHED";
+    this._finishPromiseResolve(true);
+    this._onFinish?.(skipped);
+    this._eventSink?.emit("STAGE_FINISHED", this.name);
+  }
+
+  _addStartEventHandlers() {
+    this._startEventHandlers = this._eventsToStart.map(([event, checker]) => [
+      event,
+      (...data) => this.status === "READY" && checker(...data) && this._start(),
+    ]);
+    this._startEventHandlers.forEach(([event, handler]) => this._eventSource?.on(event, handler));
+  }
+
+  _removeStartEventHandlers() {
+    this._finishEventHandlers?.forEach(([event, handler]) => this._eventSource?.off(event, handler));
+  }
 
   _addFinishEventHandlers() {
     this._finishEventHandlers = this._eventsToFinish.map(([event, checker]) => [
       event,
       (...data) => this.status === "RUNNING" && checker(...data) && this._finish(),
     ]);
-    this._finishEventHandlers.forEach(([event, handler]) => this.eventSource?.on(event, handler));
+    this._finishEventHandlers.forEach(([event, handler]) => this._eventSource?.on(event, handler));
   }
 
   _removeFinishEventHandlers() {
-    this._finishEventHandlers?.forEach(([event, handler]) => this.eventSource?.off(event, handler));
+    this._finishEventHandlers?.forEach(([event, handler]) => this._eventSource?.off(event, handler));
   }
 
-  _start() {
-    this._addFinishEventHandlers();
-    this.status = "RUNNING";
-    this._startPromiseResolve();
-    this._onStart?.(() => {
-      this._finish(true);
-    });
-  }
-
-  _finish(skipped = false) {
+  _removeEventHandlers() {
     this._removeFinishEventHandlers();
-    this.status = "FINISHED";
-    this._finishPromiseResolve();
-    this._onFinish?.(skipped);
-    this.eventSource?.emit("STAGE_FINISHED", this.name);
+    this._removeStartEventHandlers();
   }
 
   setEventSource(eventSource) {
-    this.eventSource = eventSource;
+    this._eventSource = eventSource;
+  }
+
+  setEventSink(eventSink) {
+    this._eventSink = eventSink;
   }
 
   setName(name) {
@@ -130,17 +170,9 @@ export class Stage {
   }
 
   /**
-   * @param {Stage|string} parent
-   */
-  addParent(parent) {
-    parent = parent instanceof Stage ? parent.name : parent;
-    if (!this.parents.includes(parent) && parent !== this.name) this.parents.push(parent);
-  }
-
-  /**
    * @param {Stage|string} child
    */
-  addChild(child) {
+  setRoute(child) {
     child = child instanceof Stage ? child.name : child;
     if (!this.children.includes(child) && child !== this.name) this.children.push(child);
   }
@@ -149,12 +181,20 @@ export class Stage {
   copy(name = null) {
     return new Stage(
       [...this.parents],
+      [...this._eventsToStart],
       [...this._eventsToFinish],
+      this._onReady,
       this._onStart,
       this._onFinish,
-      [...this.children],
+      this.route,
+      [...this._sideRoutes],
       name ?? this.name,
     );
+  }
+
+  static formatEvents(events) {
+    if (!events) return [];
+    return events.map(item => (item instanceof Array ? item : [item, () => true]));
   }
 
 }
@@ -164,40 +204,49 @@ export class StageManager {
   stages;
   entry;
 
+  current;
+
   /** @type {EventEmitter} */
-  emitter;
+  _emitter;
+  /** @type {EventEmitter} */
+  _stageEventListener;
+  /** @type {EventEmitter} */
+  _eventSink;
 
   /**
    * @param {{name:Stage}} stages
    * @param {string} entry Starting stage node
    * @param {[string | [event: string, checker: function(object):boolean]]} eventsToReset
    */
-  constructor(stages, entry = null, eventsToReset = []) {
+  constructor(stages, entry = null, eventsToReset = [], eventSink = null) {
     this.stages = Object.fromEntries(Object.entries(stages).map(([name, stage]) => [name, stage.copy(name)]));
     this.entry = this.stages[entry] && entry;
     Object.values(this.stages).forEach(stage => {
-      stage.children.forEach(child => {
-        this.stages[child].addParent(stage);
-      });
-    });
-    Object.values(this.stages).forEach(stage => {
       stage.parents.forEach(parent => {
-        this.stages[parent].addChild(stage);
+        this.stages[parent].setRoute(stage);
       });
     });
     this._eventsToRestart = eventsToReset.map(item => (item instanceof Array ? item : [item, () => true]));
+    this._eventSink = eventSink instanceof EventEmitter ? eventSink : null;
     this.reset();
   }
 
   reset() {
     Object.values(this.stages).forEach(stage => stage.reset());
-    this.emitter = new EventEmitter();
-    Object.values(this.stages).forEach(stage => stage.setEventSource(this.emitter));
-    this.emitter.on("STAGE_FINISHED", stage =>
-      this.stages[stage].children.forEach(child => this.stages[child]?.triggerStart(stage)),
-    );
+    this._emitter = new EventEmitter();
+    this._stageEventListener = new EventEmitter();
+    Object.values(this.stages).forEach(stage => {
+      stage.setEventSource(this._emitter);
+      stage.setEventSink(this._stageEventListener);
+    });
+    this._stageEventListener.on("STAGE_STARTED", stage => {
+      this._move(this.stages[stage].route);
+    });
+    this._stageEventListener.on("STAGE_FINISHED", stage => {
+      this._move(this.stages[stage].route);
+    });
     this._eventsToRestart.forEach(([event, checker]) =>
-      this.emitter.on(event, (...data) => checker(...data) && this.restart()),
+      this._emitter.on(event, (...data) => checker(...data) && this.restart()),
     );
   }
 
@@ -209,7 +258,7 @@ export class StageManager {
     entry = (this.stages[entry] && entry) || this.entry;
     if (!entry) throw new Error("No entry point found to start the staging process");
     this.entry = entry;
-    this.stages[entry].triggerStart();
+    this._move(entry);
   }
 
   restart() {
@@ -217,8 +266,14 @@ export class StageManager {
     this.start();
   }
 
+  /** @param {string} stage */
+  _move(stage) {
+    this.current = stage;
+    this.stages[stage].trigger();
+  }
+
   emit(event, ...args) {
-    this.emitter.emit(event, ...args);
+    this._emitter.emit(event, ...args);
   }
 
 }
