@@ -7,10 +7,11 @@ import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
 import Web3Modal, { providers } from "web3modal";
 import APIProvider from "./APIProvider";
 import erc20ContractABI from "lib/contracts/ERC20.json";
+import binanceLogo from "../../../assets/images/binance-smart-chain.png";
 
 export default class EthAPIProvider extends APIProvider {
 
-  async start(emitChanges = true) {
+  async start(emitChanges = true, infuraId) {
     let onboarding = new MetaMaskOnboarding();
     if (emitChanges) this.state.set(APIProvider.State.CONNECTING);
     const providerOptions = {
@@ -24,7 +25,7 @@ export default class EthAPIProvider extends APIProvider {
       walletconnect: {
         package: WalletConnectProvider,
         options: {
-          infuraId: "7c22b75cd9cc4f7fa0b03ac9484693aa",
+          infuraId,
         },
       },
       binancechainwallet: {
@@ -34,31 +35,60 @@ export default class EthAPIProvider extends APIProvider {
         package: CoinbaseWalletSDK,
         options: {
           appName: "Coinbase",
-          infuraId: "7c22b75cd9cc4f7fa0b03ac9484693aa",
+          infuraId,
         },
       },
       "custom-coinbase": {
         display: {
-          logo: "images/coinbase.svg",
-          name: "Coinbase",
+          logo: providers.COINBASE.logo,
+          name: providers.COINBASE.name,
           description: "Scan with WalletLink to connect",
         },
         options: {
           appName: "app", // Your app name
-          infuraId: "7c22b75cd9cc4f7fa0b03ac9484693aa",
+          infuraId,
         },
         package: WalletLink,
         connector: async (_, options) => {
-          const { appName, networkUrl, chainId } = options;
+          const { appName } = options;
           const walletLink = new CoinbaseWalletSDK({
             appName,
           });
-          const provider = walletLink.makeWeb3Provider(networkUrl, chainId);
+          const provider = walletLink.makeWeb3Provider();
           await provider.enable();
           return provider;
         },
       },
+      "custom-binancechainwallet": {
+        display: {
+          logo: binanceLogo,
+          name: "Binance Chain Wallet",
+          description: "Connect to your Binance Chain Wallet",
+        },
+        package: true,
+        connector: async () => {
+          let provider = null;
+          if (typeof window.BinanceChain !== "undefined") {
+            provider = window.BinanceChain;
+            try {
+              await provider.request({ method: "eth_requestAccounts" });
+            } catch (error) {
+              throw new Error(error);
+            }
+          } else {
+            return window.open(
+              "https://chrome.google.com/webstore/detail/binance-wallet/fhbohimaelbohpjbbldcngcnapndodjp",
+            );
+          }
+          return provider;
+        },
+      },
     };
+
+    if (typeof window === "undefined") {
+      toast.error("Browser doesn't support Web3.");
+      return;
+    }
 
     if (!window.ethereum) {
       providerOptions["custom-metamask"] = {
@@ -77,11 +107,6 @@ export default class EthAPIProvider extends APIProvider {
       };
     }
 
-    if (typeof window === "undefined") {
-      toast.error("Browser doesn't support Web3.");
-      return;
-    }
-
     this.web3Modal = new Web3Modal({
       network: this.NETWORK_NAME,
       cacheProvider: true,
@@ -90,19 +115,14 @@ export default class EthAPIProvider extends APIProvider {
     });
 
     const provider = await this.web3Modal.connect();
-    this.provider = new ethers.providers.Web3Provider(provider);
-
     if (provider.isMetaMask) onboarding.stopOnboarding();
+    this.provider = new ethers.providers.Web3Provider(provider);
 
     const networkChanged = await this.switchNetwork();
 
     if (networkChanged) return await this.start();
 
     const signer = this.provider.getSigner();
-
-    // const address = await signer.getAddress();
-
-    // const network = await this.provider.getNetwork();
 
     this.wallet = signer;
 
