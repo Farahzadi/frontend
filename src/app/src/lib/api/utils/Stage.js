@@ -1,5 +1,7 @@
 import { EventEmitter } from "events";
 
+/** @typedef {(string|[event: string, checker: function(...*):boolean])} StageEvent */
+
 export class Stage {
 
   /** @type {string} */
@@ -36,29 +38,42 @@ export class Stage {
 
   _startEventHandlers = [];
   _finishEventHandlers = [];
+  _sideRouteEventHandlers = [];
 
   /**
-   * @param {[string]} parents
-   * @param {[string | [event: string, checker: function(object):boolean]]} eventsToFinish
+   * @param {string} route
+   * The main route of a stage to go after finishing.
+   * @param {[StageEvent]} eventsToStart
+   * Single string for triggering start when the event happenes.
+   * Or list of string and a checker function to run the checker whenever the event happenes
+   * and trigger start if the returned value was true.
+   * @param {[StageEvent]} eventsToFinish
    * Single string for triggering finish when the event happenes.
    * Or list of string and a checker function to run the checker whenever the event happenes
    * and trigger finish if the returned value was true.
-   * @param {function(function)} onStart
+   * @param {function(function)} onReady
+   * Runs when the stage becomes current stage.
    * Has a function argument that if you want to skip this stage you can call.
+   * @param {function()} onStart
+   * Runs when the stage has started running.
    * @param {function(boolean)} onFinish
+   * Runs when the stage finished running and is ready to pass the current place to the next stage.
    * Has a boolean argument that shows if the stage was finished by skipping or not.
-   * @param {[string]} children
+   * @param {[{events: [StageEvent], route: string, onHappen?: function}]} sideRoutes
+   * Other possible routes to go as exceptions when given events happen.
+   * @param {[string]} parents
    * @param {string} name
+   * The name of the stage (optional: can be handled by the StageManager)
    */
   constructor(
-    parents = [],
+    route = null,
     eventsToStart = [],
     eventsToFinish = [],
     onReady = skip => {},
     onStart = () => {},
     onFinish = skipped => {},
-    route = null,
     sideRoutes = [],
+    parents = [],
     name = null,
   ) {
     this.name = name;
@@ -69,7 +84,7 @@ export class Stage {
     this._onFinish = onFinish || (skipped => {});
     this._eventsToStart = Stage.formatEvents(eventsToStart);
     this._eventsToFinish = Stage.formatEvents(eventsToFinish);
-    this._sideRoutes = sideRoutes;
+    this._sideRoutes = sideRoutes.map(sideRoute => ({ ...sideRoute, events: Stage.formatEvents(sideRoute.events) }));
     this.reset();
   }
 
@@ -89,6 +104,8 @@ export class Stage {
     this._startEventHandlers = [];
     this._removeFinishEventHandlers();
     this._finishEventHandlers = [];
+    this._removeSideRouteEventHandlers();
+    this._sideRouteEventHandlers = [];
   }
 
   /**
@@ -101,6 +118,7 @@ export class Stage {
   }
 
   _ready() {
+    this._addSideRouteEventHandlers();
     this._addStartEventHandlers();
     this.status = "READY";
     this._onReady?.(() => {
@@ -121,6 +139,7 @@ export class Stage {
   }
 
   _finish(skipped = false) {
+    this._removeSideRouteEventHandlers();
     this._removeFinishEventHandlers();
     this.status = "FINISHED";
     this._finishPromiseResolve(true);
@@ -152,9 +171,33 @@ export class Stage {
     this._finishEventHandlers?.forEach(([event, handler]) => this._eventSource?.off(event, handler));
   }
 
+  _addSideRouteEventHandlers() {
+    const handlers = [];
+    this._sideRoutes.forEach(sideRoute =>
+      sideRoute.events.forEach(([event, checker]) =>
+        handlers.push([
+          event,
+          (...data) => {
+            if (checker(...data)) {
+              sideRoute.onHappen?.(sideRoute.route, event, ...data);
+              this._eventSink?.emit("STAGE_EXCEPTION", this.name, sideRoute.route || this.route);
+            }
+          },
+        ]),
+      ),
+    );
+    handlers.forEach(([event, handler]) => this._eventSource?.on(event, handler));
+    this._sideRouteEventHandlers = handlers;
+  }
+
+  _removeSideRouteEventHandlers() {
+    this._sideRouteEventHandlers?.forEach(([event, handler]) => this._eventSource?.off(event, handler));
+  }
+
   _removeEventHandlers() {
     this._removeFinishEventHandlers();
     this._removeStartEventHandlers();
+    this._removeSideRouteEventHandlers();
   }
 
   setEventSource(eventSource) {
@@ -170,11 +213,10 @@ export class Stage {
   }
 
   /**
-   * @param {Stage|string} child
+   * @param {Stage|string} stage
    */
-  setRoute(child) {
-    child = child instanceof Stage ? child.name : child;
-    if (!this.children.includes(child) && child !== this.name) this.children.push(child);
+  setRoute(stage) {
+    this.route = stage instanceof Stage ? stage.name : stage;
   }
 
   /** @param {string?} name */
@@ -192,6 +234,7 @@ export class Stage {
     );
   }
 
+  /** @param {[StageEvent]} events */
   static formatEvents(events) {
     if (!events) return [];
     return events.map(item => (item instanceof Array ? item : [item, () => true]));
@@ -240,10 +283,13 @@ export class StageManager {
       stage.setEventSink(this._stageEventListener);
     });
     this._stageEventListener.on("STAGE_STARTED", stage => {
-      this._move(this.stages[stage].route);
+      this._eventSink?.emit("STAGE_STATUS_CHANGED", stage, this.stages[stage].status);
     });
     this._stageEventListener.on("STAGE_FINISHED", stage => {
       this._move(this.stages[stage].route);
+    });
+    this._stageEventListener.on("STAGE_EXCEPTION", (stage, route) => {
+      this._move(route);
     });
     this._eventsToRestart.forEach(([event, checker]) =>
       this._emitter.on(event, (...data) => checker(...data) && this.restart()),
@@ -269,6 +315,7 @@ export class StageManager {
   /** @param {string} stage */
   _move(stage) {
     this.current = stage;
+    this._eventSink?.emit("STAGE_CHANGED", stage, "READY");
     this.stages[stage].trigger();
   }
 
