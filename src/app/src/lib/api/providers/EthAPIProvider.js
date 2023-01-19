@@ -1,42 +1,81 @@
 import { ethers } from "ethers";
 import { toast } from "react-toastify";
-import APIProvider from "./APIProvider";
-import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
+import MetaMaskOnboarding from "@metamask/onboarding";
+import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
+
+import Web3Modal, { providers } from "web3modal";
+import APIProvider from "./APIProvider";
 import erc20ContractABI from "lib/contracts/ERC20.json";
 
 export default class EthAPIProvider extends APIProvider {
 
   async start(emitChanges = true) {
+    let onboarding = new MetaMaskOnboarding();
     if (emitChanges) this.state.set(APIProvider.State.CONNECTING);
-
     const providerOptions = {
+      injected: {
+        display: {
+          name: "MetaMask",
+          description: "Connect to your MetaMask Wallet",
+        },
+        package: null,
+      },
       walletconnect: {
         package: WalletConnectProvider,
+        options: {
+          infuraId: "7c22b75cd9cc4f7fa0b03ac9484693aa",
+        },
       },
-      // "custom-walletlink": {
-      //   display: {
-      //     logo: "https://play-lh.googleusercontent.com/PjoJoG27miSglVBXoXrxBSLveV6e3EeBPpNY55aiUUBM9Q1RCETKCOqdOkX2ZydqVf0",
-      //     name: "Coinbase",
-      //     description: "Connect to Coinbase Wallet (not Coinbase App)",
-      //   },
-      //   options: {
-      //     appName: "Coinbase", // Your app name
-      //     networkUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
-      //     chainId: 1,
-      //   },
-      //   package: WalletLink,
-      //   connector: async (_, options) => {
-      //     const { appName, networkUrl, chainId } = options;
-      //     const walletLink = new WalletLink({
-      //       appName,
-      //     });
-      //     const provider = walletLink.makeWeb3Provider(networkUrl, chainId);
-      //     await provider.enable();
-      //     return provider;
-      //   },
-      // },
+      binancechainwallet: {
+        package: true,
+      },
+      coinbasewallet: {
+        package: CoinbaseWalletSDK,
+        options: {
+          appName: "Coinbase",
+          infuraId: "7c22b75cd9cc4f7fa0b03ac9484693aa",
+        },
+      },
+      "custom-coinbase": {
+        display: {
+          logo: "images/coinbase.svg",
+          name: "Coinbase",
+          description: "Scan with WalletLink to connect",
+        },
+        options: {
+          appName: "app", // Your app name
+          infuraId: "7c22b75cd9cc4f7fa0b03ac9484693aa",
+        },
+        package: WalletLink,
+        connector: async (_, options) => {
+          const { appName, networkUrl, chainId } = options;
+          const walletLink = new CoinbaseWalletSDK({
+            appName,
+          });
+          const provider = walletLink.makeWeb3Provider(networkUrl, chainId);
+          await provider.enable();
+          return provider;
+        },
+      },
     };
+
+    if (!window.ethereum) {
+      providerOptions["custom-metamask"] = {
+        display: {
+          logo: providers.METAMASK.logo,
+          name: "Install MetaMask",
+          description: "Connect using browser wallet",
+        },
+        package: {},
+        connector: async () => {
+          if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
+            onboarding.startOnboarding();
+            onboarding._injectForwarder("INJECT");
+          }
+        },
+      };
+    }
 
     if (typeof window === "undefined") {
       toast.error("Browser doesn't support Web3.");
@@ -51,8 +90,9 @@ export default class EthAPIProvider extends APIProvider {
     });
 
     const provider = await this.web3Modal.connect();
-
     this.provider = new ethers.providers.Web3Provider(provider);
+
+    if (provider.isMetaMask) onboarding.stopOnboarding();
 
     const networkChanged = await this.switchNetwork();
 
@@ -70,7 +110,7 @@ export default class EthAPIProvider extends APIProvider {
   }
 
   async stop(emitChanges = true) {
-    // this.web3Modal.clearCachedProvider();
+    if (this.web3Modal) this.web3Modal.clearCachedProvider();
     delete this.provider;
     delete this.wallet;
     if (emitChanges) this.state.set(APIProvider.State.DISCONNECTED);
