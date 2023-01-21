@@ -5,6 +5,7 @@ export const MainContainer = styled("div")(({ theme }) => ({
   position: "relative",
   color: "#3d4a52",
   borderColor: "#3d4a52",
+  fontSize: "0.9rem",
 }));
 export const TableContainer = styled("div")(({ hasAction }) => ({
   overflow: "auto",
