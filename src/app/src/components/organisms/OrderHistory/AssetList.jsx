@@ -19,7 +19,9 @@ const AssetList = ({ orders, tabs, selectedTab }) => {
         return (
           <Tr key={getObjKey(asset)}>
             {cols.map(col => (
-              <Td data-label={col} key={col}>{balancePropMap[col](asset)}</Td>
+              <Td data-label={col} key={col}>
+                {balancePropMap[col](asset)}
+              </Td>
             ))}
           </Tr>
         );

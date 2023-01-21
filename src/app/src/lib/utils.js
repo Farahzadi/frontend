@@ -127,7 +127,8 @@ export function getExplorerLink(network) {
   return baseExplorerUrl;
 }
 
-export function hasOneDayPassed(time) { // correct function naming
+export function hasOneDayPassed(time) {
+  // correct function naming
   const date = new Date(time);
   const dateString = date.toLocaleDateString();
   let finalDate;

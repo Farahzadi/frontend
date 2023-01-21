@@ -34,7 +34,6 @@ class Footer extends React.Component {
   static activeFillStatus = ["m", "b", "f", "r", "e"];
   static activeOrderStatus = ["c", "r", "e", "f"];
 
-
   getFills() {
     let fills = Object.values(this.props.userFills).sort((a, b) => b.id - a.id);
     return fills.filter(fill => {

@@ -47,7 +47,7 @@ export const Tr = styled("tr")(({ theme }) => ({
     },
   },
 }));
-export const Td = styled("td")(({theme}) => ({
+export const Td = styled("td")(({ theme }) => ({
   padding: "10px",
   textAlign: "center",
   [theme.breakpoints.down("md")]: {
