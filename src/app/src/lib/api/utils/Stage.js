@@ -82,9 +82,12 @@ export class Stage {
     this._onReady = onReady || (skip => {});
     this._onStart = onStart || (() => {});
     this._onFinish = onFinish || (skipped => {});
-    this._eventsToStart = Stage.formatEvents(eventsToStart);
-    this._eventsToFinish = Stage.formatEvents(eventsToFinish);
-    this._sideRoutes = sideRoutes.map(sideRoute => ({ ...sideRoute, events: Stage.formatEvents(sideRoute.events) }));
+    this._eventsToStart = Stage.formatEvents(eventsToStart || []);
+    this._eventsToFinish = Stage.formatEvents(eventsToFinish || []);
+    this._sideRoutes = (sideRoutes ?? []).map(sideRoute => ({
+      ...sideRoute,
+      events: Stage.formatEvents(sideRoute.events),
+    }));
     this.reset();
   }
 
@@ -222,14 +225,14 @@ export class Stage {
   /** @param {string?} name */
   copy(name = null) {
     return new Stage(
-      [...this.parents],
+      this.route,
       [...this._eventsToStart],
       [...this._eventsToFinish],
       this._onReady,
       this._onStart,
       this._onFinish,
-      this.route,
       [...this._sideRoutes],
+      [...this.parents],
       name ?? this.name,
     );
   }
