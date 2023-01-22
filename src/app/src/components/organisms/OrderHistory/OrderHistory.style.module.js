@@ -34,7 +34,6 @@ export const InnerTh = styled("div")(() => ({
 export const Tr = styled("tr")(({ theme }) => ({
   "&:hover": {
     color: theme.palette.text.secondary,
-    cursor: "pointer",
     backgroundColor: "#2B3E5A",
   },
   [theme.breakpoints.down("md")]: {
