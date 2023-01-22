@@ -538,7 +538,7 @@ export const userOpenOrdersSelector = state =>
   state.api.userOrders &&
   Object.values(state.api.userOrders)
     .sort((a, b) => b.id - a.id)
-    .filter(order => order.status === "o" && order.market === state.api.currentMarket);
+    .filter(order => (order.status === "o" ?? order.status === "pm") && order.market === state.api.currentMarket);
 export const userFillOrdersSelector = state =>
   state.api.userFills &&
   Object.values(state.api.userFills)
@@ -547,7 +547,7 @@ export const userFillOrdersSelector = state =>
 export const getLastOrdersSelector = state =>
   state.api.userOrders &&
   Object.values(state.api.userOrders)
-    .filter(order => order.status !== "o")
+    .filter(order => order.status !== "o" && order.status !== "pm")
     .slice(-25)
     .sort((a, b) => b.id - a.id);
 
