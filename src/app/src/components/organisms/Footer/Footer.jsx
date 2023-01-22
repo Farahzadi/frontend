@@ -1,5 +1,5 @@
-import React from "react";
-import { connect } from "react-redux";
+import React, { useState } from "react";
+import { connect, useSelector } from "react-redux";
 import Decimal from "decimal.js";
 
 import "./Footer.css";
@@ -19,6 +19,8 @@ import {
   getExplorerUserAddressDetails,
 } from "lib/utils";
 import Core from "lib/api/Core";
+import Tabs from "../Tabs/Tabs";
+import { activeFillStatus, activeOrderStatus } from "lib/interface";
 
 class Footer extends React.Component {
 
@@ -31,10 +33,6 @@ class Footer extends React.Component {
 
   static activeFillStatus = ["m", "b", "f", "r", "e"];
   static activeOrderStatus = ["c", "r", "e", "f"];
-
-  setTab(value) {
-    this.setState({ tab: value });
-  }
 
   getFills() {
     let fills = Object.values(this.props.userFills).sort((a, b) => b.id - a.id);

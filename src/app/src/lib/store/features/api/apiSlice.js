@@ -2,6 +2,7 @@ import { createSlice, createAction } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import networkManager from "config/NetworkManager";
 import { getOrderDetailsWithoutFee } from "lib/utils";
+import { fillStatusList, openOrderStatusList } from "lib/interface";
 
 const translators = {
   // used for both initial orders and order updates
@@ -18,7 +19,7 @@ const translators = {
     status: o.status,
     remaining: +o.unfilled,
     type: o.type,
-    insertTimestamp: o.created_at,
+    createdAt: o.created_at,
     unbroadcasted: o.unbroadcasted,
     makerFee: +o.maker_fee,
     takerFee: +o.taker_fee,
@@ -46,7 +47,7 @@ const translators = {
     type: f.type,
     takerOrderAddress: f.taker_order_address,
     makerOrderAddress: f.maker_order_address,
-    insertTimestamp: f.created_at,
+    createdAt: f.created_at,
     makerFee: +f.maker_fee,
     takerFee: +f.taker_fee,
     error: f.error, // tx rejection error message
@@ -533,7 +534,30 @@ export const uuidSelector = state => state.api.uuid;
 export const bridgeReceiptsStatusSelector = state => state.api.bridgeReceiptsStatus;
 
 export const networkListSelector = state => state.api.networks;
+export const userOpenOrdersSelector = state =>
+  state.api.userOrders &&
+  Object.values(state.api.userOrders)
+    .sort((a, b) => b.id - a.id)
+    .filter(order => (order.status === "o" ?? order.status === "pm") && order.market === state.api.currentMarket);
+export const userFillOrdersSelector = state =>
+  state.api.userFills &&
+  Object.values(state.api.userFills)
+    .sort((a, b) => b.id - a.id)
+    .filter(fill => fillStatusList.includes(fill.status));
+export const getLastOrdersSelector = state =>
+  state.api.userOrders &&
+  Object.values(state.api.userOrders)
+    .filter(order => order.status !== "o" && order.status !== "pm")
+    .slice(-25)
+    .sort((a, b) => b.id - a.id);
 
+export const userBalanceByTokenSelector = state =>
+  state.api.user.balances &&
+  Object.keys(state.api.user.balances).map(val => {
+    return {
+      [val]: state.api.user.balances[val].valueReadable,
+    };
+  });
 export const userAddressSelector = state => state.api.user.address;
 export const userNameSelector = state => state.api.user.name;
 export const userImageSelector = state => state.api.user.image;
