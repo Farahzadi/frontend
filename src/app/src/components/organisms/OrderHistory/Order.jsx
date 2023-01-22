@@ -82,6 +82,7 @@ const getOrderDetail = (order, network) => {
     price,
     volume: baseQuantity + " " + baseCurrency,
     remaining: remaining + " " + baseCurrency,
+    rawRemaining: remaining,
   };
 };
 const getFillOrderDetail = (fill, network) => {
@@ -125,8 +126,8 @@ export const OrderPropMap = {
   time: val => hasOneDayPassed(val),
   expiry: (status, expires) => (status !== "f" && status !== "c" ? formatTimeInSec(expires) : "--"),
   detail: getOrderDetail,
-  action: ({ status, id }, remaining) => {
-    if (status === "o" || (status === "pm" && remaining > 0)) {
+  action: ({ status, id }, rawRemaining) => {
+    if (status === "o" || (status === "pm" && rawRemaining > 0)) {
       return <CancelOrderBtn onClick={() => Core.run("cancelOrder", id)}>Cancel</CancelOrderBtn>;
     }
   },
