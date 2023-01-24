@@ -10,7 +10,7 @@ const AllowanceForm = styled(FormControl)(({ theme }) => ({
     color: "inherit",
   },
 }));
-const SelectAllowance = ({ value, handleChange, label, items }) => {
+const SelectAllowance = ({ value, handleChange, items }) => {
   return (
     <AllowanceForm>
       <Select
