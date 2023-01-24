@@ -1,15 +1,17 @@
-import CoinSelect from "components/molecules/CoinSelect";
 import React, { useEffect, useState } from "react";
-import { ALLOWANCE_INFO } from "./data";
 import { styled } from "@mui/material/styles";
-import { DefaultTemplate } from "components/templates/DefaultTemplate";
-import { Button } from "components/atoms/Button";
-import { useSelector } from "react-redux";
-import { balancesSelector, userChainDetailsSelector } from "lib/store/features/api/apiSlice";
-import { validateNumberInputs } from "lib/utils";
 import { useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/styles";
+import { useSelector } from "react-redux";
+
 import Core from "lib/api/Core";
+import { ALLOWANCE_INFO } from "./data";
+import { userChainDetailsSelector } from "lib/store/features/api/apiSlice";
+import SelectAllowance from "./SelectAllowance";
+import { Button } from "components/atoms/Button";
+import { DefaultTemplate } from "components/templates/DefaultTemplate";
+import CoinSelect from "components/molecules/CoinSelect";
+import { maxAllowance } from "lib/api/constants";
 
 const Container = styled("div")(({ theme }) => ({
   justifyContent: "center",
@@ -56,34 +58,11 @@ const InputContainer = styled("div")(({ theme }) => ({
   flexFlow: "row",
   border: `2px solid ${theme.palette.primary.main}`,
   borderRadius: "24px",
-  backgroundColor: "white",
+  backgroundColor: "black",
 }));
 const FormContainer = styled("div")(() => ({
   display: "flex",
   justifyContent: "center",
-}));
-const Input = styled("input")(({ theme }) => ({
-  border: "none",
-  height: "52px",
-  minWidth: theme.breakpoints.down("sm") ? "100px" : "160px",
-  maxWidth: theme.breakpoints.down("sm") ? "min(150px, 100vw - 175px)" : "160px",
-  textAlign: "right",
-  borderTopRightRadius: "24px",
-  borderBottomRightRadius: "24px",
-  borderLeft: `2px solid ${theme.palette.primary.main}`,
-  padding: "0.3rem 1.2rem",
-  fontSize: "1.25rem",
-  "&:focus": {
-    outline: "none",
-  },
-}));
-const Diff = styled("div")(() => ({
-  marginBottom: "0.25rem",
-  textAlign: "center",
-  fontSize: "0.95rem",
-  "& span": {
-    fontWeight: "bold",
-  },
 }));
 const BtnContainer = styled("div")(() => ({
   marginTop: "1.2rem",
@@ -91,7 +70,7 @@ const BtnContainer = styled("div")(() => ({
 
 const Allowance = () => {
   const allowances = useSelector(userChainDetailsSelector)?.allowances;
-  const [allowance, setAllowance] = useState("");
+  const [allowance, setAllowance] = useState(0);
   const [preAllowance, setPreAllowance] = useState();
   const [truncated, setTruncated] = useState(true);
   const [allowanceInfo, setAllowanceInfo] = useState(true);
@@ -99,10 +78,20 @@ const Allowance = () => {
   const [pending, setPending] = useState(false);
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.down("sm"));
+  const allowanceItems = [
+    { id: -1, name: "MAX ALLOWANCE" },
+    { id: 0, name: "ZERO" },
+  ];
   useEffect(() => {
     if (currency) {
-      setAllowance(allowances?.[currency]?.allowance?.valueReadable?.toString() || "");
-      setPreAllowance(+allowances?.[currency]?.allowance?.valueReadable?.toString() || "");
+      const allowance = allowances?.[currency]?.value;
+      if (+allowance < +maxAllowance) {
+        setAllowance(0);
+        setPreAllowance(0);
+      } else {
+        setAllowance(-1);
+        setPreAllowance(-1);
+      }
     }
   }, [currency]);
   useEffect(() => {
@@ -116,13 +105,12 @@ const Allowance = () => {
   const handleCurrencyChange = value => {
     setCurrency(value);
   };
-  const handleSetAllowance = e => {
-    const value = validateNumberInputs(e.target.value);
-    setAllowance(value);
-  };
   const handleSubmitAllowance = async () => {
+    let approvedValue = 0;
     setPending(true);
-    await Core.run("approve", currency, allowance)
+    if (preAllowance === allowance) return;
+    if (allowance === -1) approvedValue = maxAllowance;
+    await Core.run("approve", currency, approvedValue)
       .catch(err => {
         console.log(err);
       })
@@ -130,6 +118,7 @@ const Allowance = () => {
         setPending(false);
       });
   };
+  const handleChangeAllowance = e => setAllowance(e.target.value);
   return (
     <DefaultTemplate>
       <Container>
@@ -147,24 +136,15 @@ const Allowance = () => {
           <FormContainer>
             <InputContainer>
               <CoinSelect handleCurrencyChange={handleCurrencyChange} currency={currency} />
-
-              <Input type="text" placeholder="0.00" value={allowance} onChange={handleSetAllowance} />
+              <SelectAllowance
+                value={allowance}
+                items={allowanceItems}
+                handleChange={handleChangeAllowance}></SelectAllowance>
             </InputContainer>
           </FormContainer>
-
-          <Diff>
-            {+allowance !== +preAllowance ? (
-              <div>
-                {` You're about to ${allowance > preAllowance ? "increase" : "decrease"} your allowance by `}
-                <span>{Math.abs(allowance - preAllowance) || 0}</span> {currency}
-              </div>
-            ) : (
-              <span> Allowance has not been changed. </span>
-            )}
-          </Diff>
           <BtnContainer>
             <Button
-              text="Accept"
+              text="Revoke Allowance"
               className="bg_btn"
               disabled={pending || allowance === preAllowance}
               loading={pending}
