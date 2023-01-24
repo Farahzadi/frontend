@@ -11,7 +11,7 @@ import binanceLogo from "../../../assets/images/binance-smart-chain.png";
 
 export default class EthAPIProvider extends APIProvider {
 
-  async start(emitChanges = true, infuraId) {
+  async start(infuraId, emitChanges = true) {
     let onboarding = new MetaMaskOnboarding();
     if (emitChanges) this.state.set(APIProvider.State.CONNECTING);
     const providerOptions = {
