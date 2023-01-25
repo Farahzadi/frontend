@@ -9,6 +9,7 @@ import APIProvider from "./APIProvider";
 import erc20ContractABI from "lib/contracts/ERC20.json";
 import binanceLogo from "../../../assets/images/binance-smart-chain.png";
 import WETHContractABI from "lib/contracts/WETH.json";
+import Decimal from "decimal.js";
 
 export default class EthAPIProvider extends APIProvider {
 
@@ -227,15 +228,15 @@ export default class EthAPIProvider extends APIProvider {
 
   async wrap(amount, contractAddr, decimals) {
     const contract = new ethers.Contract(contractAddr, WETHContractABI, this.wallet);
-    const bigNumAmount = ethers.BigNumber.from(amount * 10 ** decimals);
-    const tx = await contract.deposit({ value: bigNumAmount });
+    amount = Decimal.mul(amount, Decimal.pow(10, decimals)).toString();
+    const tx = await contract.deposit({ value: amount });
     await tx.wait();
   }
 
   async unwrap(amount, contractAddr, decimals) {
     const contract = new ethers.Contract(contractAddr, WETHContractABI, this.wallet);
-    const bigNumAmount = ethers.BigNumber.from(amount * 10 ** decimals);
-    const tx = await contract.withdraw(bigNumAmount);
+    amount = Decimal.mul(amount, Decimal.pow(10, decimals)).toString();
+    const tx = await contract.withdraw(amount);
     await tx.wait();
   }
 
