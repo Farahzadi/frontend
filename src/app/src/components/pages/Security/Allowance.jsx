@@ -58,7 +58,7 @@ const InputContainer = styled("div")(({ theme }) => ({
   flexFlow: "row",
   border: `2px solid ${theme.palette.primary.main}`,
   borderRadius: "24px",
-  backgroundColor: "black",
+  backgroundColor: "white",
 }));
 const FormContainer = styled("div")(() => ({
   display: "flex",

@@ -7,11 +7,10 @@ import { styled } from "@mui/material/styles";
 import Currencies from "config/Currencies";
 
 const CoinBtn = styled("button")(() => ({
-  width: "182px",
+  width: "200px",
   border: "none",
   paddingRight: "13px",
   paddingLeft: "7px",
-  height: "52px",
   position: "relative",
   display: "inline-flex",
   alignItems: "center",
