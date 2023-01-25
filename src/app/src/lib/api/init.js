@@ -2,6 +2,7 @@ import {
   handleMessage,
   addBridgeReceipt,
   addbridgeReceiptStatus,
+  addEventLogs,
   setNetwork,
   clearUserOrders,
   rangePrice,
@@ -25,6 +26,10 @@ export const initActions = (core, store) => {
 
   core.on("bridgeReceiptStatus", status => {
     store.dispatch(addbridgeReceiptStatus(status));
+  });
+
+  core.on("eventLogs", eventLog => {
+    store.dispatch(addEventLogs(eventLog));
   });
 
   core.on("signOut", () => {

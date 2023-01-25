@@ -27,7 +27,7 @@ const defaultTransfer = {
   type: "deposit",
 };
 
-const Bridge = () => {
+const Bridge = ({ checkBridge, checkWrapper }) => {
   const userAddress = useSelector(userAddressSelector);
   const userChainDetails = useSelector(userChainDetailsSelector);
   const userL1Balances = userChainDetails?.L1Balances;
@@ -46,6 +46,7 @@ const Bridge = () => {
   const [transfer, setTransfer] = useState(defaultTransfer);
   const [coinColor, setCoinColler] = useState(true);
   const [showBridge, setShowBridge] = useState(true);
+  const [acceptWrap, setAcceptWrap] = useState(true);
   const [windowSize, setWindowSize] = useState(getWindowSize());
   const [swapDetails, _setSwapDetails] = useState(() => ({
     amount: "",
@@ -62,6 +63,8 @@ const Bridge = () => {
   let L1Balances = userL1Balances;
   let L2Balances = userBalances;
 
+  // const { hasBridge, hasWrapper } = networkConfig;
+
   const setSwapDetails = values => {
     const details = {
       ...swapDetails,
@@ -73,7 +76,7 @@ const Bridge = () => {
     const setFee = bridgeFee => {
       setBridgeFee(bridgeFee);
 
-      const bals = transfer.type === "deposit" ? L1Balances : L2Balances;
+      const bals = transfer.type === "deposit" ? (checkBridge ? L1Balances : L2Balances) : L2Balances;
       const detailBalance = Number(bals?.[details.currency]?.valueReadable ?? 0);
       const input = Number(details.amount || 0);
       if (input > 0) {
@@ -128,7 +131,7 @@ const Bridge = () => {
   useEffect(() => {
     (async () => {
       // update changePubKeyFee fee if needed
-      if (userAddress && networkConfig.hasBridge) {
+      if (userAddress && checkBridge) {
         // TODO
         const usdFee = await Core.run("changePubKeyFee");
         setUsdFee(usdFee);
@@ -170,17 +173,17 @@ const Bridge = () => {
 
   const ethLayer1Header = (
     <div className="bridge_coin_details ">
-      <p className="">Ethereum L1</p>
+      <p>{checkBridge ? "Ethereum L1" : checkWrapper ? "ETH" : ""} </p>
     </div>
   );
   const zkSyncLayer2Header = (
     <div className="bridge_coin_details ">
-      <p className={" "}>zkSync(V1) L2</p>
+      <p> {checkBridge ? "zkSync(V1) L2" : checkWrapper ? "Wrapped ETH" : ""} </p>
     </div>
   );
 
-  const balances = transfer.type === "deposit" ? L1Balances : L2Balances;
-  const altBalances = transfer.type === "deposit" ? L2Balances : L1Balances;
+  const balances = transfer.type === "deposit" ? (checkBridge ? L1Balances : L2Balances) : L2Balances;
+  const altBalances = transfer.type === "deposit" ? L2Balances : checkBridge ? L1Balances : L2Balances;
   const hasAllowance = true; // TODO: make chain specific!
   // new Decimal(userAllowances?.[swapDetails.currency]?.value || 0).greaterThan(
   //   maxAllowance.div(3).toString()
@@ -210,6 +213,18 @@ const Bridge = () => {
     // await new Promise((res, rej) => setTimeout(() => res(), 2000));
   };
 
+  const doWrap = async () => {
+    try {
+      if (transfer.type === "deposit") await Core.run("wrapToken", swapDetails.amount);
+      else await Core.run("unwrapToken", swapDetails.amount);
+    } catch (err) {
+      toast.error(err.message);
+    }
+    // await new Promise((res, rej) => setTimeout(() => res(), 2000));
+  };
+
+  const tokenTransfer = checkBridge ? doTransfer : doWrap;
+
   function getWindowSize() {
     const { innerWidth, innerHeight } = window;
     return { innerWidth, innerHeight };
@@ -220,7 +235,10 @@ const Bridge = () => {
       <div className=" bridge_coin_title align-self-lg-end align-self-auto">
         <p className="bridge_bottom_form__right-title">Available balance</p>
         <p>
-          {balances?.[swapDetails.currency]?.valueReadable}
+          {
+            balances?.[checkBridge ? swapDetails.currency : transfer.type === "deposit" ? swapDetails.currency : "WETH"]
+              ?.valueReadable
+          }
           {` ${swapDetails.currency}`}
         </p>
       </div>
@@ -258,7 +276,7 @@ const Bridge = () => {
             </div>
 
             <div className="bridge_box_bottom">
-              <div className="bridge_box_swap_wrapper">
+              <div onClick={() => (checkWrapper ? setAcceptWrap(!acceptWrap) : "")} className="bridge_box_swap_wrapper">
                 <SwapButton onClick={switchTransferType} />
               </div>
               <div className="center-form">
@@ -272,7 +290,13 @@ const Bridge = () => {
                       <div className=" bridge_coin_title align-self-lg-end align-self-auto">
                         <p className="bridge_bottom_form__right-title">Available balance</p>
                         <p>
-                          {altBalances?.[swapDetails.currency]?.valueReadable.toString()}
+                          {altBalances?.[
+                            checkBridge
+                              ? swapDetails.currency
+                              : transfer.type === "deposit"
+                              ? "WETH"
+                              : swapDetails.currency
+                          ]?.valueReadable.toString()}
                           {` ${swapDetails.currency}`}
                         </p>
                       </div>
@@ -321,9 +345,10 @@ const Bridge = () => {
                     Modal.open({
                       children: (
                         <BridgeModal
+                          modalType={checkBridge ? "bridgeModal" : "wrapperModal"}
                           {...{
                             transfer,
-                            doTransfer,
+                            tokenTransfer,
                             approveSpend,
                             swapDetails,
                             bridgeFee,
@@ -341,7 +366,7 @@ const Bridge = () => {
                       ),
                     })
                   }>
-                  ACCEPT
+                  {checkBridge ? "ACCEPT" : checkWrapper ? (acceptWrap ? "Wrap" : "UnWrap") : ""}
                 </button>
               </div>
             </div>

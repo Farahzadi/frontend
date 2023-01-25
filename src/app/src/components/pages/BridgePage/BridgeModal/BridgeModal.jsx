@@ -6,10 +6,12 @@ import cx from "classnames";
 import { useEffect, useState } from "react";
 import Loader from "react-loader-spinner";
 import Modal from "components/atoms/Modal";
+import { useSelector } from "react-redux";
+import { networkConfigSelector } from "lib/store/features/api/apiSlice";
 
 const BridgeModal = ({
   transfer,
-  doTransfer,
+  tokenTransfer,
   approveSpend,
   swapDetails,
   bridgeFee,
@@ -22,25 +24,29 @@ const BridgeModal = ({
   hasAllowance,
   activationFee,
   usdFee,
+  modalType,
 }) => {
   const [loading, setLoading] = useState(false);
 
   const handleAccept = async e => {
     e.preventDefault();
     setLoading(true);
-    await doTransfer?.();
+    await tokenTransfer?.();
     setLoading(false);
     Modal.close();
   };
+  const networkConfig = useSelector(networkConfigSelector);
+
+  const { hasBridge, hasWrapper } = networkConfig;
 
   const ethLayer1HeaderDetails = (
     <div className="bridge_coin_details">
-      <p>Ethereum L1</p>
+      <p>{modalType === "bridgeModal" ? "Ethereum L1" : modalType === "wrapperModal" ? "ETH" : ""}</p>
     </div>
   );
   const zkSyncLayer2HeaderDetails = (
     <div className="bridge_coin_details mx-auto">
-      <p>zkSync(V1) L2</p>
+      <p>{modalType === "bridgeModal" ? "zkSync(V1) L2" : modalType === "wrapperModal" ? "Wrapped ETH" : ""} </p>
     </div>
   );
   return (
@@ -48,7 +54,7 @@ const BridgeModal = ({
       <div className="row">
         <div className="col-6-border">
           <p>
-            <small>Source Network:</small>
+            <small> {modalType === "bridgeModal" ? "Source Network:" : modalType === "wrapperModal" ? "from:" : ""}</small>
           </p>
           <p>
             <b>{transfer.type !== "withdraw" ? ethLayer1HeaderDetails : zkSyncLayer2HeaderDetails}</b>
@@ -57,7 +63,7 @@ const BridgeModal = ({
         </div>
         <div className="col-5-border mb-2">
           <p>
-            <small>Destination Network:</small>
+            <small> {modalType === "bridgeModal" ? "Destination Network:" : modalType === "wrapperModal" ? "To:" : ""}</small>
           </p>
           <p>
             <b>{transfer.type === "withdraw" ? ethLayer1HeaderDetails : zkSyncLayer2HeaderDetails}</b>

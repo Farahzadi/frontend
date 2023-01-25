@@ -8,6 +8,8 @@ import Web3Modal, { providers } from "web3modal";
 import APIProvider from "./APIProvider";
 import erc20ContractABI from "lib/contracts/ERC20.json";
 import binanceLogo from "../../../assets/images/binance-smart-chain.png";
+import WETHContractABI from "lib/contracts/WETH.json";
+import Decimal from "decimal.js";
 
 export default class EthAPIProvider extends APIProvider {
 
@@ -222,6 +224,38 @@ export default class EthAPIProvider extends APIProvider {
   async signOrder({ orderHash }) {
     const result = await this.wallet.signMessage(ethers.utils.arrayify(orderHash));
     return result;
+  }
+
+  async wrap(amount, contractAddr, decimals) {
+    const contract = new ethers.Contract(contractAddr, WETHContractABI, this.wallet);
+    amount = Decimal.mul(amount, Decimal.pow(10, decimals)).toString();
+    const tx = await contract.deposit({ value: amount });
+    await tx.wait();
+  }
+
+  async unwrap(amount, contractAddr, decimals) {
+    const contract = new ethers.Contract(contractAddr, WETHContractABI, this.wallet);
+    amount = Decimal.mul(amount, Decimal.pow(10, decimals)).toString();
+    const tx = await contract.withdraw(amount);
+    await tx.wait();
+  }
+
+  async getEvents(contractAddr, eventName, fromBlock, toBlock) {
+    const contract = new ethers.Contract(contractAddr, WETHContractABI, this.provider);
+    let filterFromMe = contract.filters[eventName](await this.getAddress(), null);
+    const logs = await contract.queryFilter(filterFromMe, fromBlock, toBlock);
+    return logs;
+  }
+
+  async subscribeToEvent(contractAddr) {
+    const contract = new ethers.Contract(contractAddr, WETHContractABI, this.provider);
+    contract.on("Deposit", (dst, wad, event) => {
+      return {
+        from: dst,
+        amount: wad.toString(),
+        event,
+      };
+    });
   }
 
   onAccountChange = cb => {

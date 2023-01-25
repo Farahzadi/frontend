@@ -12,13 +12,16 @@ import NetworkInterface from "./NetworkInterface";
 const ETHEREUM_DEX_CONTRACT = process.env.REACT_APP_ETHEREUM_DEX_CONTRACT;
 export default class EthereumInterface extends NetworkInterface {
 
-  static Actions = [...super.Actions, "approve"];
+  static Actions = [...super.Actions, "approve", "wrapToken", "unwrapToken", "getEvent"];
   static Provider = EthAPIProvider;
   NETWORK = "ethereum";
   CURRENCY = "ETH";
   CHAIN_ID = 1;
+  HAS_CONTRACT = true;
+  HAS_WRAPPER = true;
   DEX_CONTRACT = ETHEREUM_DEX_CONTRACT;
   SECURITY_TYPE = SecurityTypeList.allowance;
+  EVENTS_NAME = ["Deposit", "Withdrawal"];
 
   async fetchBalance(ticker, userAddress, isLayerTwo = false) {
     const currency = getNetworkCurrency(this.NETWORK, ticker);
@@ -199,6 +202,26 @@ export default class EthereumInterface extends NetworkInterface {
       signature,
     };
     return tx;
+  }
+
+  async wrapToken(amount, currency = "WETH") {
+    const { decimals, info } = getNetworkCurrency(this.NETWORK, currency);
+    await this.apiProvider.wrap(amount, info.contract, decimals);
+  }
+
+  async unwrapToken(amount, currency = "WETH") {
+    const { decimals, info } = getNetworkCurrency(this.NETWORK, currency);
+    await this.apiProvider.unwrap(amount, info.contract, decimals);
+  }
+
+  async getEvent(currency = "WETH", eventName, fromBlock = 0, toBlock = "latest") {
+    const contractAddr = getNetworkCurrency(this.NETWORK, currency).info.contract;
+    if (eventName) this.emit("eventLogs", await this.apiProvider?.getEvents(contractAddr, eventName, fromBlock, toBlock));
+    else {
+      this.EVENTS_NAME.map(async name => {
+        this.emit("eventLogs", await this.apiProvider?.getEvents(contractAddr, name, fromBlock, toBlock));
+      });
+    }
   }
 
 }
