@@ -15,11 +15,12 @@ export default function BridgePage() {
   const { pathname } = useLocation();
   const history = useHistory();
 
+
   return (
     <BridgeTemplate>
       <div className="bridge_section">
-        {pathname === "/bridge" ? hasBridge ? <Bridge /> : history.push("/") : ""}
-        {pathname === "/wrapper" ? hasWrapper ? <Bridge /> : history.push("/") : ""}
+        {pathname === "/bridge" ? hasBridge ? <Bridge checkBridge={true} /> : history.push("/") : ""}
+        {pathname === "/wrapper" ? hasWrapper ? <Bridge checkWrapper={true} /> : history.push("/") : ""}
       </div>
     </BridgeTemplate>
   );

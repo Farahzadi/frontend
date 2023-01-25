@@ -24,6 +24,7 @@ const BridgeModal = ({
   hasAllowance,
   activationFee,
   usdFee,
+  modalType,
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -40,12 +41,12 @@ const BridgeModal = ({
 
   const ethLayer1HeaderDetails = (
     <div className="bridge_coin_details">
-      <p>{hasBridge ? "Ethereum L1" : hasWrapper ? "ETH" : ""}</p>
+      <p>{modalType === "bridgeModal" ? "Ethereum L1" : modalType === "wrapperModal" ? "ETH" : ""}</p>
     </div>
   );
   const zkSyncLayer2HeaderDetails = (
     <div className="bridge_coin_details mx-auto">
-      <p>{hasBridge ? "zkSync(V1) L2" : hasWrapper ? "Wrapped ETH" : ""} </p>
+      <p>{modalType === "bridgeModal" ? "zkSync(V1) L2" : modalType === "wrapperModal" ? "Wrapped ETH" : ""} </p>
     </div>
   );
   return (
@@ -53,7 +54,7 @@ const BridgeModal = ({
       <div className="row">
         <div className="col-6-border">
           <p>
-            <small> {hasBridge ? "Source Network:" : hasWrapper ? "from:" : ""}</small>
+            <small> {modalType === "bridgeModal" ? "Source Network:" : modalType === "wrapperModal" ? "from:" : ""}</small>
           </p>
           <p>
             <b>{transfer.type !== "withdraw" ? ethLayer1HeaderDetails : zkSyncLayer2HeaderDetails}</b>
@@ -62,7 +63,7 @@ const BridgeModal = ({
         </div>
         <div className="col-5-border mb-2">
           <p>
-            <small> {hasBridge ? "Destination Network:" : hasWrapper ? "To:" : ""}</small>
+            <small> {modalType === "bridgeModal" ? "Destination Network:" : modalType === "wrapperModal" ? "To:" : ""}</small>
           </p>
           <p>
             <b>{transfer.type === "withdraw" ? ethLayer1HeaderDetails : zkSyncLayer2HeaderDetails}</b>
