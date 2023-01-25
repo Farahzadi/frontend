@@ -130,7 +130,7 @@ export default class NetworkInterface {
 
     let result;
     try {
-      result = await this.apiProvider.start(this.core.infuraId, false);
+      result = await this.apiProvider.start(this.core.infuraId, true);
     } catch (err) {
       console.error("Error on connecting to provider:", err);
       throw err;
