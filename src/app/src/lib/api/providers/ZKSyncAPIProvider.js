@@ -17,10 +17,10 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
   syncProvider = null;
   _tokenWithdrawFees = {};
 
-  async start() {
+  async start(infuraId) {
     this.state.set(APIProvider.State.CONNECTING);
 
-    await super.start(false);
+    await super.start(infuraId, false);
 
     try {
       this.syncProvider = await zksync.getDefaultProvider(this.NETWORK_NAME);

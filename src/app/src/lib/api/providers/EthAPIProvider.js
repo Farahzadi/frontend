@@ -1,46 +1,110 @@
 import { ethers } from "ethers";
 import { toast } from "react-toastify";
-import APIProvider from "./APIProvider";
-import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
+import MetaMaskOnboarding from "@metamask/onboarding";
+import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
+
+import Web3Modal, { providers } from "web3modal";
+import APIProvider from "./APIProvider";
 import erc20ContractABI from "lib/contracts/ERC20.json";
+import binanceLogo from "../../../assets/images/binance-smart-chain.png";
 
 export default class EthAPIProvider extends APIProvider {
 
-  async start(emitChanges = true) {
+  async start(infuraId, emitChanges = true) {
+    let onboarding = new MetaMaskOnboarding();
     if (emitChanges) this.state.set(APIProvider.State.CONNECTING);
-
     const providerOptions = {
+      injected: {
+        display: {
+          name: "MetaMask",
+          description: "Connect to your MetaMask Wallet",
+        },
+        package: null,
+      },
       walletconnect: {
         package: WalletConnectProvider,
+        options: {
+          infuraId,
+        },
       },
-      // "custom-walletlink": {
-      //   display: {
-      //     logo: "https://play-lh.googleusercontent.com/PjoJoG27miSglVBXoXrxBSLveV6e3EeBPpNY55aiUUBM9Q1RCETKCOqdOkX2ZydqVf0",
-      //     name: "Coinbase",
-      //     description: "Connect to Coinbase Wallet (not Coinbase App)",
-      //   },
-      //   options: {
-      //     appName: "Coinbase", // Your app name
-      //     networkUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
-      //     chainId: 1,
-      //   },
-      //   package: WalletLink,
-      //   connector: async (_, options) => {
-      //     const { appName, networkUrl, chainId } = options;
-      //     const walletLink = new WalletLink({
-      //       appName,
-      //     });
-      //     const provider = walletLink.makeWeb3Provider(networkUrl, chainId);
-      //     await provider.enable();
-      //     return provider;
-      //   },
-      // },
+      binancechainwallet: {
+        package: true,
+      },
+      coinbasewallet: {
+        package: CoinbaseWalletSDK,
+        options: {
+          appName: "Coinbase",
+          infuraId,
+        },
+      },
+      "custom-coinbase": {
+        display: {
+          logo: providers.COINBASE.logo,
+          name: providers.COINBASE.name,
+          description: "Scan with WalletLink to connect",
+        },
+        options: {
+          appName: "app", // Your app name
+          infuraId,
+        },
+        package: WalletLink,
+        connector: async (_, options) => {
+          const { appName } = options;
+          const walletLink = new CoinbaseWalletSDK({
+            appName,
+          });
+          const provider = walletLink.makeWeb3Provider();
+          await provider.enable();
+          return provider;
+        },
+      },
+      "custom-binancechainwallet": {
+        display: {
+          logo: binanceLogo,
+          name: "Binance Chain Wallet",
+          description: "Connect to your Binance Chain Wallet",
+        },
+        package: true,
+        connector: async () => {
+          let provider = null;
+          if (typeof window.BinanceChain !== "undefined") {
+            provider = window.BinanceChain;
+            try {
+              await provider.request({ method: "eth_requestAccounts" });
+            } catch (error) {
+              throw new Error(error);
+            }
+          } else {
+            return window.open(
+              "https://chrome.google.com/webstore/detail/binance-wallet/fhbohimaelbohpjbbldcngcnapndodjp",
+            );
+          }
+          return provider;
+        },
+      },
     };
 
     if (typeof window === "undefined") {
       toast.error("Browser doesn't support Web3.");
       return;
+    }
+
+    if (!window.ethereum) {
+      providerOptions["custom-metamask"] = {
+        display: {
+          logo: providers.METAMASK.logo,
+          name: "Install MetaMask",
+          description: "Connect using browser wallet",
+        },
+        package: {},
+        connector: async () => {
+          if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
+            onboarding.startOnboarding();
+            onboarding._injectForwarder("INJECT");
+          }
+        },
+      };
     }
 
     this.web3Modal = new Web3Modal({
@@ -51,7 +115,7 @@ export default class EthAPIProvider extends APIProvider {
     });
 
     const provider = await this.web3Modal.connect();
-
+    if (provider.isMetaMask) onboarding.stopOnboarding();
     this.provider = new ethers.providers.Web3Provider(provider);
 
     const networkChanged = await this.switchNetwork();
@@ -60,17 +124,13 @@ export default class EthAPIProvider extends APIProvider {
 
     const signer = this.provider.getSigner();
 
-    // const address = await signer.getAddress();
-
-    // const network = await this.provider.getNetwork();
-
     this.wallet = signer;
 
     if (emitChanges) this.state.set(APIProvider.State.CONNECTED);
   }
 
   async stop(emitChanges = true) {
-    // this.web3Modal.clearCachedProvider();
+    if (this.web3Modal) this.web3Modal.clearCachedProvider();
     delete this.provider;
     delete this.wallet;
     if (emitChanges) this.state.set(APIProvider.State.DISCONNECTED);
