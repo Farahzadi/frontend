@@ -112,6 +112,7 @@ const CoinSelect = ({ currency, handleCurrencyChange }) => {
       .filter(c => {
         return Currencies[c].chain[network];
       })
+      .filter(c => c !== "ETH")
       .sort();
     setTickers(tickers);
   }, [userChainDetails?.userId, network]);

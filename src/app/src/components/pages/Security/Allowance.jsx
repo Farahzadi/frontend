@@ -74,7 +74,7 @@ const Allowance = () => {
   const [preAllowance, setPreAllowance] = useState();
   const [truncated, setTruncated] = useState(true);
   const [allowanceInfo, setAllowanceInfo] = useState(true);
-  const [currency, setCurrency] = useState("ETH");
+  const [currency, setCurrency] = useState("DAI");
   const [pending, setPending] = useState(false);
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.down("sm"));
