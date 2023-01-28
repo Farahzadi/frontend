@@ -44,16 +44,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
       throw err;
     }
 
-    const accountState = await this.getAccountState();
-
-    let result;
-    if (!(await this.isActivated())) {
-      await this.activateAccount(accountState);
-      result = "redirectToBridge";
-    }
-
     this.state.set(APIProvider.State.CONNECTED);
-    return result;
   }
 
   async stop() {
@@ -174,9 +165,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
     });
 
     await signingKey.awaitReceipt();
-    if (signingKey) {
-      toast.success("Your address is succesfully registered!.");
-    }
+    if (!signingKey) throw new Error("Address not activated");
 
     return signingKey;
   }

@@ -20,13 +20,16 @@ export function* userPollingSaga(core) {
   const STEPS_TO_UPDATE_USER_CHAIN_DETAILS = 3;
   for (let i = 0; ; i = (i + 1) % STEPS_TO_UPDATE_USER_CHAIN_DETAILS) {
     const shouldUpdateUserChainDetails = i % STEPS_TO_UPDATE_USER_CHAIN_DETAILS === 0;
-    try {
-      yield all([
-        apply(core, core.run, ["updateUserBalancesState", true]),
-        ...(shouldUpdateUserChainDetails ? [apply(core, core.run, ["updateUserChainDetailsState", true])] : []),
-      ]);
-    } catch (err) {
-      console.log("Error: Core balances and chain details update error:", err);
+    const connectionStage = yield select(state => state.api?.stages?.connection);
+    if (connectionStage === "CONNECTED") {
+      try {
+        yield all([
+          apply(core, core.run, ["updateUserBalancesState", true]),
+          ...(shouldUpdateUserChainDetails ? [apply(core, core.run, ["updateUserChainDetailsState", true])] : []),
+        ]);
+      } catch (err) {
+        console.log("Error: Core balances and chain details update error:", err);
+      }
     }
     yield delay(4000);
   }

@@ -14,9 +14,12 @@ import { formatBalances, getCurrentValidUntil, State, toBaseUnit } from "lib/uti
 import { isString } from "lodash";
 import { toast } from "react-toastify";
 import APIProvider from "../providers/APIProvider";
+import { Stage, StageManager } from "../utils/Stage";
 
 export default class NetworkInterface {
+
   static State = class extends State {
+
     static DISCONNECTED = "DISCONNECTED";
     static PROVIDER_CONNECTING = "PROVIDER_CONNECTING";
     static PROVIDER_CONNECTED = "PROVIDER_CONNECTED";
@@ -27,6 +30,7 @@ export default class NetworkInterface {
     static PROVIDER_DISCONNECTING = "PROVIDER_DISCONNECTING";
 
     _state = "DISCONNECTED";
+
   };
 
   static Actions = [
@@ -72,9 +76,13 @@ export default class NetworkInterface {
 
   shouldSignOut = false;
 
+  stageManager = new StageManager(this.getStages(), "CONNECT", ["DISCONNECTED"]);
+
   constructor({ core, signInMessage }) {
     this.core = core;
     this.signInMessage = signInMessage ?? "Login to Dexpresso";
+    this.setStagesInitialStates();
+    this.stageManager.start();
   }
 
   async stop() {
@@ -92,9 +100,11 @@ export default class NetworkInterface {
 
   async connectWallet() {
     await this.disconnectWallet();
+    this.stageManager.emit("CONNECTING");
     try {
       await Promise.all([this.core.ws.uuidPromise, this.startAPIProvider()]);
       await this.signIn();
+      this.stageManager.emit("CONNECTED");
     } catch (err) {
       console.log("Wallet connection failed with error, disconnecting.", err);
       await this.disconnectWallet();
@@ -104,6 +114,7 @@ export default class NetworkInterface {
   async disconnectWallet() {
     await this.signOut();
     await this.stopAPIProvider();
+    this.stageManager.emit("DISCONNECTED");
     this.emit("signOut");
   }
 
@@ -135,29 +146,29 @@ export default class NetworkInterface {
       throw err;
     }
 
-    if (result === "redirectToBridge") {
-      // const isBrige = !/^\/bridge(\/.*)?$/.test(window.location.pathname);
-      // if (!isBrige) {
-      //   // window.history.pushState("/bridge");
-      //   toast.error(
-      //     "Account not found. Please use the bridge to deposit funds before trying again."
-      //   );
-      // }
-      toast.info(
-        <>
-          Account not activated. Please activate your account first:{" "}
-          <a
-            href="https://wallet.zksync.io/?network=goerli"
-            style={{ color: "white" }}
-            target="_blank"
-            rel="noreferrer">
-            {" "}
-            go to wallet.zksync.io
-          </a>
-        </>
-      );
-      throw new Error();
-    }
+    // if (result === "redirectToBridge") {
+    //   // const isBrige = !/^\/bridge(\/.*)?$/.test(window.location.pathname);
+    //   // if (!isBrige) {
+    //   //   // window.history.pushState("/bridge");
+    //   //   toast.error(
+    //   //     "Account not found. Please use the bridge to deposit funds before trying again."
+    //   //   );
+    //   // }
+    //   toast.info(
+    //     <>
+    //       Account not activated. Please activate your account first:{" "}
+    //       <a
+    //         href="https://wallet.zksync.io/?network=goerli"
+    //         style={{ color: "white" }}
+    //         target="_blank"
+    //         rel="noreferrer">
+    //         {" "}
+    //         go to wallet.zksync.io
+    //       </a>
+    //     </>
+    //   );
+    //   throw new Error();
+    // }
 
     this.apiProvider.onAccountChange(() => this.disconnectWallet());
   }
@@ -249,6 +260,7 @@ export default class NetworkInterface {
 
   async updateBalances(...args) {
     await this.updatePureBalances(...args);
+    this.stageManager.emit("BALANCES_UPDATED", this.userDetails.balances);
     await this.updateAvailableBalances(...args);
   }
 
@@ -374,7 +386,7 @@ export default class NetworkInterface {
       }
       if (price.eq(0))
         throw new VError(
-          type === "l" ? "Price should not be equal to 0" : "There is no orders in the orderbook to match"
+          type === "l" ? "Price should not be equal to 0" : "There is no orders in the orderbook to match",
         );
 
       if (side === "buy") side = "b";
@@ -413,7 +425,7 @@ export default class NetworkInterface {
       const minOrderSize = new Decimal(toBaseUnit(configSelector(state).minOrderSize, baseDecimals));
       if (amount.lt(minOrderSize))
         throw new VError(
-          `Minimum order size is ${minOrderSize.div(Decimal.pow(10, baseDecimals)).toFixed()} ${baseCurrency}`
+          `Minimum order size is ${minOrderSize.div(Decimal.pow(10, baseDecimals)).toFixed()} ${baseCurrency}`,
         );
 
       const lastPrice = new Decimal(lastPricesSelector(state)[market]?.price ?? price);
@@ -493,4 +505,23 @@ export default class NetworkInterface {
       quote: useToBase ? toBaseUnit(price, quoteDecimals) : price,
     };
   }
+
+  setStagesInitialStates() {
+    this.emit("setStage", "connection", "DISCONNECTED");
+  }
+
+  getStages() {
+    return {
+      CONNECT: new Stage(
+        "READY",
+        ["CONNECTING"],
+        ["CONNECTED"],
+        () => this.emit("setStage", "connection", "DISCONNECTED"),
+        () => this.emit("setStage", "connection", "CONNECTING"),
+        () => this.emit("setStage", "connection", "CONNECTED"),
+      ),
+      READY: new Stage("CONNECT", [], ["DISCONNECTED"], () => console.log("Reached READY stage")),
+    };
+  }
+
 }

@@ -115,6 +115,10 @@ export const apiSlice = createSlice({
       availableBalances: null,
       chainDetails: null,
     },
+    stages: {
+      connection: null,
+      zksyncActivation: null,
+    },
   },
   reducers: {
     _connected_ws(state, { payload }) {
@@ -372,16 +376,10 @@ export const apiSlice = createSlice({
     addBridgeReceipt(state, { payload }) {
       if (!payload || !payload.txId) return;
       const { amount, token, txUrl, type, userAddress } = payload;
-      if (!state.user.address) {
-        //‌This is for addresses that have not yet been activated
-        state.bridgeReceipts.unshift(payload);
-        toast.info("Your wallet address is going to be activate!");
-      }
-      if (state.user.address === userAddress) {
-        state.bridgeReceipts.unshift(payload);
-      } else {
-        return {};
-      }
+      if (state.user.address !== userAddress) return;
+
+      state.bridgeReceipts.unshift(payload);
+
       toast.success(
         <>
           Successfully {type === "deposit" ? "deposited" : "withdrew"} {amount} {token}{" "}
@@ -494,6 +492,9 @@ export const apiSlice = createSlice({
       state.user.availableBalances = null;
       state.user.chainDetails = null;
     },
+    setStage(state, { payload }) {
+      state.stages[payload.type] = payload.stage;
+    },
   },
 });
 
@@ -523,6 +524,7 @@ export const {
   setUserChainDetails,
   setUserDetails,
   clearUserDetails,
+  setStage,
 } = apiSlice.actions;
 
 export const configSelector = state => state.api.config;
@@ -581,6 +583,9 @@ export const userBalancesSelector = state => state.api.user.balances;
 export const userAvailableBalancesSelector = state => state.api.user.availableBalances;
 export const userChainDetailsSelector = state => state.api.user.chainDetails;
 export const userSelector = state => state.api.user;
+
+export const connectionStageSelector = state => state.api.stages.connection;
+export const zksyncActivationStageSelector = state => state.api.stages.zksyncActivation;
 
 export const handleMessage = createAction("api/handleMessage");
 

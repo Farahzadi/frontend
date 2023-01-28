@@ -8,6 +8,8 @@ import NetworkInterface from "./NetworkInterface";
 import * as zksync from "zksync";
 import Currencies, { getNetworkCurrency } from "config/Currencies";
 import { maxAllowance } from "../constants";
+import { Stage } from "../utils/Stage";
+import { toast } from "react-toastify";
 
 export default class ZKSyncInterface extends EthereumInterface {
 
@@ -188,16 +190,18 @@ export default class ZKSyncInterface extends EthereumInterface {
   async bridgeTransferL2(amount, token, type) {
     if (!amount || !type || !["deposit", "withdraw"].includes(type)) return;
     const address = await this.getAddress();
-    const userId = (await this.getChainDetails())?.userId;
-    if (!address || !userId) return;
+    if (!address) return;
     const decimals = Currencies[token].decimals;
     amount = ethers.BigNumber.from(toBaseUnit(amount, decimals));
+
+    if (type === "deposit") this.stageManager.emit("DEPOSITTING");
 
     let transfer;
     try {
       transfer = await this.apiProvider?.[type === "deposit" ? "depositL2" : "withdrawL2"](amount, address, token);
       if (!transfer) throw new Error();
     } catch (err) {
+      this.stageManager.emit("DEPOSIT_ERROR");
       throw new Error(
         err.code === 4001 ? "You've rejected the signing process." : "Error occurred in bridge transfer operation",
       );
@@ -206,10 +210,8 @@ export default class ZKSyncInterface extends EthereumInterface {
     const receipt = await this.apiProvider?.getBridgeReceiptStatus(transfer, type);
     const readableAmount = fromBaseUnit(amount.toString(), decimals);
 
-    this.emit(
-      "bridgeReceipt",
-      this.handleBridgeReceipt(transfer, readableAmount, token, type, userId, address, receipt?.status),
-    );
+    const bridgeReceipt = this.handleBridgeReceipt(transfer, readableAmount, token, type, address, receipt?.status);
+    this.emit("bridgeReceipt", bridgeReceipt);
     return transfer;
   }
 
@@ -229,14 +231,13 @@ export default class ZKSyncInterface extends EthereumInterface {
     return this.apiProvider?.withdrawL2Fee(token);
   }
 
-  handleBridgeReceipt(_receipt, amount, token, type, userId, userAddress, status) {
+  handleBridgeReceipt(_receipt, amount, token, type, userAddress, status) {
     let receipt = {
       date: +new Date(),
       network: this.network,
       amount,
       token,
       type,
-      userId,
       userAddress,
       _receipt,
       status,
@@ -257,6 +258,88 @@ export default class ZKSyncInterface extends EthereumInterface {
 
   async changePubKeyFee() {
     return await this.apiProvider?.changePubKeyFee();
+  }
+
+  setStagesInitialStates() {
+    super.setStagesInitialStates();
+    this.emit("setStage", "zksyncActivation", "UNKNOWN");
+  }
+
+  getStages() {
+    const balanceChecker = balances => {
+      if (balances) for (const balance in Object.values(balances)) if (balance.value !== "0") return true;
+      return false;
+    };
+    return {
+      ...super.getStages(),
+      FETCH_BALANCES: new Stage(
+        "DEPOSIT",
+        [],
+        ["BALANCES_UPDATED"],
+        null,
+        null,
+        null, // () => console.log("Fetched balances and ready to continue staging"),
+        null,
+        ["CONNECT"],
+      ),
+      DEPOSIT: new Stage(
+        "ACTIVATE",
+        ["DEPOSITTING"],
+        [["BALANCES_UPDATED", balanceChecker]],
+        async skip => {
+          if (balanceChecker(this.userDetails.balances)) return skip();
+          if (await this.apiProvider.isActivated()) return skip();
+          this.emit("setStage", "zksyncActivation", "MUST_DEPOSIT");
+        },
+        async () => {
+          this.emit("setStage", "zksyncActivation", "DEPOSITTING");
+        },
+        skipped => {
+          // this.emit("setStage", "zksyncActivation", null);
+        },
+        [
+          {
+            events: ["DEPOSIT_ERROR"],
+            route: "DEPOSIT",
+            onHappen: () => {
+              toast.error("Depossiting failed. Please try again to continue activating your account.");
+            },
+          },
+        ],
+      ),
+      ACTIVATE: new Stage(
+        "READY",
+        ["ZK_PUBLIC_KEY_REQUESTED"],
+        ["ZK_PUBLIC_KEY_SET"],
+        async skip => {
+          if (await this.apiProvider.isActivated()) return skip();
+          this.stageManager.emit("ZK_PUBLIC_KEY_REQUESTED");
+        },
+        async () => {
+          this.emit("setStage", "zksyncActivation", "ACTIVATING");
+          try {
+            await this.apiProvider.activateAccount();
+          } catch (err) {
+            this.stageManager.emit("ZKـPUBLIC_KEY_ERROR", err);
+            return;
+          }
+          toast.success("Your address is succesfully activated!.");
+          this.stageManager.emit("ZK_PUBLIC_KEY_SET");
+        },
+        skipped => {
+          this.emit("setStage", "zksyncActivation", null);
+        },
+        [
+          {
+            events: ["ZKـPUBLIC_KEY_ERROR"],
+            route: "ACTIVATE",
+            onHappen: (route, event, ...data) => {
+              toast.error("Error on activating the account. Trying again...");
+            },
+          },
+        ],
+      ),
+    };
   }
 
 }

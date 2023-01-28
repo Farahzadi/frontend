@@ -17,6 +17,7 @@ import {
   setUserAvailableBalances,
   clearUserDetails,
   setUserChainDetails,
+  setStage,
 } from "lib/store/features/api/apiSlice";
 
 export const initActions = (core, store) => {
@@ -88,5 +89,9 @@ export const initActions = (core, store) => {
 
   core.on("updateUserChainDetails", chainDetails => {
     store.dispatch(setUserChainDetails(chainDetails));
+  });
+
+  core.on("setStage", (type, stage) => {
+    store.dispatch(setStage({ type, stage }));
   });
 };
