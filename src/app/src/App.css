@@ -53,8 +53,9 @@ html {
 *::-webkit-scrollbar:horizontal {
   height: 7px;
 }
+/* TODO: a color tag should change with dexpressoPrimery */
 a {
-  color: var(--dexpressoPrimery);
+  color: #b2bfc7 !important;
 }
 a:hover {
   color: var(--dexpressoPrimery);
