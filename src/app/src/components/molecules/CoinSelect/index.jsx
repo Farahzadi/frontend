@@ -108,11 +108,9 @@ const CoinSelect = ({ currency, handleCurrencyChange }) => {
   const network = useSelector(networkSelector);
   const userChainDetails = useSelector(userChainDetailsSelector);
   useEffect(() => {
-    const tickers = Object.keys(Currencies)
-      .filter(c => {
-        return Currencies[c].chain[network];
-      })
-      .filter(c => c !== "ETH")
+    const tickers = Object.entries(Currencies)
+      .filter(([ticker, { chain }]) => chain[network] && ticker !== "ETH")
+      .map(([ticker]) => ticker)
       .sort();
     setTickers(tickers);
   }, [userChainDetails?.userId, network]);
