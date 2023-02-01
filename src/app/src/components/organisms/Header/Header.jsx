@@ -35,8 +35,8 @@ export const Header = () => {
   const links = [
     { name: "Trade", to: "/" },
     { name: "Bridge", to: "/bridge", isHidden: !hasBridge },
-    { name: "Security", to: "/security" },
     { name: "wrapper", to: "/wrapper", isHidden: !hasWrapper },
+    { name: "Security", to: "/security" },
     { name: "Docs", to: getDocsLink(), target: "blank" },
   ];
   const theme = useTheme();
