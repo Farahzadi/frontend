@@ -18,6 +18,8 @@ import {
   clearUserDetails,
   setUserChainDetails,
   setStage,
+  addNotification,
+  removeNotification,
 } from "lib/store/features/api/apiSlice";
 
 export const initActions = (core, store) => {
@@ -93,5 +95,16 @@ export const initActions = (core, store) => {
 
   core.on("setStage", (type, stage) => {
     store.dispatch(setStage({ type, stage }));
+  });
+
+  core.on("notifications", (action, ...args) => {
+    if (action === "add") {
+      const [id, type, message] = args;
+      store.dispatch(addNotification({ id, type, message }));
+    }
+    if (action === "remove") {
+      const [id] = args;
+      store.dispatch(removeNotification(id));
+    }
   });
 };
