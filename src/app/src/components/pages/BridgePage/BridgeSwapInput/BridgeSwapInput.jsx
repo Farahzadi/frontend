@@ -45,16 +45,18 @@ const CurrencySelector = styled("div")(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   marginRight: "15px",
-  [theme.breakpoints.down("md")]: {
-    width: "100%",
-    marginRight: "0",
+  [theme.breakpoints.down("sm")]: {
+    justifyContent: "space-between",
   },
 }));
 const BridgeInputBox = styled("div")(({ theme }) => ({
   display: "flex",
   justifyContent: "space-between",
-  [theme.breakpoints.down("md")]: {
-    flexDirection: "column",
+  "& input": {
+    fontSize: "calc(1.275rem + 0.3vw) !important",
+  },
+  "& input::placeholder": {
+    fontSize: "calc(1.275rem + 0.3vw) !important",
   },
 }));
 const BridgeSwapInputBox = styled("div")(() => ({
@@ -66,7 +68,7 @@ const BridgeSwapInputBox = styled("div")(() => ({
 const CurrencySelectorBox = styled("div")(({ theme }) => ({
   display: "flex",
   justifyContent: "space-between",
-  [theme.breakpoints.down("md")]: {
+  [theme.breakpoints.down("sm")]: {
     flexDirection: "column",
   },
 }));
@@ -109,7 +111,7 @@ const BridgeSwapInput = ({
             />
           </CurrencySelector>
           <BridgeInputForm>
-            <input onChange={setAmount} value={value.amount} className={className} placeholder="0.00" type="text" />
+            <input onChange={setAmount} value={value.amount} className={className} placeholder="0.000" type="text" />
             {false && (
               <a className="maxLink" href="#max" onClick={setMax}>
                 Max

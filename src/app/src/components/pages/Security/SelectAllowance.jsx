@@ -32,7 +32,9 @@ const SelectAllowance = ({ value, handleChange, items }) => {
         label={"Allowance"}
         IconComponent={() => <Chevron />}>
         {items.map(({ id, name }) => (
-          <MenuItem key={id} value={id}>{name}</MenuItem>
+          <MenuItem key={id} value={id}>
+            {name}
+          </MenuItem>
         ))}
       </AllowanceSelect>
     </AllowanceForm>

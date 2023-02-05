@@ -35,19 +35,19 @@ export const Header = () => {
   const links = [
     { name: "Trade", to: "/" },
     { name: "Bridge", to: "/bridge", isHidden: !hasBridge },
-    { name: "Security", to: "/security" },
     { name: "wrapper", to: "/wrapper", isHidden: !hasWrapper },
+    { name: "Security", to: "/security" },
     { name: "Docs", to: getDocsLink(), target: "blank" },
   ];
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.down("md"));
   const handleMenu = ({ key }) => {
     switch (key) {
-      case "signOut":
-        Core.run("disconnectWallet");
-        return;
-      default:
-        throw new Error("Invalid dropdown option");
+    case "signOut":
+      Core.run("disconnectWallet");
+      return;
+    default:
+      throw new Error("Invalid dropdown option");
     }
   };
 
@@ -97,7 +97,7 @@ export const Header = () => {
                     </NavLink>
                   )}
                 </NavItem>
-              )
+              ),
           )}
         </NavUl>
         <ActionBtnContainer>

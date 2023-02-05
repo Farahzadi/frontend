@@ -294,8 +294,8 @@ const Bridge = ({ checkBridge, checkWrapper }) => {
                             checkBridge
                               ? swapDetails.currency
                               : transfer.type === "deposit"
-                              ? "WETH"
-                              : swapDetails.currency
+                                ? "WETH"
+                                : swapDetails.currency
                           ]?.valueReadable.toString()}
                           {` ${swapDetails.currency}`}
                         </p>

@@ -130,11 +130,12 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
   const networkConfig = useSelector(networkConfigSelector);
 
   const { hasBridge, hasWrapper } = networkConfig;
+  const [currencyVal, setCurrencyVal] = useState("");
 
   const StyledBridgeCurrencySelector = Newstyled("div")(() => ({
     padding: "0 0 0 3px",
     color: "#fff",
-    borderRadius: "15px",
+    borderRadius: "6px",
     display: "flex",
     width: "100%",
     height: "50px",
@@ -164,7 +165,7 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
       objectFit: "contain",
     },
     "& .currencyName": {
-      marginLeft: " 20px",
+      marginLeft: " 10px",
       fontSize: "20px",
 
       "& svg": {
@@ -187,20 +188,19 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
   }, [network, currencies]);
 
   const inputTest = val => {
+    setCurrencyVal(val.target.value);
+
+    const tickers = (currencies || Object.keys(Currencies))
+      .filter(c => {
+        return Currencies[c].chain[network];
+      })
+      .sort();
     if (val.target.value === "") {
-      const tickers = (currencies || Object.keys(Currencies))
-        .filter(c => {
-          return Currencies[c].chain[network];
-        })
-        .sort();
       return setTickers(tickers);
     }
     const arr = tickers.filter(i => i.includes(val.target.value.toUpperCase()));
     setTickers(arr);
   };
-  // const inputTest = (val) => {
-  //   console.warn(val.target.value);
-  // };
 
   const hideOptions = e => {
     if (e) e.preventDefault();
@@ -268,7 +268,14 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
         show={showingOptions}>
         <li className="currencyOption w-md-100 text-white border-top border-bottom">SELECT A TOKEN</li>
         <div className="border-side input-box" onClick={e => e.stopPropagation()}>
-          <input type="text" className="input-search" onChange={inputTest} placeholder="search" />
+          <input
+            type="text"
+            value={currencyVal}
+            className="input-search"
+            autoFocus={showingOptions ? true : false}
+            onChange={inputTest}
+            placeholder="search"
+          />
         </div>
         {tickers.map((ticker, key, tickers) =>
           ticker === value ? null : (
@@ -288,7 +295,7 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
                 </div>
               )}
             </li>
-          )
+          ),
         )}
         {!tickers.length && (
           <li

@@ -51,6 +51,14 @@ const TradePage = () => {
   const markets = [];
 
   useEffect(() => {
+    const { market, price } = marketSummary;
+    if (price && market) {
+      // document.title = `$ ${price} | ${market} | Dexpresso`;
+      document.title = "Dexpresso";
+    } else document.title = "Dexpresso";
+  }, [marketSummary]);
+
+  useEffect(() => {
     if (!uuid || !network || !networkManager.has(network, currentMarket)) return;
 
     const sub = () => Core.run("subscribeToMarket", currentMarket);
@@ -173,6 +181,7 @@ const TradePage = () => {
             />
           </div>
           <div className="container-fluid pl-sm-1 pl-lg-0">
+            {console.log("------------", marketSummary)}
             <div className="row flex-column-reverse  flex-lg-row m-0">
               <div className="col-12 col-lg-5 px-0 px-lg-1">
                 <div className="trade_right ">

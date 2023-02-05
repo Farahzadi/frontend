@@ -61,14 +61,14 @@
   align-items: flex-end;
 }
 .currencyName {
-  margin-left: 20px;
+  margin-left: 10px;
   font-size: 20px;
   justify-content: space-around;
 }
 .currencyName-selected {
   padding: 0 0 0 3px;
   color: #fff;
-  border-radius: 15px;
+  border-radius: 6px;
   display: -webkit-inline-box;
   display: -webkit-inline-flex;
   display: -ms-inline-flexbox;
@@ -422,17 +422,17 @@
   max-width: 70%;
   width: 674px;
   padding: 30px 50px;
-  margin: 0 auto 10px;
-  height: 240px;
+  margin: 0 auto 4px;
+  height: 200px;
 }
 
 .bridge_box_top {
   background-color: var(--dexpressoTableBackground);
-  border-radius: 40px;
+  border-radius: 6px;
   color: #fff;
 }
 .bridge_box_bottom {
-  border-radius: 40px;
+  border-radius: 6px;
   position: relative;
   background: var(--dexpressoTableBackground);
   color: #fff;
@@ -516,21 +516,19 @@
   padding: 0;
   height: auto;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   margin: 0 auto;
 }
 .accept-btn {
   display: block;
   margin-bottom: 2rem;
-  width: 65%;
-  margin-left: auto;
+  width: 100%;
 }
 .transfer-data {
   height: 50px;
-  margin: 10px 5px 0 5px;
-  width: 48%;
   padding: 0 10px;
-  border-radius: 30px;
+  border-radius: 6px;
   color: #fff;
   background: var(--dexpressoTableBackground);
   display: flex;
@@ -543,9 +541,9 @@
 }
 .accept-btn button {
   width: 100%;
-  margin-top: 10px;
+  margin-top: 4px;
   height: 50px;
-  border-radius: 24px;
+  border-radius: 9px;
   border: none;
   background-color: var(--dexpressoPrimery);
   color: #fff;
@@ -566,13 +564,14 @@
     border-bottom-right-radius: 0;
   }
   .bridge_coin_title {
-    margin: 00;
+    margin: 0;
     margin-top: 18px;
+    max-width: 100%;
   }
   .bridge_box_bottom {
     padding-bottom: 10px !important;
     margin-top: 10px;
-    border-radius: 30px;
+    border-radius: 6px;
   }
   .bridge_lables-btn {
     display: block;
@@ -581,12 +580,12 @@
     background: var(--dexpressoPrimery);
     width: 480px;
     max-width: 90%;
-    border-radius: 24px;
+    border-radius: 6px;
   }
   .bridge_lables-btn button {
     width: 220px;
     height: 50px;
-    border-radius: 15px;
+    border-radius: 6px;
     background: none;
     border: none;
     color: white;
@@ -601,13 +600,14 @@
     flex-direction: column;
   }
   .bridge_box_bottom,
-  .bridge_box_top,
-  .bridg-btn-box {
+  .bridge_box_top {
     max-width: 100%;
     padding: 5px;
   }
   .bridg-btn-box {
     flex-direction: column;
+    max-width: 100%;
+    margin-top: 10px;
   }
   .bridge_box_top {
     padding-bottom: 0;
@@ -647,7 +647,7 @@
     align-items: center;
     position: absolute;
     transform: rotate(90deg);
-    background: none;
+    padding: 5px;
     top: -12%;
     right: 45%;
   }
@@ -656,14 +656,13 @@
     width: 100%;
     margin: 0;
   }
-  .bridge_coin_top {
-    flex-direction: column;
-  }
+}
+
+@media only screen and (max-width: 599.95px) {
   .bridge_bottom_form__right {
-    flex-direction: column;
     justify-content: space-between;
   }
-  .currencyName-box {
-    width: 100%;
+  .bridge_coin_top {
+    flex-direction: column;
   }
 }
