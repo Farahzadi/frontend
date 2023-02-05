@@ -1,6 +1,92 @@
 import { EventEmitter } from "events";
 
 /** @typedef {(string|[event: string, checker: function(...*):boolean])} StageEvent */
+/** @typedef {{events: [StageEvent], route: string, onHappen?: function, waitForAllEvents?: boolean}} SideRoute */
+
+class AdvancedEventEmitter extends EventEmitter {
+
+  handlers = {};
+  allHandlers = {};
+
+  /** @param {StageEvent} event */
+  static parseEvent(event) {
+    return event instanceof Array ? event : [event, () => true];
+  }
+
+  /** @param {[StageEvent]} events */
+  static parseEvents(events) {
+    if (!events) return [];
+    return events.map(event => this.parseEvent(event));
+  }
+
+  _random() {
+    return new Date().getTime().toString(36) + Math.random().toString(36).slice(2);
+  }
+
+  _generateId() {
+    while (true) {
+      const id = this._random();
+      if (!(id in this.handlers) && !(id in this.allHandlers)) return id;
+    }
+  }
+
+  on(event, handler, passId = false) {
+    const id = this._generateId();
+    const [name, checker] = this.constructor.parseEvent(event);
+    const finalHandler = (...args) => checker(...args) && handler(...(passId ? [id, ...args] : args));
+    super.on(name, finalHandler);
+    this.handlers[id] = [name, finalHandler];
+    return id;
+  }
+
+  off(id) {
+    if (!id || !(id in this.handlers)) return;
+    const [name, handler] = this.handlers[id];
+    super.off(name, handler);
+    delete this.handlers[id];
+  }
+
+  _triggerAllBatch(id, waitForAllEvents, eventName, ...args) {
+    const allHandler = this.allHandlers[id];
+    if (!allHandler || allHandler.done) return;
+    const done = !waitForAllEvents ? true : !allHandler.ids.some(childId => !allHandler.finished[childId]);
+    if (done) {
+      allHandler.done = true;
+      const handler = allHandler.handler;
+      this.offAll(id);
+      handler?.(eventName, ...args);
+    }
+  }
+
+  onAll(events, handler, waitForAllEvents = true) {
+    events = this.constructor.parseEvents(events);
+    const id = this._generateId();
+    const childrenIds = events.map(event =>
+      this.on(
+        event,
+        (_childId, ...args) => {
+          const allHandler = this.allHandlers[id];
+          allHandler.finished[_childId] = true;
+          this._triggerAllBatch(id, waitForAllEvents, event[0], ...args);
+        },
+        true,
+      ),
+    );
+    this.allHandlers[id] = {
+      ids: childrenIds,
+      finished: {},
+      handler,
+      done: false,
+    };
+  }
+
+  offAll(id) {
+    if (!id || !(id in this.allHandlers)) return;
+    this.allHandlers[id].ids.forEach(childId => this.off(childId));
+    delete this.allHandlers[id];
+  }
+
+}
 
 export class Stage {
 
@@ -28,7 +114,7 @@ export class Stage {
   _startPromiseReject;
   _finishPromiseReject;
 
-  /** @type {EventEmitter} */
+  /** @type {AdvancedEventEmitter} */
   _eventSource;
   /** @type {EventEmitter} */
   _eventSink;
@@ -36,9 +122,12 @@ export class Stage {
   _eventsToStart = [];
   _eventsToFinish = [];
 
-  _startEventHandlers = [];
-  _finishEventHandlers = [];
-  _sideRouteEventHandlers = [];
+  /** @type {[SideRoute]} */
+  _sideRoutes = [];
+
+  _startEventHandlerId = null;
+  _finishEventHandlerId = null;
+  _sideRouteEventHandlerIds = [];
 
   /**
    * @param {string} route
@@ -59,9 +148,14 @@ export class Stage {
    * @param {function(boolean)} onFinish
    * Runs when the stage finished running and is ready to pass the current place to the next stage.
    * Has a boolean argument that shows if the stage was finished by skipping or not.
-   * @param {[{events: [StageEvent], route: string, onHappen?: function}]} sideRoutes
+   * @param {[SideRoute]} sideRoutes
    * Other possible routes to go as exceptions when given events happen.
    * @param {[string]} parents
+   * list of parents to override routes
+   * @param {boolean} waitForAllStartEvents
+   * Whether to wait for all start event to happen or not.
+   * @param {boolean} waitForAllFinishEvents
+   * Whether to wait for all finish event to happen or not.
    * @param {string} name
    * The name of the stage (optional: can be handled by the StageManager)
    */
@@ -69,11 +163,13 @@ export class Stage {
     route = null,
     eventsToStart = [],
     eventsToFinish = [],
-    onReady = skip => {},
-    onStart = () => {},
+    onReady = (skip, start) => {},
+    onStart = finish => {},
     onFinish = skipped => {},
     sideRoutes = [],
     parents = [],
+    waitForAllStartEvents = false,
+    waitForAllFinishEvents = false,
     name = null,
   ) {
     this.name = name;
@@ -82,11 +178,14 @@ export class Stage {
     this._onReady = onReady || (skip => {});
     this._onStart = onStart || (() => {});
     this._onFinish = onFinish || (skipped => {});
-    this._eventsToStart = Stage.formatEvents(eventsToStart || []);
-    this._eventsToFinish = Stage.formatEvents(eventsToFinish || []);
+    this._eventsToStart = AdvancedEventEmitter.parseEvents(eventsToStart);
+    this._eventsToFinish = AdvancedEventEmitter.parseEvents(eventsToFinish);
+    this._waitForAllStartEvents = waitForAllStartEvents ?? false;
+    this._waitForAllFinishEvents = waitForAllFinishEvents ?? false;
     this._sideRoutes = (sideRoutes ?? []).map(sideRoute => ({
       ...sideRoute,
-      events: Stage.formatEvents(sideRoute.events),
+      waitForAllEvents: sideRoute.waitForAllEvents ?? false,
+      events: AdvancedEventEmitter.parseEvents(sideRoute.events),
     }));
     this.reset();
   }
@@ -104,11 +203,11 @@ export class Stage {
       this._finishPromiseReject = rej;
     });
     this._removeStartEventHandlers();
-    this._startEventHandlers = [];
+    this._startEventHandlerId = null;
     this._removeFinishEventHandlers();
-    this._finishEventHandlers = [];
+    this._finishEventHandlerId = null;
     this._removeSideRouteEventHandlers();
-    this._sideRouteEventHandlers = [];
+    this._sideRouteEventHandlerIds = [];
   }
 
   /**
@@ -124,9 +223,14 @@ export class Stage {
     this._addSideRouteEventHandlers();
     this._addStartEventHandlers();
     this.status = "READY";
-    this._onReady?.(() => {
-      this._finish(true);
-    });
+    this._onReady?.(
+      () => {
+        if (this.status !== "FINISHED") this._finish(true);
+      },
+      () => {
+        if (this.status === "READY") this._start();
+      },
+    );
     this._eventSink?.emit("STAGE_READY", this.name);
     if (this._eventsToStart.length === 0) this._start();
   }
@@ -136,7 +240,9 @@ export class Stage {
     this._addFinishEventHandlers();
     this.status = "RUNNING";
     this._startPromiseResolve(true);
-    this._onStart?.();
+    this._onStart?.(() => {
+      if (this.status === "RUNNING") this._finish();
+    });
     this._eventSink?.emit("STAGE_STARTED", this.name);
     if (this._eventsToFinish.length === 0) this._finish();
   }
@@ -151,50 +257,48 @@ export class Stage {
   }
 
   _addStartEventHandlers() {
-    this._startEventHandlers = this._eventsToStart.map(([event, checker]) => [
-      event,
-      (...data) => this.status === "READY" && checker(...data) && this._start(),
-    ]);
-    this._startEventHandlers.forEach(([event, handler]) => this._eventSource?.on(event, handler));
+    this._startEventHandlerId = this._eventSource.onAll(
+      this._eventsToStart.map(([event, checker]) => [event, (...args) => this.status === "READY" && checker(...args)]),
+      () => this._start(),
+      this._waitForAllStartEvents,
+    );
   }
 
   _removeStartEventHandlers() {
-    this._finishEventHandlers?.forEach(([event, handler]) => this._eventSource?.off(event, handler));
+    this._eventSource?.offAll(this._startEventHandlerId);
   }
 
   _addFinishEventHandlers() {
-    this._finishEventHandlers = this._eventsToFinish.map(([event, checker]) => [
-      event,
-      (...data) => this.status === "RUNNING" && checker(...data) && this._finish(),
-    ]);
-    this._finishEventHandlers.forEach(([event, handler]) => this._eventSource?.on(event, handler));
+    this._finishEventHandlerId = this._eventSource.onAll(
+      this._eventsToFinish.map(([event, checker]) => [
+        event,
+        (...args) => this.status === "RUNNING" && checker(...args),
+      ]),
+      () => this._finish(),
+      this._waitForAllFinishEvents,
+    );
   }
 
   _removeFinishEventHandlers() {
-    this._finishEventHandlers?.forEach(([event, handler]) => this._eventSource?.off(event, handler));
+    this._eventSource?.offAll(this._finishEventHandlerId);
   }
 
   _addSideRouteEventHandlers() {
-    const handlers = [];
-    this._sideRoutes.forEach(sideRoute =>
-      sideRoute.events.forEach(([event, checker]) =>
-        handlers.push([
-          event,
-          (...data) => {
-            if (checker(...data)) {
-              sideRoute.onHappen?.(sideRoute.route, event, ...data);
-              this._eventSink?.emit("STAGE_EXCEPTION", this.name, sideRoute.route || this.route);
-            }
-          },
-        ]),
+    const handlerIds = this._sideRoutes.map(sideRoute =>
+      this._eventSource.onAll(
+        sideRoute.events,
+        (event, ...args) => {
+          sideRoute.onHappen?.(sideRoute.route, event, ...args);
+          this._eventSink?.emit("STAGE_EXCEPTION", this.name, sideRoute.route || this.route);
+        },
+        sideRoute.waitForAllEvents,
       ),
     );
-    handlers.forEach(([event, handler]) => this._eventSource?.on(event, handler));
-    this._sideRouteEventHandlers = handlers;
+    this._sideRouteEventHandlerIds = handlerIds;
   }
 
   _removeSideRouteEventHandlers() {
-    this._sideRouteEventHandlers?.forEach(([event, handler]) => this._eventSource?.off(event, handler));
+    this._sideRouteEventHandlerIds?.forEach(id => this._eventSource?.offAll(id));
   }
 
   _removeEventHandlers() {
@@ -233,14 +337,10 @@ export class Stage {
       this._onFinish,
       [...this._sideRoutes],
       [...this.parents],
+      this._waitForAllStartEvents,
+      this._waitForAllFinishEvents,
       name ?? this.name,
     );
-  }
-
-  /** @param {[StageEvent]} events */
-  static formatEvents(events) {
-    if (!events) return [];
-    return events.map(item => (item instanceof Array ? item : [item, () => true]));
   }
 
 }
@@ -252,7 +352,7 @@ export class StageManager {
 
   current;
 
-  /** @type {EventEmitter} */
+  /** @type {AdvancedEventEmitter} */
   _emitter;
   /** @type {EventEmitter} */
   _stageEventListener;
@@ -263,8 +363,10 @@ export class StageManager {
    * @param {{name:Stage}} stages
    * @param {string} entry Starting stage node
    * @param {[string | [event: string, checker: function(object):boolean]]} eventsToReset
+   * @param {function} onStart
+   * @param {EventEmitter} eventSink output event emitter for getting stage changes
    */
-  constructor(stages, entry = null, eventsToReset = [], eventSink = null) {
+  constructor(stages, entry = null, eventsToReset = [], onStart = () => {}, eventSink = null) {
     this.stages = Object.fromEntries(Object.entries(stages).map(([name, stage]) => [name, stage.copy(name)]));
     this.entry = this.stages[entry] && entry;
     Object.values(this.stages).forEach(stage => {
@@ -273,13 +375,14 @@ export class StageManager {
       });
     });
     this._eventsToRestart = eventsToReset.map(item => (item instanceof Array ? item : [item, () => true]));
+    this._onStart = onStart;
     this._eventSink = eventSink instanceof EventEmitter ? eventSink : null;
     this.reset();
   }
 
   reset() {
     Object.values(this.stages).forEach(stage => stage.reset());
-    this._emitter = new EventEmitter();
+    this._emitter = new AdvancedEventEmitter();
     this._stageEventListener = new EventEmitter();
     Object.values(this.stages).forEach(stage => {
       stage.setEventSource(this._emitter);
@@ -294,9 +397,7 @@ export class StageManager {
     this._stageEventListener.on("STAGE_EXCEPTION", (stage, route) => {
       this._move(route);
     });
-    this._eventsToRestart.forEach(([event, checker]) =>
-      this._emitter.on(event, (...data) => checker(...data) && this.restart()),
-    );
+    this._eventsToRestart.forEach(event => this._emitter.on(event, () => this.restart()));
   }
 
   /**
@@ -307,6 +408,7 @@ export class StageManager {
     entry = (this.stages[entry] && entry) || this.entry;
     if (!entry) throw new Error("No entry point found to start the staging process");
     this.entry = entry;
+    this._onStart?.();
     this._move(entry);
   }
 

@@ -76,7 +76,7 @@ export default class NetworkInterface {
 
   shouldSignOut = false;
 
-  stageManager = new StageManager(this.getStages(), "CONNECT", ["DISCONNECTED"]);
+  stageManager = new StageManager(this.getStages(), "CONNECT", ["DISCONNECTED"], () => this.setStagesInitialStates());
 
   constructor({ core, signInMessage }) {
     this.core = core;
@@ -236,20 +236,32 @@ export default class NetworkInterface {
     this.state.set(NetworkInterface.State.SIGNED_OUT);
   }
 
-  async updateAddress() {
+  async _updateAddress() {
     if (!this.apiProvider) return;
     const address = await this.apiProvider.getAddress();
     this.userDetails.address = address;
+  }
+
+  async updateAddress(...args) {
+    const result = await this._updateAddress(...args);
+    this.stageManager.emit("ADDRESS_UPDATED", this.userDetails.address);
+    return result;
   }
 
   async getAddress() {
     return this.userDetails.address;
   }
 
-  async updateNonce() {
+  async _updateNonce() {
     if (!this.apiProvider) return;
     const nonce = await this.apiProvider.getNonce();
     this.userDetails.nonce = nonce;
+  }
+
+  async updateNonce(...args) {
+    const result = await this._updateNonce(...args);
+    this.stageManager.emit("NONCE_UPDATED", this.userDetails.nonce);
+    return result;
   }
 
   async getNonce() {
@@ -268,7 +280,7 @@ export default class NetworkInterface {
     return this.userDetails.balances;
   }
 
-  async updateAvailableBalances() {
+  async _updateAvailableBalances() {
     if (!this.getBalances()) return;
     const currencies = getNetworkCurrencies(this.NETWORK);
     const entriesPromises = Object.entries(currencies).map(async ([ticker, currency]) => [
@@ -281,11 +293,23 @@ export default class NetworkInterface {
     return availableBalances;
   }
 
+  async updateAvailableBalances(...args) {
+    const result = await this._updateAvailableBalances(...args);
+    this.stageManager.emit("AVAILABLE_BALANCES_UPDATED", this.userDetails.availableBalances);
+    return result;
+  }
+
   async getAvailableBalances() {
     return this.userDetails.availableBalances;
   }
 
-  async updateChainDetails() {}
+  async _updateChainDetails() {}
+
+  async updateChainDetails() {
+    const result = await this._updateChainDetails();
+    this.stageManager.emit("CHAIN_DETAILS_UPDATED", this.userDetails.chainDetails);
+    return result;
+  }
 
   async getChainDetails() {
     return this.userDetails.chainDetails;
