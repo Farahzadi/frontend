@@ -15,7 +15,6 @@ export default function BridgePage() {
   const { pathname } = useLocation();
   const history = useHistory();
 
-
   return (
     <BridgeTemplate>
       <div className="bridge_section">

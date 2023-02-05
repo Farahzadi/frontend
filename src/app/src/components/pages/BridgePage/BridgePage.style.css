@@ -61,7 +61,7 @@
   align-items: flex-end;
 }
 .currencyName {
-  margin-left: 20px;
+  margin-left: 10px;
   font-size: 20px;
   justify-content: space-around;
 }
@@ -564,13 +564,14 @@
     border-bottom-right-radius: 0;
   }
   .bridge_coin_title {
-    margin: 00;
+    margin: 0;
     margin-top: 18px;
+    max-width: 100%;
   }
   .bridge_box_bottom {
     padding-bottom: 10px !important;
     margin-top: 10px;
-    border-radius: 30px;
+    border-radius: 6px;
   }
   .bridge_lables-btn {
     display: block;
@@ -579,12 +580,12 @@
     background: var(--dexpressoPrimery);
     width: 480px;
     max-width: 90%;
-    border-radius: 24px;
+    border-radius: 6px;
   }
   .bridge_lables-btn button {
     width: 220px;
     height: 50px;
-    border-radius: 15px;
+    border-radius: 6px;
     background: none;
     border: none;
     color: white;
@@ -599,13 +600,14 @@
     flex-direction: column;
   }
   .bridge_box_bottom,
-  .bridge_box_top,
-  .bridg-btn-box {
+  .bridge_box_top {
     max-width: 100%;
     padding: 5px;
   }
   .bridg-btn-box {
     flex-direction: column;
+    max-width: 100%;
+    margin-top: 10px;
   }
   .bridge_box_top {
     padding-bottom: 0;
@@ -645,7 +647,7 @@
     align-items: center;
     position: absolute;
     transform: rotate(90deg);
-    background: none;
+    padding: 5px;
     top: -12%;
     right: 45%;
   }
@@ -654,14 +656,13 @@
     width: 100%;
     margin: 0;
   }
-  .bridge_coin_top {
-    flex-direction: column;
-  }
+}
+
+@media only screen and (max-width: 599.95px) {
   .bridge_bottom_form__right {
-    flex-direction: column;
     justify-content: space-between;
   }
-  .currencyName-box {
-    width: 100%;
+  .bridge_coin_top {
+    flex-direction: column;
   }
 }

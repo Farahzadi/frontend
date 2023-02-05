@@ -165,7 +165,7 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
       objectFit: "contain",
     },
     "& .currencyName": {
-      marginLeft: " 20px",
+      marginLeft: " 10px",
       fontSize: "20px",
 
       "& svg": {
@@ -272,7 +272,7 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
             type="text"
             value={currencyVal}
             className="input-search"
-            autoFocus={true}
+            autoFocus={showingOptions ? true : false}
             onChange={inputTest}
             placeholder="search"
           />
@@ -295,7 +295,7 @@ const BridgeCurrencySelector = ({ onChange, currencies, balances = {}, value }) 
                 </div>
               )}
             </li>
-          )
+          ),
         )}
         {!tickers.length && (
           <li

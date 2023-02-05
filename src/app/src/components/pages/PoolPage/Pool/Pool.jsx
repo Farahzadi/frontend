@@ -34,7 +34,9 @@ const Pool = () => {
           </div>
           <PoolModalInput currency="USDC" balance="2299" />
           <PoolModalInput currency="USDT" balance="8303" />
-          <Button className="bg_btn" onClick={() => Modal.close()}> {/* TODO needs complete logic */}
+          <Button className="bg_btn" onClick={() => Modal.close()}>
+            {" "}
+            {/* TODO needs complete logic */}
             APPROVE
           </Button>
         </>

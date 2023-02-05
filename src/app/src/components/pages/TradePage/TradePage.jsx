@@ -52,8 +52,9 @@ const TradePage = () => {
 
   useEffect(() => {
     const { market, price } = marketSummary;
-    if ( price && market) {
-      document.title = `$ ${price} | ${market} | Dexpresso`;
+    if (price && market) {
+      // document.title = `$ ${price} | ${market} | Dexpresso`;
+      document.title = "Dexpresso";
     } else document.title = "Dexpresso";
   }, [marketSummary]);
 
@@ -141,23 +142,23 @@ const TradePage = () => {
   const askBins =
     allOrders !== {}
       ? Object.values(allOrders)
-          .filter(order => order.side === "s")
-          .reverse()
+        .filter(order => order.side === "s")
+        .reverse()
       : [];
 
   const bidBins =
     allOrders !== {}
       ? Object.values(allOrders)
-          .filter(order => order.side === "b")
-          .reverse()
+        .filter(order => order.side === "b")
+        .reverse()
       : [];
 
   const activeLimitAndMarketOrders = Object.values(userOrders).filter(
-    order => activeOrderStatuses.includes(order.status) && order.type === "l"
+    order => activeOrderStatuses.includes(order.status) && order.type === "l",
   );
 
   const activeSwapOrders = Object.values(userOrders).filter(
-    order => activeOrderStatuses.includes(order.status) && order.type === "s"
+    order => activeOrderStatuses.includes(order.status) && order.type === "s",
   );
 
   let tradingViewMarket = currentMarket;

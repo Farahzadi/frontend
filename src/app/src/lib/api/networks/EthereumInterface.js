@@ -216,7 +216,8 @@ export default class EthereumInterface extends NetworkInterface {
 
   async getEvent(currency = "WETH", eventName, fromBlock = 0, toBlock = "latest") {
     const contractAddr = getNetworkCurrency(this.NETWORK, currency).info.contract;
-    if (eventName) this.emit("eventLogs", await this.apiProvider?.getEvents(contractAddr, eventName, fromBlock, toBlock));
+    if (eventName)
+      this.emit("eventLogs", await this.apiProvider?.getEvents(contractAddr, eventName, fromBlock, toBlock));
     else {
       this.EVENTS_NAME.map(async name => {
         this.emit("eventLogs", await this.apiProvider?.getEvents(contractAddr, name, fromBlock, toBlock));

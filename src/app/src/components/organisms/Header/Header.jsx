@@ -43,11 +43,11 @@ export const Header = () => {
   const matches = useMediaQuery(theme.breakpoints.down("md"));
   const handleMenu = ({ key }) => {
     switch (key) {
-      case "signOut":
-        Core.run("disconnectWallet");
-        return;
-      default:
-        throw new Error("Invalid dropdown option");
+    case "signOut":
+      Core.run("disconnectWallet");
+      return;
+    default:
+      throw new Error("Invalid dropdown option");
     }
   };
 
@@ -97,7 +97,7 @@ export const Header = () => {
                     </NavLink>
                   )}
                 </NavItem>
-              )
+              ),
           )}
         </NavUl>
         <ActionBtnContainer>

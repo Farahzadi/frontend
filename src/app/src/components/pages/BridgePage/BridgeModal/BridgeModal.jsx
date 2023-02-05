@@ -54,7 +54,10 @@ const BridgeModal = ({
       <div className="row">
         <div className="col-6-border">
           <p>
-            <small> {modalType === "bridgeModal" ? "Source Network:" : modalType === "wrapperModal" ? "from:" : ""}</small>
+            <small>
+              {" "}
+              {modalType === "bridgeModal" ? "Source Network:" : modalType === "wrapperModal" ? "from:" : ""}
+            </small>
           </p>
           <p>
             <b>{transfer.type !== "withdraw" ? ethLayer1HeaderDetails : zkSyncLayer2HeaderDetails}</b>
@@ -63,7 +66,10 @@ const BridgeModal = ({
         </div>
         <div className="col-5-border mb-2">
           <p>
-            <small> {modalType === "bridgeModal" ? "Destination Network:" : modalType === "wrapperModal" ? "To:" : ""}</small>
+            <small>
+              {" "}
+              {modalType === "bridgeModal" ? "Destination Network:" : modalType === "wrapperModal" ? "To:" : ""}
+            </small>
           </p>
           <p>
             <b>{transfer.type === "withdraw" ? ethLayer1HeaderDetails : zkSyncLayer2HeaderDetails}</b>
