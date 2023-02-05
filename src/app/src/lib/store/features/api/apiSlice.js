@@ -119,6 +119,7 @@ export const apiSlice = createSlice({
       connection: null,
       zksyncActivation: null,
     },
+    notifications: [], // { id, type, message }
   },
   reducers: {
     _connected_ws(state, { payload }) {
@@ -495,6 +496,12 @@ export const apiSlice = createSlice({
     setStage(state, { payload }) {
       state.stages[payload.type] = payload.stage;
     },
+    addNotification(state, { payload }) {
+      state.notifications.unshift(payload);
+    },
+    removeNotification(state, { payload }) {
+      state.notifications = state.notifications.filter(notif => notif.id !== payload);
+    },
   },
 });
 
@@ -525,6 +532,8 @@ export const {
   setUserDetails,
   clearUserDetails,
   setStage,
+  addNotification,
+  removeNotification,
 } = apiSlice.actions;
 
 export const configSelector = state => state.api.config;
@@ -588,6 +597,8 @@ export const userSelector = state => state.api.user;
 
 export const connectionStageSelector = state => state.api.stages.connection;
 export const zksyncActivationStageSelector = state => state.api.stages.zksyncActivation;
+
+export const notificationsSelector = state => state.api.notifications;
 
 export const handleMessage = createAction("api/handleMessage");
 
