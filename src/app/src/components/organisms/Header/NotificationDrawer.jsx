@@ -8,25 +8,19 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import { NotifictionSidebar } from "./Header.module";
 import Alert from "@mui/material/Alert";
+import { useSelector } from "react-redux";
+import { notificationsSelector } from "lib/store/features/api/apiSlice";
+import Core from "lib/api/Core";
 
 export const NotificationDrawer = () => {
   const [right, setRight] = useState(false);
-  const [notifData, setnotifData] = useState(["error", "warning", "info", "success"]);
+  const notifData = useSelector(notificationsSelector);
 
   const toggleDrawer = open => event => {
     if (event && event.type === "keydown" && (event.key === "Tab" || event.key === "Shift")) {
       return;
     }
     setRight(open);
-  };
-  const deletNotif = deleteNotifData => {
-    const temp = notifData.filter(t => {
-      // console.log(t===deleteNotifData);
-
-      return t !== deleteNotifData;
-    });
-    console.log(temp);
-    setnotifData(temp);
   };
 
   const NotifictionCard = {
@@ -44,8 +38,8 @@ export const NotificationDrawer = () => {
         <h5>Notifications</h5>
         <i role="button" onClick={toggleDrawer(false)} class="icon-remove icon-2x"></i>
         <Divider />
-        {notifData.map((notifType, i) => (
-          <ListItem key={i} disablePadding>
+        {notifData.map(notif => (
+          <ListItem key={notif.id} disablePadding>
             <ListItemButton
               sx={{
                 "&:hover": {
@@ -53,17 +47,14 @@ export const NotificationDrawer = () => {
                 },
               }}>
               <ListItemText>
-                {/* <NotifictionCard> */}
                 <Alert
-                  severity={notifType}
+                  severity={notif.type}
                   sx={NotifictionCard}
                   onClose={() => {
-                    deletNotif(notifType);
+                    Core.run("notify", "remove", notif.id);
                   }}>
-                  This is a {notifType} alert — check it out!
+                  {notif.message}
                 </Alert>
-                {/* <p>some alerts goes there</p> */}
-                {/* </NotifictionCard> */}
               </ListItemText>
             </ListItemButton>
           </ListItem>
