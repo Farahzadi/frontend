@@ -2,6 +2,7 @@ import Emitter from "tiny-emitter";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { getAppConfig } from ".";
+import { Notify } from "./utils/Notification";
 
 const DEFAULT_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK;
 
@@ -29,6 +30,7 @@ export default class Core extends Emitter {
     "emit",
     "on",
     "off",
+    "notify",
   ];
 
   networkClasses = {};
@@ -353,6 +355,10 @@ export default class Core extends Emitter {
 
   static getInstance() {
     return this.instance;
+  }
+
+  notify(method, ...args) {
+    return Notify[method](...args);
   }
 
 }
