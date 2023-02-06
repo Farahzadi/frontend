@@ -91,7 +91,7 @@ export default class EthereumInterface extends NetworkInterface {
     );
   }
 
-  async updateChainDetails() {
+  async _updateChainDetails() {
     if (!this.apiProvider) return;
     const currencies = getNetworkCurrencies(this.NETWORK);
     const allowances = await this.fetchAllowances();

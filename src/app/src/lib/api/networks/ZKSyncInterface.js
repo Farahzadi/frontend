@@ -79,12 +79,12 @@ export default class ZKSyncInterface extends EthereumInterface {
 
   formatZkSyncBalances(balances) {
     const entries = Object.entries(balances)
-      .map(([ticker, currency]) => [ticker.toUpperCase(), currency])
+      .map(([ticker, currency]) => [ticker.toUpperCase(), currency?.amount ?? currency])
       .filter(([ticker, currency]) => getNetworkCurrency(this.NETWORK, ticker));
     return Object.fromEntries(entries);
   }
 
-  async updateAddress(_accountState) {
+  async _updateAddress(_accountState) {
     if (_accountState) {
       this.userDetails.address = ethers.utils.getAddress(_accountState.address);
       return;
@@ -94,7 +94,7 @@ export default class ZKSyncInterface extends EthereumInterface {
     this.userDetails.address = address;
   }
 
-  async updateNonce(_accountState) {
+  async _updateNonce(_accountState) {
     if (_accountState) {
       this.userDetails.nonce = +_accountState.committed.nonce;
       return;
@@ -111,7 +111,7 @@ export default class ZKSyncInterface extends EthereumInterface {
     this.userDetails.balances = formatBalances(zkBalances, Currencies);
   }
 
-  async updateChainDetails(_accountState) {
+  async _updateChainDetails(_accountState) {
     if (!this.apiProvider) return;
     const accountStatePromise = (async () => _accountState ?? (await this.apiProvider.getAccountState()))();
     const balancesPromise = this.fetchL1Balances();
@@ -122,10 +122,14 @@ export default class ZKSyncInterface extends EthereumInterface {
       allowancesPromise,
     ]);
     const verifiedZkBalances = this.formatZkSyncBalances(accountState.verified.balances);
+    const depositingZkBalances = this.formatZkSyncBalances(accountState.depositing.balances);
     this.userDetails.chainDetails = {
       verified: {
         nonce: +accountState.verified.nonce,
         balances: formatBalances(verifiedZkBalances, Currencies),
+      },
+      depositing: {
+        balances: formatBalances(depositingZkBalances, Currencies),
       },
       userId: accountState.id,
       L1Balances: formatBalances(l1Balances, Currencies),
@@ -270,24 +274,29 @@ export default class ZKSyncInterface extends EthereumInterface {
       if (balances) for (const balance in Object.values(balances)) if (balance.value !== "0") return true;
       return false;
     };
+    const depositChecker = chainDetails => balanceChecker(chainDetails.depositing.balances);
+
     return {
       ...super.getStages(),
       FETCH_BALANCES: new Stage(
         "DEPOSIT",
         [],
-        ["BALANCES_UPDATED"],
+        ["BALANCES_UPDATED", "CHAIN_DETAILS_UPDATED"],
         null,
         null,
         null, // () => console.log("Fetched balances and ready to continue staging"),
         null,
         ["CONNECT"],
+        false,
+        true,
       ),
       DEPOSIT: new Stage(
         "ACTIVATE",
-        ["DEPOSITTING"],
+        ["DEPOSITTING", ["CHAIN_DETAILS_UPDATED", depositChecker]],
         [["BALANCES_UPDATED", balanceChecker]],
-        async skip => {
+        async (skip, start) => {
           if (balanceChecker(this.userDetails.balances)) return skip();
+          if (depositChecker(this.userDetails.chainDetails)) return start();
           if (await this.apiProvider.isActivated()) return skip();
           this.emit("setStage", "zksyncActivation", "MUST_DEPOSIT");
         },
@@ -332,9 +341,10 @@ export default class ZKSyncInterface extends EthereumInterface {
         [
           {
             events: ["ZKـPUBLIC_KEY_ERROR"],
-            route: "ACTIVATE",
+            route: "CONNECT",
             onHappen: (route, event, ...data) => {
               toast.error("Error on activating the account. Trying again...");
+              this.disconnectWallet();
             },
           },
         ],
