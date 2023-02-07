@@ -14,7 +14,6 @@ import Decimal from "decimal.js";
 export default class EthAPIProvider extends APIProvider {
 
   async start(infuraId, emitChanges = true) {
-    let onboarding = new MetaMaskOnboarding();
     if (emitChanges) this.state.set(APIProvider.State.CONNECTING);
     const providerOptions = {
       injected: {
@@ -101,9 +100,11 @@ export default class EthAPIProvider extends APIProvider {
         },
         package: {},
         connector: async () => {
+          const onboarding = new MetaMaskOnboarding();
           if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
             onboarding.startOnboarding();
-            onboarding._injectForwarder("INJECT");
+            onboarding.stopOnboarding();
+            return new Error("Metamask installation started. Disconnecting.");
           }
         },
       };
@@ -117,7 +118,9 @@ export default class EthAPIProvider extends APIProvider {
     });
 
     const provider = await this.web3Modal.connect();
-    if (provider.isMetaMask) onboarding.stopOnboarding();
+
+    if (provider instanceof Error) throw provider.message;
+
     this.provider = new ethers.providers.Web3Provider(provider);
 
     const networkChanged = await this.switchNetwork();
