@@ -11,7 +11,6 @@ import { FaEquals, FaTimes, FaMinus } from "react-icons/all";
 import Submit from "../../atoms/Form/Submit";
 import Form from "../../atoms/Form/Form";
 import { x } from "@xstyled/styled-components";
-import { toast } from "react-toastify";
 import Core from "lib/api/Core";
 
 const AllocationModal = ({ onClose, show, onSuccess, bytesToPurchase }) => {
@@ -91,7 +90,7 @@ const AllocationModal = ({ onClose, show, onSuccess, bytesToPurchase }) => {
             await onSuccess();
           } catch (e) {
             console.error("Error purchasing arweave bytes", e);
-            toast.error("Transaction was rejected");
+            Core.run("notify", "error", "Transaction was rejected");
           }
         }}>
         <Submit block isDisabled={!isUSDCBalanceSufficient}>

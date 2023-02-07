@@ -1,6 +1,5 @@
 import Emitter from "tiny-emitter";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { getAppConfig } from ".";
 import { Notify } from "./utils/Notification";
 
@@ -110,7 +109,7 @@ export default class Core extends Emitter {
     const { noRetry } = options ?? {};
     this.emit("close");
     if (!noRetry) {
-      // toast.error("Connection to server closed. Please try again in a minute");
+      // Core.run("notify", "error", "Connection to server closed. Please try again in a minute");
       // console.log("test socket close", noRetry);
       setTimeout(
         () => {
@@ -197,7 +196,9 @@ export default class Core extends Emitter {
             error.response.status,
             (error.response.data.error && error.response.data.message) || error.message,
           );
-          toast.error(
+          Core.run(
+            "notify",
+            "error",
             `API Error ${error.response.status}: ${
               (error.response.data.error && error.response.data.message) || error.message
             }`,

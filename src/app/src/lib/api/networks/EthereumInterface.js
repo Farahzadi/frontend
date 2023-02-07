@@ -4,7 +4,6 @@ import Decimal from "decimal.js";
 import { BigNumber, ethers } from "ethers";
 import { getENSName } from "lib/ens";
 import { formatBalances, getCurrentValidUntil, switchRatio } from "lib/utils";
-import { toast } from "react-toastify";
 import { maxAllowance } from "../constants";
 import EthAPIProvider from "../providers/EthAPIProvider";
 import NetworkInterface from "./NetworkInterface";
@@ -153,7 +152,7 @@ export default class EthereumInterface extends NetworkInterface {
     const userAddress = await this.getAddress();
     const allowance = await this.apiProvider.getAllowance(res.sellTokenAddress, userAddress, this.DEX_CONTRACT);
     if (new Decimal(allowance.toString()).lt(compareAmount)) {
-      toast.warning("Insufficient allowance");
+      this.core.run("notify", "warning", "Insufficient allowance");
       await this.approve(currency);
       // TODO: throw the error and catch the correct error message to start approving procedure
       // throw new Error("Insufficient allowance");

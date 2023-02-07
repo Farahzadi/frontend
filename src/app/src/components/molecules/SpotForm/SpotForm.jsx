@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
-import { toast } from "react-toastify";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
 import {
@@ -230,7 +229,7 @@ const SpotForm = () => {
     return 0;
   };
   const HandleTrade = async e => {
-    let amount, price, newstate, orderPendingToast;
+    let amount, price, newstate;
     // amount
     if (typeof order.amount === "string") {
       if (rangePrice > 0) {
@@ -243,13 +242,13 @@ const SpotForm = () => {
     }
 
     if (sessionStorage.getItem("test") === null) {
-      toast.warning("Dear user, there is no guarantee from us for your definite performance");
+      Core.run("notify", "warning", "Dear user, there is no guarantee from us for your definite performance");
       sessionStorage.setItem("test", true);
     }
 
     if (activeLimitAndMarketOrders.length > 0) {
       if (orderType === "market") {
-        toast.error("Your limit or market order should fill first");
+        Core.run("notify", "error", "Your limit or market order should fill first");
         return;
       }
     }
@@ -277,24 +276,24 @@ const SpotForm = () => {
         type: orderType === "limit" ? "l" : "m",
       });
     } catch (err) {
-      toast.error(err.message);
+      Core.run("notify", "error", err.message);
       return;
     }
 
     setFlags({ ...flags, orderButtonDisabled: true });
     setOrder({ ...order, price });
 
-    orderPendingToast = toast.info("Order pending. Sign or Cancel to continue...");
+    const orderPendingNotif = Core.run("notify", "info", "Order pending. Sign or Cancel to continue...");
 
     // send feeType for limit order (fee method)
     try {
       await Core.run("submitOrder", data);
     } catch (e) {
       console.log(e);
-      toast.error(e.message);
+      Core.run("notify", "error", e.message);
     }
 
-    toast.dismiss(orderPendingToast);
+    Core.run("notify", "remove", await orderPendingNotif);
 
     setFlags({ ...flags, orderButtonDisabled: false });
   };
