@@ -79,10 +79,10 @@ class TradePriceTable extends React.Component {
       Core.run("emit", "selectedPrice", this.state.selectedPrice);
       this.updateOrderType("limit");
       if (this.props.itsAsks) {
-        Core.run("emit", "orderSide", true);
+        Core.run("emit", "orderSide", "b");
       }
       if (this.props.itsBids) {
-        Core.run("emit", "orderSide", false);
+        Core.run("emit", "orderSide", "s");
       }
     }
   }
