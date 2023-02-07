@@ -3,17 +3,20 @@ import { takeEvery, put, all, select, delay, apply } from "redux-saga/effects";
 
 const DEFAULT_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK;
 
-function* handleSingleMessageSaga({ payload }) {
+function* handleSingleMessage({ payload }, core) {
   let { op, data } = payload;
   if (!op) return;
   yield put({
     type: `api/_${op}`,
     payload: data,
+    core,
   });
 }
 
 export function* messageHandlerSaga(core) {
-  yield takeEvery("api/handleMessage", handleSingleMessageSaga);
+  yield takeEvery("api/handleMessage", function* (data) {
+    yield handleSingleMessage(data, core);
+  });
 }
 
 export function* userPollingSaga(core) {

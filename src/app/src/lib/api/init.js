@@ -20,6 +20,7 @@ import {
   setStage,
   addNotification,
   removeNotification,
+  clearNotifications,
 } from "lib/store/features/api/apiSlice";
 
 export const initActions = (core, store) => {
@@ -98,13 +99,21 @@ export const initActions = (core, store) => {
   });
 
   core.on("notifications", (action, ...args) => {
-    if (action === "add") {
-      const [id, type, message] = args;
-      store.dispatch(addNotification({ id, type, message }));
+    switch (action) {
+    case "add": {
+      const [id, type, message, toast] = args;
+      store.dispatch(addNotification({ id, type, message, toast }));
+      break;
     }
-    if (action === "remove") {
+    case "remove": {
       const [id] = args;
       store.dispatch(removeNotification(id));
+      break;
+    }
+    case "clear": {
+      store.dispatch(clearNotifications());
+      break;
+    }
     }
   });
 };

@@ -1,5 +1,4 @@
 import { createSlice, createAction } from "@reduxjs/toolkit";
-import { toast } from "react-toastify";
 import networkManager from "config/NetworkManager";
 import { getOrderDetailsWithoutFee } from "lib/utils";
 import { fillStatusList, openOrderStatusList } from "lib/interface";
@@ -215,7 +214,7 @@ export const apiSlice = createSlice({
       for (const id of payload.data.ids)
         if (payload.data.success && state.userOrders[id]) state.userOrders[id].status = "c";
     },
-    _user_orders_update_ws(state, { payload }) {
+    _user_orders_update_ws(state, { payload, core }) {
       payload.data.map(translators.userOrder).forEach(async update => {
         let filledOrder, partialmatchorder;
         switch (update.status) {
@@ -234,7 +233,9 @@ export const apiSlice = createSlice({
             partialmatchorder.remaining = remaining;
             partialmatchorder.status = "pm";
             const noFeeOrder = getOrderDetailsWithoutFee(partialmatchorder);
-            toast.success(
+            core.run(
+              "notify",
+              "success",
               `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
                 noFeeOrder.price.toPrecision(4) / 1
               } was partial match!`,
@@ -258,7 +259,9 @@ export const apiSlice = createSlice({
             filledOrder.status = "f";
             filledOrder.remaining = 0;
             const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
-            toast.success(
+            core.run(
+              "notify",
+              "success",
               `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
                 noFeeOrder.price.toPrecision(4) / 1
               } was filled!`,
@@ -276,7 +279,7 @@ export const apiSlice = createSlice({
           //     filledOrder.status = "pf";
           //     filledOrder.remaining = remaining;
           //     const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
-          //     toast.success(
+          //     core.run("notify", "success",
           //       `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1
           //       } ${baseCurrency} @ ${noFeeOrder.price.toPrecision(4) / 1
           //       } was partial filled!`
@@ -299,12 +302,18 @@ export const apiSlice = createSlice({
             filledOrder.status = "r";
             filledOrder.txHash = update.txHash;
             const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
-            toast.error(
+            core.run(
+              "notify",
+              "error",
               `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
                 noFeeOrder.price.toPrecision(4) / 1
               } was rejected: ${error}`,
             );
-            toast.info("This happens occasionally. Run the transaction again and you should be fine.");
+            core.run(
+              "notify",
+              "info",
+              "This happens occasionally. Run the transaction again and you should be fine.",
+            );
           }
           break;
         case "e":
@@ -374,14 +383,16 @@ export const apiSlice = createSlice({
       });
       state.bridgeReceipts = newBridgeReceipts;
     },
-    addBridgeReceipt(state, { payload }) {
+    addBridgeReceipt(state, { payload, core }) {
       if (!payload || !payload.txId) return;
       const { amount, token, txUrl, type, userAddress } = payload;
       if (state.user.address !== userAddress) return;
 
       state.bridgeReceipts.unshift(payload);
 
-      toast.success(
+      core.run(
+        "notify",
+        "success",
         <>
           Successfully {type === "deposit" ? "deposited" : "withdrew"} {amount} {token}{" "}
           {type === "deposit"
@@ -502,6 +513,9 @@ export const apiSlice = createSlice({
     removeNotification(state, { payload }) {
       state.notifications = state.notifications.filter(notif => notif.id !== payload);
     },
+    clearNotifications(state) {
+      state.notifications = [];
+    },
   },
 });
 
@@ -534,6 +548,7 @@ export const {
   setStage,
   addNotification,
   removeNotification,
+  clearNotifications,
 } = apiSlice.actions;
 
 export const configSelector = state => state.api.config;
