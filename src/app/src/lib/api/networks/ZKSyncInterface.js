@@ -10,12 +10,13 @@ import Currencies, { getNetworkCurrency } from "config/Currencies";
 import { maxAllowance } from "../constants";
 import { Stage } from "../utils/Stage";
 import { toast } from "react-toastify";
+import { increaseNonce } from "../Actions";
 
 export default class ZKSyncInterface extends EthereumInterface {
 
   static Actions = [
     ...super.Actions,
-    "increaseNonce",
+    increaseNonce,
     "changePubKeyFee",
     "depositL2",
     "withdrawL2",
@@ -44,17 +45,15 @@ export default class ZKSyncInterface extends EthereumInterface {
 
   async increaseNonce() {
     let increaseNonceResult = {};
-
     const increaseNonceRes = await this.apiProvider.increaseWalletNonce();
     // cancel all orders if wallet nonce is increased
-    this.core.cancelAllOrders();
-    const verifiedAccountNonce = await this._accountState.verified.nonce;
-    if (increaseNonceRes) {
-      increaseNonceResult.response = increaseNonceRes;
-      increaseNonceResult.verifiedAccountNonce = verifiedAccountNonce;
+    if (increaseNonceRes.success) {
+      this.updateNonce();
+      this.core.cancelAllOrders();
+      toast.success("wallet nonce was successfully increased.");
+      return true;
     }
-
-    return increaseNonceResult;
+    return false;
   }
 
   async fetchL1Balances() {

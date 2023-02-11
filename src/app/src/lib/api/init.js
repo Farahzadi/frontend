@@ -18,7 +18,10 @@ import {
   clearUserDetails,
   setUserChainDetails,
   setStage,
+  setUserNonce,
 } from "lib/store/features/api/apiSlice";
+
+export const updateUserNonce = "updateUserNonce";
 
 export const initActions = (core, store) => {
   core.on("bridgeReceipt", bridgeReceipt => {
@@ -73,6 +76,9 @@ export const initActions = (core, store) => {
 
   core.on("updateUser", user => {
     store.dispatch(setUserDetails(user));
+  });
+  core.on("updateUserNonce", user => {
+    store.dispatch(setUserNonce(user));
   });
 
   core.on("updateUserAddress", userAddress => {

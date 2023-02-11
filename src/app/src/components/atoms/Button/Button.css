@@ -66,6 +66,7 @@
 
 .btn_loader {
   position: absolute;
+  left: calc(50% - 12px);
 }
 
 .bg_err {

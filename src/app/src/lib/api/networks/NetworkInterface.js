@@ -13,6 +13,8 @@ import {
 import { formatBalances, getCurrentValidUntil, State, toBaseUnit } from "lib/utils";
 import { isString } from "lodash";
 import { toast } from "react-toastify";
+import { connectWallet } from "../Actions";
+import { updateUserNonce } from "../init";
 import APIProvider from "../providers/APIProvider";
 import { Stage, StageManager } from "../utils/Stage";
 
@@ -34,7 +36,7 @@ export default class NetworkInterface {
   };
 
   static Actions = [
-    "connectWallet",
+    connectWallet,
     "disconnectWallet",
     "updateAddress",
     "updateNonce",
@@ -261,10 +263,11 @@ export default class NetworkInterface {
   async updateNonce(...args) {
     const result = await this._updateNonce(...args);
     this.stageManager.emit("NONCE_UPDATED", this.userDetails.nonce);
+    this.emit(updateUserNonce, this.userDetails.nonce);
     return result;
   }
 
-  async getNonce() {
+  getNonce() {
     return this.userDetails.nonce;
   }
 

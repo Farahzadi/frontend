@@ -3,49 +3,52 @@ import { DefaultTemplate } from "components";
 import { useHistory, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import "./NonceIncreasement.css";
-import { Button } from "react-bootstrap";
 import { networkSelector, userSelector } from "lib/store/features/api/apiSlice";
-import { toast } from "react-toastify";
 import Modal from "../../atoms/Modal";
 import Core from "lib/api/Core";
+import Checkbox from "components/atoms/Checkbox/Checkbox";
+import { Button } from "components/atoms/Button";
+import { connectWallet, increaseNonce } from "lib/api/Actions";
 
-const NonceIncreasement = () => {
+const NonceIncrement = () => {
   const [termsCheck, setTersmsCheck] = useState(false);
   const [cancelCheck, setCancelCheck] = useState(false);
   const [oldNonce, setOldNonce] = useState(null);
   const [connecting, setConnecting] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const network = useSelector(networkSelector);
   const user = useSelector(userSelector);
   const history = useHistory();
   const location = useLocation();
 
+  useEffect(() => {
+    if (user.nonce) {
+      setOldNonce(user.nonce);
+    }
+  }, [user.nonce]);
+
   const connect = () => {
     setConnecting(true);
-    Core.run("connectWallet").finally(() => setConnecting(false));
-  };
-
-  const getOldNonce = () => {
-    const oldNonce = user.nonce;
-    setOldNonce(oldNonce);
+    Core.run(connectWallet).finally(() => setConnecting(false));
   };
 
   const increaseWalletNonce = async () => {
+    setLoading(true);
     try {
-      const res = await Core.run("increaseWalletNonce");
-      const success = res.response.success;
-      if (success) {
-        toast.success("wallet nonce increased");
+      const response = await Core.run(increaseNonce);
+      if (response) {
+        // setCancelCheck(!cancelCheck);
+        // setTersmsCheck(!termsCheck);
       }
-      window.location.reload(false);
+      // window.location.reload(false); ??
     } catch (error) {
       console.log(error);
     }
+    setLoading(false);
   };
 
   const acceptNonce = async () => {
-    setCancelCheck(!cancelCheck);
-    setTersmsCheck(!termsCheck);
     const accept = await Modal.accept({
       cancelText: "No",
       proceedText: "Yes",
@@ -54,11 +57,7 @@ const NonceIncreasement = () => {
     if (accept) increaseWalletNonce();
   };
 
-  useEffect(() => {
-    if (user.nonce) {
-      getOldNonce();
-    }
-  }, []);
+
 
   const accept = cancelCheck && termsCheck;
   return (
@@ -67,7 +66,7 @@ const NonceIncreasement = () => {
         <div className="nonce-bg">
           <h2 className="mt-2">change nonce setting</h2>
           <div className="nonce-text text-white">
-            {oldNonce && <h2 className="text-center mb-3 ">user wallet nonce = {oldNonce}</h2>}
+            {oldNonce && <h4 className="text-center mb-3 ">user wallet nonce = {oldNonce}</h4>}
 
             <h5 className="mb-2">Security of private key:</h5>
             <p className="mb-3">
@@ -107,39 +106,38 @@ const NonceIncreasement = () => {
             </p>
           </div>
           <form>
-            <p>
-              <input
-                name="termsCheck"
-                type="checkbox"
+            <div className="checkbox-container">
+              <Checkbox
+                label={" I agree to the terms and conditions"}
                 checked={termsCheck}
                 onChange={() => {
                   setTersmsCheck(!termsCheck);
                 }}
+                name="termsCheck"
               />
-              I agree to the terms and conditions
-            </p>
-            <p>
-              <input
-                name="isGoing"
-                type="checkbox"
+            </div>
+            <div className="checkbox-container">
+              <Checkbox
+                label={"I agree with canceling orders"}
                 checked={cancelCheck}
                 onChange={() => {
                   setCancelCheck(!cancelCheck);
                 }}
+                name="cancelAll"
               />
-              I agree with canceling orders
-            </p>
+            </div>
           </form>
-          {user.id ? (
-            <button
-              onClick={() => acceptNonce()}
+          {user.address ? (
+            <Button
+              onClick={acceptNonce}
               disabled={!accept}
-              className={`bg_btn  btn_fix  mb-3 ${accept ? "" : "btn btn-secondary"} `}>
+              loading={loading}
+              className={`bg_btn btn btn_fix  mb-3 ${accept ? "" : " btn-secondary"} `}>
               Accept
-            </button>
+            </Button>
           ) : (
             <div className="spf_btn ">
-              <Button loadin={connecting} className="bg_btn mx-auto" onClick={connect}>
+              <Button loading={connecting} className="bg_btn mx-auto" onClick={connect}>
                 CONNECT
               </Button>
             </div>
@@ -150,4 +148,4 @@ const NonceIncreasement = () => {
   );
 };
 
-export default NonceIncreasement;
+export default NonceIncrement;
