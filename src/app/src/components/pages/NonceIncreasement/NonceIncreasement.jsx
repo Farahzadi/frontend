@@ -3,35 +3,27 @@ import { DefaultTemplate } from "components";
 import { useHistory, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import "./NonceIncreasement.css";
-import { networkSelector, userSelector } from "lib/store/features/api/apiSlice";
+import { networkSelector, userNonceSelector } from "lib/store/features/api/apiSlice";
 import Modal from "../../atoms/Modal";
 import Core from "lib/api/Core";
 import Checkbox from "components/atoms/Checkbox/Checkbox";
 import { Button } from "components/atoms/Button";
-import { connectWallet, increaseNonce } from "lib/api/Actions";
+import { increaseNonce } from "lib/api/Actions";
+import ConnectButton from "components/molecules/ConnectButton/ConnectButton";
 
 const NonceIncrement = () => {
   const [termsCheck, setTersmsCheck] = useState(false);
   const [cancelCheck, setCancelCheck] = useState(false);
   const [oldNonce, setOldNonce] = useState(null);
-  const [connecting, setConnecting] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const network = useSelector(networkSelector);
-  const user = useSelector(userSelector);
-  const history = useHistory();
-  const location = useLocation();
+  const nonce = useSelector(userNonceSelector);
 
   useEffect(() => {
-    if (user.nonce) {
-      setOldNonce(user.nonce);
+    if (nonce) {
+      setOldNonce(nonce);
     }
-  }, [user.nonce]);
+  }, [nonce]);
 
-  const connect = () => {
-    setConnecting(true);
-    Core.run(connectWallet).finally(() => setConnecting(false));
-  };
 
   const increaseWalletNonce = async () => {
     setLoading(true);
@@ -56,8 +48,6 @@ const NonceIncrement = () => {
     });
     if (accept) increaseWalletNonce();
   };
-
-
 
   const accept = cancelCheck && termsCheck;
   return (
@@ -127,7 +117,7 @@ const NonceIncrement = () => {
               />
             </div>
           </form>
-          {user.address ? (
+          <ConnectButton>
             <Button
               onClick={acceptNonce}
               disabled={!accept}
@@ -135,13 +125,7 @@ const NonceIncrement = () => {
               className={`bg_btn btn btn_fix  mb-3 ${accept ? "" : " btn-secondary"} `}>
               Accept
             </Button>
-          ) : (
-            <div className="spf_btn ">
-              <Button loading={connecting} className="bg_btn mx-auto" onClick={connect}>
-                CONNECT
-              </Button>
-            </div>
-          )}
+          </ConnectButton>
         </div>
       </DefaultTemplate>
     </>

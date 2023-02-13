@@ -21,3 +21,10 @@ export const OrderSide = {
   b: "buy",
   s: "sell",
 };
+
+export const NetworkStages = {
+  READY: "READY",
+  CONNECTING: "CONNECTING",
+  CONNECTED: "CONNECTED",
+  DISCONNECTED: "DISCONNECTED",
+};

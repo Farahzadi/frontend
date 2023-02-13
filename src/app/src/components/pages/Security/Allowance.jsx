@@ -13,6 +13,7 @@ import { DefaultTemplate } from "components/templates/DefaultTemplate";
 import CoinSelect from "components/molecules/CoinSelect";
 import { maxAllowance } from "lib/api/constants";
 import { approve } from "lib/api/Actions";
+import ConnectButton from "components/molecules/ConnectButton/ConnectButton";
 
 const Container = styled("div")(({ theme }) => ({
   justifyContent: "center",
@@ -121,7 +122,7 @@ const Allowance = () => {
   };
   const handleChangeAllowance = e => setAllowance(e.target.value);
   const setBtnText = () => {
-    if (allowance === "MAX ALLOWANCE") {
+    if (allowance === -1) {
       return "Allowance";
     }
     return "Revoke Allowance";
@@ -150,13 +151,15 @@ const Allowance = () => {
             </InputContainer>
           </FormContainer>
           <BtnContainer>
-            <Button
-              text={setBtnText()}
-              className="bg_btn"
-              disabled={pending || allowance === preAllowance}
-              loading={pending}
-              onClick={handleSubmitAllowance}
-            />
+            <ConnectButton>
+              <Button
+                text={setBtnText()}
+                className="bg_btn"
+                disabled={pending || allowance === preAllowance}
+                loading={pending}
+                onClick={handleSubmitAllowance}
+              />
+            </ConnectButton>
           </BtnContainer>
         </InnerContainer>
       </Container>
