@@ -12,6 +12,7 @@ import { Button } from "components/atoms/Button";
 import { DefaultTemplate } from "components/templates/DefaultTemplate";
 import CoinSelect from "components/molecules/CoinSelect";
 import { maxAllowance } from "lib/api/constants";
+import { approve } from "lib/api/Actions";
 
 const Container = styled("div")(({ theme }) => ({
   justifyContent: "center",
@@ -110,7 +111,7 @@ const Allowance = () => {
     setPending(true);
     if (preAllowance === allowance) return;
     if (allowance === -1) approvedValue = maxAllowance;
-    await Core.run("approve", currency, approvedValue)
+    await Core.run(approve, currency, approvedValue)
       .catch(err => {
         console.log(err);
       })
@@ -119,6 +120,12 @@ const Allowance = () => {
       });
   };
   const handleChangeAllowance = e => setAllowance(e.target.value);
+  const setBtnText = () => {
+    if (allowance === "MAX ALLOWANCE") {
+      return "Allowance";
+    }
+    return "Revoke Allowance";
+  };
   return (
     <DefaultTemplate>
       <Container>
@@ -144,7 +151,7 @@ const Allowance = () => {
           </FormContainer>
           <BtnContainer>
             <Button
-              text="Revoke Allowance"
+              text={setBtnText()}
               className="bg_btn"
               disabled={pending || allowance === preAllowance}
               loading={pending}

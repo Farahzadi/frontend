@@ -19,9 +19,11 @@ import {
   setUserChainDetails,
   setStage,
   setUserNonce,
+  setAllowance,
 } from "lib/store/features/api/apiSlice";
 
 export const updateUserNonce = "updateUserNonce";
+export const updateAllowance = "updateAllowance";
 
 export const initActions = (core, store) => {
   core.on("bridgeReceipt", bridgeReceipt => {
@@ -99,5 +101,8 @@ export const initActions = (core, store) => {
 
   core.on("setStage", (type, stage) => {
     store.dispatch(setStage({ type, stage }));
+  });
+  core.on(updateAllowance, (allowance, currency) => {
+    store.dispatch(setAllowance({ allowance, currency }));
   });
 };

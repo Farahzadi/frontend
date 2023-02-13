@@ -495,6 +495,12 @@ export const apiSlice = createSlice({
     setStage(state, { payload }) {
       state.stages[payload.type] = payload.stage;
     },
+    setAllowance(state, { payload }) {
+      const { allowance, currency } = payload;
+      if (state.user.chainDetails.allowances) {
+        state.user.chainDetails.allowances[currency] = allowance;
+      }
+    },
   },
 });
 
@@ -525,6 +531,7 @@ export const {
   setUserDetails,
   clearUserDetails,
   setStage,
+  setAllowance,
 } = apiSlice.actions;
 
 export const configSelector = state => state.api.config;

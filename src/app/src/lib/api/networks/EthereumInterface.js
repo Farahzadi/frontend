@@ -3,8 +3,10 @@ import { getNetworkCurrencies, getNetworkCurrency } from "config/Currencies";
 import Decimal from "decimal.js";
 import { BigNumber, ethers } from "ethers";
 import { getENSName } from "lib/ens";
-import { formatBalances, getCurrentValidUntil, switchRatio } from "lib/utils";
+import { setAllowance } from "lib/store/features/api/apiSlice";
+import { formatBalances, getCurrentValidUntil, getValueReadable, switchRatio } from "lib/utils";
 import { toast } from "react-toastify";
+import { approve } from "../Actions";
 import { maxAllowance } from "../constants";
 import EthAPIProvider from "../providers/EthAPIProvider";
 import NetworkInterface from "./NetworkInterface";
@@ -12,7 +14,7 @@ import NetworkInterface from "./NetworkInterface";
 const ETHEREUM_DEX_CONTRACT = process.env.REACT_APP_ETHEREUM_DEX_CONTRACT;
 export default class EthereumInterface extends NetworkInterface {
 
-  static Actions = [...super.Actions, "approve", "wrapToken", "unwrapToken", "getEvent"];
+  static Actions = [...super.Actions, approve, "wrapToken", "unwrapToken", "getEvent"];
   static Provider = EthAPIProvider;
   NETWORK = "ethereum";
   CURRENCY = "ETH";
@@ -88,7 +90,20 @@ export default class EthereumInterface extends NetworkInterface {
       !this.HAS_BRIDGE || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
       !this.HAS_BRIDGE || isLayerTwo ? this.DEX_CONTRACT : this.BRIDGE_CONTRACT,
       allowance,
-    );
+    ).then(res => {
+      if (res) {
+        let newAllowance = {
+          value: allowance,
+          valueReadable: getValueReadable(allowance),
+        };
+        this.emit(setAllowance, newAllowance, ticker);
+        toast.success("Allowance was successfully revoked.");
+      } else {
+        toast.success("Error in revoking allowance");
+      }
+    }, error => {
+      toast.success("Error in revoking allowance");
+    });
   }
 
   async _updateChainDetails() {

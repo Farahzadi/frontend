@@ -1,3 +1,4 @@
+import Currencies from "config/Currencies";
 import Decimal from "decimal.js";
 
 export function formatUSD(floatNum) {
@@ -234,3 +235,11 @@ export function getFillDetailsWithoutFee(fill) {
     time,
   };
 }
+
+export const getValueReadable = (value, token, options = {}) => {
+  const { decimals } = Currencies[token];
+  let { precision, zeros } = options;
+  precision = precision ?? 5;
+  const res = Decimal.div(value, Decimal.pow(10, decimals)).toFixed(Decimal.min(precision, decimals).toNumber());
+  return zeros ? res : new Decimal(res).toFixed();
+};
