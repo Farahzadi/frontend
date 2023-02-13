@@ -19,6 +19,7 @@ export const translators = {
     makerFee: +o.maker_fee,
     takerFee: +o.taker_fee,
     txHash: o.tx_hash,
+    error: o.error,
   }),
 
   orderBook: o => ({
