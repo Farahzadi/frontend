@@ -2,76 +2,7 @@ import { createSlice, createAction } from "@reduxjs/toolkit";
 import networkManager from "config/NetworkManager";
 import { getOrderDetailsWithoutFee } from "lib/utils";
 import { fillStatusList, openOrderStatusList } from "lib/interface";
-
-const translators = {
-  // used for both initial orders and order updates
-  userOrder: o => ({
-    chainId: o.network,
-    id: o.id,
-    market: o.market,
-    side: o.side,
-    price: +o.price,
-    baseQuantity: +o.base_quantity,
-    quoteQuantity: +o.quote_quantity,
-    expires: o.expiration,
-    userAddress: o.user_address,
-    status: o.status,
-    remaining: +o.unfilled,
-    type: o.type,
-    createdAt: o.created_at,
-    unbroadcasted: o.unbroadcasted,
-    makerFee: +o.maker_fee,
-    takerFee: +o.taker_fee,
-    txHash: o.tx_hash,
-  }),
-
-  orderBook: o => ({
-    price: +o.price,
-    remaining: +o.unfilled,
-    side: o.side,
-  }),
-
-  // used for both initial fills and fill updates
-  fills: f => ({
-    chainId: f.network,
-    id: f.id,
-    market: f.market,
-    takerSide: f.taker_side,
-    price: +f.price,
-    amount: +f.amount,
-    status: f.status,
-    txHash: f.tx_hash,
-    takerUserAddress: f.taker_user_address,
-    makerUserAddress: f.maker_user_address,
-    type: f.type,
-    takerOrderAddress: f.taker_order_address,
-    makerOrderAddress: f.maker_order_address,
-    createdAt: f.created_at,
-    makerFee: +f.maker_fee,
-    takerFee: +f.taker_fee,
-    error: f.error, // tx rejection error message
-  }),
-
-  markets_config: c => ({
-    market: c.market,
-    limitEnabled: c.limit_enabled,
-    swapEnabled: c.swap_nabled,
-    takerFee: c.taker_fee,
-    makerFee: c.maker_fee,
-    minMatchAmount: c.min_match_amount,
-    minOrderSize: c.min_order_size,
-  }),
-
-  markets_stats: s => ({
-    market: s.market,
-    price: s.last_price,
-    priceChange: s.change,
-    "24hi": s.high_price,
-    "24lo": s.low_price,
-    baseVolume: s.base_volume,
-    quoteVolume: s.quote_volume,
-  }),
-};
+import { translators } from "lib/api/api/Translators";
 
 export const apiSlice = createSlice({
   name: "api",
@@ -214,7 +145,7 @@ export const apiSlice = createSlice({
       for (const id of payload.data.ids)
         if (payload.data.success && state.userOrders[id]) state.userOrders[id].status = "c";
     },
-    _user_orders_update_ws(state, { payload, core }) {
+    _user_orders_update_ws(state, { payload }) {
       payload.data.map(translators.userOrder).forEach(async update => {
         let filledOrder, partialmatchorder;
         switch (update.status) {
@@ -228,18 +159,8 @@ export const apiSlice = createSlice({
           }
           if (partialmatchorder) {
             const remaining = update.remaining;
-            const sideText = partialmatchorder.side === "b" ? "buy" : "sell";
-            const baseCurrency = partialmatchorder.market.split("-")[0];
             partialmatchorder.remaining = remaining;
             partialmatchorder.status = "pm";
-            const noFeeOrder = getOrderDetailsWithoutFee(partialmatchorder);
-            core.run(
-              "notify",
-              "success",
-              `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
-                noFeeOrder.price.toPrecision(4) / 1
-              } was partial match!`,
-            );
           }
           break;
         case "m":
@@ -254,18 +175,8 @@ export const apiSlice = createSlice({
         case "f":
           filledOrder = state.userOrders[update.id];
           if (filledOrder) {
-            const sideText = filledOrder.side === "b" ? "buy" : "sell";
-            const baseCurrency = filledOrder.market.split("-")[0];
             filledOrder.status = "f";
             filledOrder.remaining = 0;
-            const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
-            core.run(
-              "notify",
-              "success",
-              `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
-                noFeeOrder.price.toPrecision(4) / 1
-              } was filled!`,
-            );
           }
           break;
           // case "pf":
@@ -296,24 +207,8 @@ export const apiSlice = createSlice({
         case "r":
           filledOrder = state.userOrders[update.id];
           if (filledOrder) {
-            const sideText = filledOrder.side === "b" ? "buy" : "sell";
-            const error = update.error;
-            const baseCurrency = filledOrder.market.split("-")[0];
             filledOrder.status = "r";
             filledOrder.txHash = update.txHash;
-            const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
-            core.run(
-              "notify",
-              "error",
-              `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
-                noFeeOrder.price.toPrecision(4) / 1
-              } was rejected: ${error}`,
-            );
-            core.run(
-              "notify",
-              "info",
-              "This happens occasionally. Run the transaction again and you should be fine.",
-            );
           }
           break;
         case "e":
@@ -425,6 +320,7 @@ export const apiSlice = createSlice({
             Bridge FAQ
           </a>
         </>,
+        { save: true },
       );
     },
     updateBridgeReceiptStatus(state, { payload }) {
@@ -513,6 +409,11 @@ export const apiSlice = createSlice({
     removeNotification(state, { payload }) {
       state.notifications = state.notifications.filter(notif => notif.id !== payload);
     },
+    updateNotification(state, { payload }) {
+      const notif = state.notifications.find(notif => notif.id === payload.id);
+      if (!notif) return;
+      Object.entries(payload.props).forEach(([prop, value]) => (notif[prop] = value));
+    },
     clearNotifications(state) {
       state.notifications = [];
     },
@@ -548,6 +449,7 @@ export const {
   setStage,
   addNotification,
   removeNotification,
+  updateNotification,
   clearNotifications,
 } = apiSlice.actions;
 
