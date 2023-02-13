@@ -9,7 +9,7 @@ const TradePriceBtcTable = () => {
   const lastPrices = useSelector(lastPricesSelector);
   const dispatch = useDispatch();
 
-  const createDataArray = () => {
+  const getMarketSummary = () => {
     let array = [];
     Object.keys(lastPrices).forEach(market => {
       //change this feild when NBX token is create
@@ -46,7 +46,7 @@ const TradePriceBtcTable = () => {
             </tr>
           </thead>
           <tbody>
-            {createDataArray().map((data, i) => {
+            {getMarketSummary().map((data, i) => {
               return (
                 <tr
                   key={i}

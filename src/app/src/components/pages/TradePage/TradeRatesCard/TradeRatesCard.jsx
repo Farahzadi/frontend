@@ -12,8 +12,6 @@ const TradeRatesCard = () => {
   const calculatePercentage = () => {
     return ((marketSummary.priceChange / marketSummary.price) * 100).toFixed(2);
   };
-  // Ask Billy
-  const isMarketSummeryExist = false;
 
   return (
     <>
