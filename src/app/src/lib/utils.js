@@ -234,3 +234,8 @@ export function getFillDetailsWithoutFee(fill) {
     time,
   };
 }
+export const removeTrailingZeros = (number, decimals) => {
+  let num = parseFloat(number);
+  num = decimals ? num.toFixed(decimals) : num;
+  return parseFloat(num); // instead of  >> .replace(/([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, "$1")
+};
