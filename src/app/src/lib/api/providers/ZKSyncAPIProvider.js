@@ -134,12 +134,14 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
           `You need to sign a one-time transaction to activate your zksync account. The fee for this tx will be $${feeUSD.toFixed(
             2,
           )}`,
+          { save: true },
         );
       } catch (err) {
         this.networkInterface.core.run(
           "notify",
           "info",
           "You need to sign a one-time transaction to activate your zksync account. The fee for this tx will be ~$2.5",
+          { save: true },
         );
       }
     } else if (this.networkInterface.NETWORK === "zksyncv1_goerli") {
@@ -147,6 +149,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
         "notify",
         "info",
         "You need to sign a one-time transaction to activate your zksync account.",
+        { save: true },
       );
     }
     const _accountState = accountState || (await this.syncWallet?.getAccountState());
@@ -164,6 +167,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
         "notify",
         "warning",
         "Your token balances are very low. You might need to bridge in more funds first.",
+        { save: true },
       );
       feeToken = "ETH";
     }

@@ -86,7 +86,7 @@ export default class EthAPIProvider extends APIProvider {
     };
 
     if (typeof window === "undefined") {
-      this.networkInterface.core.run("notify", "error", "Browser doesn't support Web3.");
+      this.networkInterface.core.run("notify", "error", "Browser doesn't support Web3.", { save: true });
       return;
     }
 

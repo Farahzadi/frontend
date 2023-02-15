@@ -242,7 +242,9 @@ const SpotForm = () => {
     }
 
     if (sessionStorage.getItem("test") === null) {
-      Core.run("notify", "warning", "Dear user, there is no guarantee from us for your definite performance");
+      Core.run("notify", "warning", "Dear user, there is no guarantee from us for your definite performance", {
+        save: true,
+      });
       sessionStorage.setItem("test", true);
     }
 
@@ -283,17 +285,17 @@ const SpotForm = () => {
     setFlags({ ...flags, orderButtonDisabled: true });
     setOrder({ ...order, price });
 
-    const orderPendingNotif = Core.run("notify", "info", "Order pending. Sign or Cancel to continue...");
-
+    const orderPendingNotif = await Core.run("notify", "loading", "Order pending. Sign or Cancel to continue...", {
+      save: true,
+    });
     // send feeType for limit order (fee method)
     try {
       await Core.run("submitOrder", data);
+      Core.run("notify", "finish", orderPendingNotif, "info", "Signed!");
     } catch (e) {
       console.log(e);
-      Core.run("notify", "error", e.message);
+      Core.run("notify", "finish", orderPendingNotif, "error", e.message);
     }
-
-    Core.run("notify", "remove", await orderPendingNotif);
 
     setFlags({ ...flags, orderButtonDisabled: false });
   };
@@ -462,7 +464,7 @@ const SpotForm = () => {
                       </>
                     ) : (
                       <>
-                        {(marketSummary.price * order.baseAmount).toPrecision(5)} {" "} {marketInfo.quote_asset_name}
+                        {(marketSummary.price * order.baseAmount).toPrecision(5)} {marketInfo.quote_asset_name}
                       </>
                     )}
                   </strong>

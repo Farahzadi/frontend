@@ -152,7 +152,7 @@ export default class EthereumInterface extends NetworkInterface {
     const userAddress = await this.getAddress();
     const allowance = await this.apiProvider.getAllowance(res.sellTokenAddress, userAddress, this.DEX_CONTRACT);
     if (new Decimal(allowance.toString()).lt(compareAmount)) {
-      this.core.run("notify", "warning", "Insufficient allowance");
+      this.core.run("notify", "warning", "Insufficient allowance", { save: true });
       await this.approve(currency);
       // TODO: throw the error and catch the correct error message to start approving procedure
       // throw new Error("Insufficient allowance");
