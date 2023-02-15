@@ -24,7 +24,6 @@ const NonceIncrement = () => {
     }
   }, [nonce]);
 
-
   const increaseWalletNonce = async () => {
     setLoading(true);
     try {

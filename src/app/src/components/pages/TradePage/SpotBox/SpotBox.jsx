@@ -5,7 +5,13 @@ import "./SpotBox.css";
 // assets
 import SpotForm from "components/molecules/SpotForm/SpotForm";
 //actions
-import { setOrderType, orderTypeSelector, allOrdersSelector, orderSideSelector, setOrderSide } from "lib/store/features/api/apiSlice";
+import {
+  setOrderType,
+  orderTypeSelector,
+  allOrdersSelector,
+  orderSideSelector,
+  setOrderSide,
+} from "lib/store/features/api/apiSlice";
 import Core from "lib/api/Core";
 import { OrderSide } from "lib/interface";
 import { styled } from "@mui/system";

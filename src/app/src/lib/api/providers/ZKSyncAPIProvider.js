@@ -328,6 +328,6 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
   getNonce = async () => {
     const accountState = await this.getAccountState();
     return accountState.committed.nonce || accountState.verified.nonce;
-  }
+  };
 
 }

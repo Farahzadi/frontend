@@ -86,24 +86,29 @@ export default class EthereumInterface extends NetworkInterface {
     const currency = getNetworkCurrency(this.NETWORK, ticker);
     if (!currency || ticker === this.CURRENCY) return;
     allowance = BigNumber.from(allowance ?? maxAllowance);
-    return await this.apiProvider?.approve(
-      !this.HAS_BRIDGE || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
-      !this.HAS_BRIDGE || isLayerTwo ? this.DEX_CONTRACT : this.BRIDGE_CONTRACT,
-      allowance,
-    ).then(res => {
-      if (res) {
-        let newAllowance = {
-          value: allowance,
-          valueReadable: getValueReadable(allowance, ticker),
-        };
-        this.emit(setAllowance, newAllowance, ticker);
-        return true;
-      }
-      return false;
-    }, error => {
-      console.log(error);
-      return false;
-    });
+    return await this.apiProvider
+      ?.approve(
+        !this.HAS_BRIDGE || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
+        !this.HAS_BRIDGE || isLayerTwo ? this.DEX_CONTRACT : this.BRIDGE_CONTRACT,
+        allowance,
+      )
+      .then(
+        res => {
+          if (res) {
+            let newAllowance = {
+              value: allowance,
+              valueReadable: getValueReadable(allowance, ticker),
+            };
+            this.emit(setAllowance, newAllowance, ticker);
+            return true;
+          }
+          return false;
+        },
+        error => {
+          console.log(error);
+          return false;
+        },
+      );
   }
 
   async _updateChainDetails() {

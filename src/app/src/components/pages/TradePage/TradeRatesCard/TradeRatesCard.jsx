@@ -29,19 +29,19 @@ const TradeRatesCard = () => {
         </div>
         <div className="rates_box rates_box_item">
           <h2>24h High</h2>
-          <p>{ marketSummary["24hi"] ?? "-.-"}</p>
+          <p>{marketSummary["24hi"] ?? "-.-"}</p>
         </div>
         <div className="rates_box rates_box_item">
           <h2>24hLow</h2>
-          <p>{ marketSummary["24lo"] ?? "-.-"}</p>
+          <p>{marketSummary["24lo"] ?? "-.-"}</p>
         </div>
         <div className="rates_box rates_box_item d-none d-lg-block">
           <h2>24h Volume({baseCurrency})</h2>
-          <p>{ marketSummary.baseVolume ?? "-.-"}</p>
+          <p>{marketSummary.baseVolume ?? "-.-"}</p>
         </div>
         <div className="rates_box rates_box_item d-none d-lg-block">
           <h2>24h Volume({quoteCurrency})</h2>
-          <p>{ marketSummary.quoteVolume ?? "-.-"}</p>
+          <p>{marketSummary.quoteVolume ?? "-.-"}</p>
         </div>
       </div>
     </>
