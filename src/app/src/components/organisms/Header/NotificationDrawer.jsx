@@ -32,33 +32,41 @@ export const NotificationDrawer = () => {
     border: 0,
   };
 
+  const notifTypeTranslator = type => {
+    if (!["error", "info", "success", "warning"].includes(type)) type = "info";
+    return type;
+  };
+
   const list = anchor => (
     <Box sx={{ width: 350 }} role="presentation">
       <List sx={{ borderColor: "red" }}>
         <h5>Notifications</h5>
         <i role="button" onClick={toggleDrawer(false)} class="icon-remove icon-2x"></i>
         <Divider />
-        {notifData.map(notif => (
-          <ListItem key={notif.id} disablePadding>
-            <ListItemButton
-              sx={{
-                "&:hover": {
-                  bgcolor: "#0c2347",
-                },
-              }}>
-              <ListItemText>
-                <Alert
-                  severity={notif.type}
-                  sx={NotifictionCard}
-                  onClose={() => {
-                    Core.run("notify", "remove", notif.id);
+        {notifData.map(
+          notif =>
+            notif.show && (
+              <ListItem key={notif.id} disablePadding>
+                <ListItemButton
+                  sx={{
+                    "&:hover": {
+                      bgcolor: "#0c2347",
+                    },
                   }}>
-                  {notif.message}
-                </Alert>
-              </ListItemText>
-            </ListItemButton>
-          </ListItem>
-        ))}
+                  <ListItemText>
+                    <Alert
+                      severity={notifTypeTranslator(notif.type)}
+                      sx={NotifictionCard}
+                      onClose={() => {
+                        Core.run("notify", "remove", notif.id);
+                      }}>
+                      {notif.message}
+                    </Alert>
+                  </ListItemText>
+                </ListItemButton>
+              </ListItem>
+            ),
+        )}
       </List>
     </Box>
   );
