@@ -135,6 +135,8 @@ export default class EthAPIProvider extends APIProvider {
   }
 
   async stop(emitChanges = true) {
+    // Clear the cache connection if provider is metamask
+    if (this.provider.isMetaMask) await window.ethereum._clearCache();
     if (this.web3Modal) this.web3Modal.clearCachedProvider();
     delete this.provider;
     delete this.wallet;
@@ -156,6 +158,7 @@ export default class EthAPIProvider extends APIProvider {
         method: "wallet_switchEthereumChain",
         params: [{ chainId }],
       });
+      this.web3Modal.clearCachedProvider();
     } catch (err) {
       console.error("Error on switching network!", err);
       return false;
