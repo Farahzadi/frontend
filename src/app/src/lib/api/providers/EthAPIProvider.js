@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import { toast } from "react-toastify";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import MetaMaskOnboarding from "@metamask/onboarding";
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
@@ -87,7 +86,7 @@ export default class EthAPIProvider extends APIProvider {
     };
 
     if (typeof window === "undefined") {
-      toast.error("Browser doesn't support Web3.");
+      this.networkInterface.core.run("notify", "error", "Browser doesn't support Web3.", { save: true });
       return;
     }
 

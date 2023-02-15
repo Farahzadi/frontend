@@ -27,7 +27,7 @@ export * from "components/molecules/AccountDropdown";
 
 // Organisms
 export * from "components/organisms/Header";
-export * from "components/organisms/Footer";
+export * from "components/organisms/Footer-Obsolete";
 
 // Templates
 export * from "components/templates/DefaultTemplate";

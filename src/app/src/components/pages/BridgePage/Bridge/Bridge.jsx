@@ -21,7 +21,6 @@ import BridgeModal from "../BridgeModal/BridgeModal";
 
 import Core from "lib/api/Core";
 import Modal from "components/atoms/Modal";
-import { toast } from "react-toastify";
 
 const defaultTransfer = {
   type: "deposit",
@@ -208,7 +207,7 @@ const Bridge = ({ checkBridge, checkWrapper }) => {
       if (transfer.type === "deposit") await Core.run("depositL2", swapDetails.amount, swapDetails.currency);
       else await Core.run("withdrawL2", swapDetails.amount, swapDetails.currency);
     } catch (err) {
-      toast.error(err.message);
+      Core.run("notify", "error", err.message);
     }
     // await new Promise((res, rej) => setTimeout(() => res(), 2000));
   };
@@ -218,7 +217,7 @@ const Bridge = ({ checkBridge, checkWrapper }) => {
       if (transfer.type === "deposit") await Core.run("wrapToken", swapDetails.amount);
       else await Core.run("unwrapToken", swapDetails.amount);
     } catch (err) {
-      toast.error(err.message);
+      Core.run("notify", "error", err.message);
     }
     // await new Promise((res, rej) => setTimeout(() => res(), 2000));
   };

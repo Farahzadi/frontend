@@ -310,7 +310,11 @@ export default class ZKSyncInterface extends EthereumInterface {
             events: ["DEPOSIT_ERROR"],
             route: "DEPOSIT",
             onHappen: () => {
-              toast.error("Depossiting failed. Please try again to continue activating your account.");
+              this.core.run(
+                "notify",
+                "error",
+                "Depossiting failed. Please try again to continue activating your account.",
+              );
             },
           },
         ],
@@ -331,7 +335,7 @@ export default class ZKSyncInterface extends EthereumInterface {
             this.stageManager.emit("ZKـPUBLIC_KEY_ERROR", err);
             return;
           }
-          toast.success("Your address is succesfully activated!.");
+          this.core.run("notify", "success", "Your address is succesfully activated!", { save: true });
           this.stageManager.emit("ZK_PUBLIC_KEY_SET");
         },
         skipped => {
@@ -342,7 +346,7 @@ export default class ZKSyncInterface extends EthereumInterface {
             events: ["ZKـPUBLIC_KEY_ERROR"],
             route: "CONNECT",
             onHappen: (route, event, ...data) => {
-              toast.error("Error on activating the account. Trying again...");
+              this.core.run("notify", "error", "Error on activating the account. Trying again...");
               this.disconnectWallet();
             },
           },

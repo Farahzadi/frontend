@@ -30,11 +30,11 @@ const NonceIncrement = () => {
     try {
       const response = await Core.run(increaseNonce);
       if (response) {
-        // setCancelCheck(!cancelCheck);
-        // setTersmsCheck(!termsCheck);
+        Core.run("notify", "success", "Wallet nonce increased", { save: true });
       }
       // window.location.reload(false); ??
     } catch (error) {
+      Core.run("notify", "error", "Wallet nonce increased");
       console.log(error);
     }
     setLoading(false);

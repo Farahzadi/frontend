@@ -12,7 +12,6 @@ import {
 } from "lib/store/features/api/apiSlice";
 import { formatBalances, getCurrentValidUntil, State, toBaseUnit } from "lib/utils";
 import { isString } from "lodash";
-import { toast } from "react-toastify";
 import { connectWallet } from "../Actions";
 import { updateUserNonce } from "../init";
 import APIProvider from "../providers/APIProvider";
@@ -152,11 +151,9 @@ export default class NetworkInterface {
     //   // const isBrige = !/^\/bridge(\/.*)?$/.test(window.location.pathname);
     //   // if (!isBrige) {
     //   //   // window.history.pushState("/bridge");
-    //   //   toast.error(
-    //   //     "Account not found. Please use the bridge to deposit funds before trying again."
-    //   //   );
+    //   //   Core.run("notify", "error", "Account not found. Please use the bridge to deposit funds before trying again.");
     //   // }
-    //   toast.info(
+    //   Core.run("notify", "info",
     //     <>
     //       Account not activated. Please activate your account first:{" "}
     //       <a

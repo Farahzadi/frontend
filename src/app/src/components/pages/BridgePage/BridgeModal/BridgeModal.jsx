@@ -8,6 +8,7 @@ import Loader from "react-loader-spinner";
 import Modal from "components/atoms/Modal";
 import { useSelector } from "react-redux";
 import { networkConfigSelector } from "lib/store/features/api/apiSlice";
+import Core from "lib/api/Core";
 
 const BridgeModal = ({
   transfer,

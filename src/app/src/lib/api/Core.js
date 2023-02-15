@@ -1,7 +1,9 @@
 import Emitter from "tiny-emitter";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { getAppConfig } from ".";
+import { Notify } from "./utils/Notification";
+import { translators } from "./api/Translators";
+import { getOrderDetailsWithoutFee } from "lib/utils";
 
 const DEFAULT_NETWORK = process.env.REACT_APP_DEFAULT_NETWORK;
 
@@ -29,6 +31,7 @@ export default class Core extends Emitter {
     "emit",
     "on",
     "off",
+    "notify",
   ];
 
   networkClasses = {};
@@ -108,7 +111,7 @@ export default class Core extends Emitter {
     const { noRetry } = options ?? {};
     this.emit("close");
     if (!noRetry) {
-      // toast.error("Connection to server closed. Please try again in a minute");
+      // Core.run("notify", "error", "Connection to server closed. Please try again in a minute");
       // console.log("test socket close", noRetry);
       setTimeout(
         () => {
@@ -195,7 +198,9 @@ export default class Core extends Emitter {
             error.response.status,
             (error.response.data.error && error.response.data.message) || error.message,
           );
-          toast.error(
+          Core.run(
+            "notify",
+            "error",
             `API Error ${error.response.status}: ${
               (error.response.data.error && error.response.data.message) || error.message
             }`,
@@ -338,6 +343,70 @@ export default class Core extends Emitter {
     login_post: payload => {
       sessionStorage.setItem("access_token", payload.access_token);
     },
+    user_orders_update_ws: payload => {
+      const state = this.store.getState()?.api;
+      payload.map(translators.userOrder).forEach(async update => {
+        let filledOrder;
+        switch (update.status) {
+        case "pm":
+          const partialmatchorder = state.userOrders[update.id];
+          if (partialmatchorder) {
+            const sideText = partialmatchorder.side === "b" ? "buy" : "sell";
+            const baseCurrency = partialmatchorder.market.split("-")[0];
+            const noFeeOrder = getOrderDetailsWithoutFee(partialmatchorder);
+            this.run(
+              "notify",
+              "success",
+              `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
+                noFeeOrder.price.toPrecision(4) / 1
+              } was partial match!`,
+              { save: true },
+            );
+          }
+          break;
+        case "f":
+          filledOrder = state.userOrders[update.id];
+          if (filledOrder) {
+            const sideText = filledOrder.side === "b" ? "buy" : "sell";
+            const baseCurrency = filledOrder.market.split("-")[0];
+            const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
+            this.run(
+              "notify",
+              "success",
+              `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
+                noFeeOrder.price.toPrecision(4) / 1
+              } was filled!`,
+              { save: true },
+            );
+          }
+          break;
+        case "r":
+          filledOrder = state.userOrders[update.id];
+          if (filledOrder) {
+            const sideText = filledOrder.side === "b" ? "buy" : "sell";
+            const error = update.error;
+            const baseCurrency = filledOrder.market.split("-")[0];
+            const noFeeOrder = getOrderDetailsWithoutFee(filledOrder);
+            this.run(
+              "notify",
+              "error",
+              `Your ${sideText} order for ${noFeeOrder.baseQuantity.toPrecision(4) / 1} ${baseCurrency} @ ${
+                noFeeOrder.price.toPrecision(4) / 1
+              } was rejected: ${error}`,
+              { save: true },
+            );
+            this.run(
+              "notify",
+              "info",
+              "This happens occasionally. Run the transaction again and you should be fine.",
+            );
+          }
+          break;
+        default:
+          break;
+        }
+      });
+    },
   };
 
   async run(action, ...args) {
@@ -353,6 +422,10 @@ export default class Core extends Emitter {
 
   static getInstance() {
     return this.instance;
+  }
+
+  notify(method, ...args) {
+    return Notify[method](...args);
   }
 
 }

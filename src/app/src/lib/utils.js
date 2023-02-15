@@ -240,3 +240,8 @@ export const getValueReadable = (value, ticker, options = {}) => {
   const { decimals } = Currencies[ticker];
   return fromBaseUnit(value, decimals, options);
 };
+export const removeTrailingZeros = (number, decimals) => {
+  let num = parseFloat(number);
+  num = decimals ? num.toFixed(decimals) : num;
+  return parseFloat(num); // instead of  >> .replace(/([0-9]+(\.[0-9]+[1-9])?)(\.?0+$)/, "$1")
+};
