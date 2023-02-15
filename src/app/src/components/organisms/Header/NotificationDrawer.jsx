@@ -8,25 +8,19 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import { NotifictionSidebar } from "./Header.module";
 import Alert from "@mui/material/Alert";
+import { useSelector } from "react-redux";
+import { notificationsSelector } from "lib/store/features/api/apiSlice";
+import Core from "lib/api/Core";
 
 export const NotificationDrawer = () => {
   const [right, setRight] = useState(false);
-  const [notifData, setnotifData] = useState(["error", "warning", "info", "success"]);
+  const notifData = useSelector(notificationsSelector);
 
   const toggleDrawer = open => event => {
     if (event && event.type === "keydown" && (event.key === "Tab" || event.key === "Shift")) {
       return;
     }
     setRight(open);
-  };
-  const deletNotif = deleteNotifData => {
-    const temp = notifData.filter(t => {
-      // console.log(t===deleteNotifData);
-
-      return t !== deleteNotifData;
-    });
-    console.log(temp);
-    setnotifData(temp);
   };
 
   const NotifictionCard = {
@@ -38,36 +32,41 @@ export const NotificationDrawer = () => {
     border: 0,
   };
 
+  const notifTypeTranslator = type => {
+    if (!["error", "info", "success", "warning"].includes(type)) type = "info";
+    return type;
+  };
+
   const list = anchor => (
     <Box sx={{ width: 350 }} role="presentation">
       <List sx={{ borderColor: "red" }}>
         <h5>Notifications</h5>
         <i role="button" onClick={toggleDrawer(false)} class="icon-remove icon-2x"></i>
         <Divider />
-        {notifData.map((notifType, i) => (
-          <ListItem key={i} disablePadding>
-            <ListItemButton
-              sx={{
-                "&:hover": {
-                  bgcolor: "#0c2347",
-                },
-              }}>
-              <ListItemText>
-                {/* <NotifictionCard> */}
-                <Alert
-                  severity={notifType}
-                  sx={NotifictionCard}
-                  onClose={() => {
-                    deletNotif(notifType);
+        {notifData.map(
+          notif =>
+            notif.show && (
+              <ListItem key={notif.id} disablePadding>
+                <ListItemButton
+                  sx={{
+                    "&:hover": {
+                      bgcolor: "#0c2347",
+                    },
                   }}>
-                  This is a {notifType} alert — check it out!
-                </Alert>
-                {/* <p>some alerts goes there</p> */}
-                {/* </NotifictionCard> */}
-              </ListItemText>
-            </ListItemButton>
-          </ListItem>
-        ))}
+                  <ListItemText>
+                    <Alert
+                      severity={notifTypeTranslator(notif.type)}
+                      sx={NotifictionCard}
+                      onClose={() => {
+                        Core.run("notify", "remove", notif.id);
+                      }}>
+                      {notif.message}
+                    </Alert>
+                  </ListItemText>
+                </ListItemButton>
+              </ListItem>
+            ),
+        )}
       </List>
     </Box>
   );

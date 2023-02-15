@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
-import { toast } from "react-toastify";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
 import {
@@ -53,11 +52,11 @@ const SpotForm = () => {
   const [baseCurrency, quoteCurrency] = useSelector(currencySelector);
   const marketSummary = useSelector(marketSummarySelector);
   const activeLimitAndMarketOrders = Object.values(useSelector(userOrdersSelector)).filter(
-    order => activeOrderStatuses.includes(order.status) && order.type === "l",
+    order => activeOrderStatuses.includes(order.status) && order.type === "l"
   );
 
   const activeSwapOrders = Object.values(useSelector(userOrdersSelector)).filter(
-    order => activeOrderStatuses.includes(order.status) && order.type === "s",
+    order => activeOrderStatuses.includes(order.status) && order.type === "s"
   );
   const [flags, setFlags] = useState({
     maxSizeSelected: false,
@@ -230,7 +229,7 @@ const SpotForm = () => {
     return 0;
   };
   const HandleTrade = async e => {
-    let amount, price, newstate, orderPendingToast;
+    let amount, price, newstate;
     // amount
     if (typeof order.amount === "string") {
       if (rangePrice > 0) {
@@ -243,13 +242,15 @@ const SpotForm = () => {
     }
 
     if (sessionStorage.getItem("test") === null) {
-      toast.warning("Dear user, there is no guarantee from us for your definite performance");
+      Core.run("notify", "warning", "Dear user, there is no guarantee from us for your definite performance", {
+        save: true,
+      });
       sessionStorage.setItem("test", true);
     }
 
     if (activeLimitAndMarketOrders.length > 0) {
       if (orderType === "market") {
-        toast.error("Your limit or market order should fill first");
+        Core.run("notify", "error", "Your limit or market order should fill first");
         return;
       }
     }
@@ -277,24 +278,24 @@ const SpotForm = () => {
         type: orderType === "limit" ? "l" : "m",
       });
     } catch (err) {
-      toast.error(err.message);
+      Core.run("notify", "error", err.message);
       return;
     }
 
     setFlags({ ...flags, orderButtonDisabled: true });
     setOrder({ ...order, price });
 
-    orderPendingToast = toast.info("Order pending. Sign or Cancel to continue...");
-
+    const orderPendingNotif = await Core.run("notify", "loading", "Order pending. Sign or Cancel to continue...", {
+      save: true,
+    });
     // send feeType for limit order (fee method)
     try {
       await Core.run("submitOrder", data);
+      Core.run("notify", "remove", orderPendingNotif);
     } catch (e) {
       console.log(e);
-      toast.error(e.message);
+      Core.run("notify", "finish", orderPendingNotif, "error", e.message);
     }
-
-    toast.dismiss(orderPendingToast);
 
     setFlags({ ...flags, orderButtonDisabled: false });
   };
@@ -421,10 +422,10 @@ const SpotForm = () => {
               orderType === "marketOrder"
                 ? "Market"
                 : !isNaN(getPrice()) && orderType !== "limit"
-                  ? getPrice()
-                  : selectedPrice > 0
-                    ? selectedPrice
-                    : order.price
+                ? getPrice()
+                : selectedPrice > 0
+                ? selectedPrice
+                : order.price
             }
             placeholder="0.0000"
             onChange={updatePrice}
@@ -457,13 +458,13 @@ const SpotForm = () => {
                         {rangePrice > 0 && selectedPrice
                           ? removeTrailingZeros(rangePrice * selectedPrice, 2)
                           : order.price || selectedPrice
-                            ? removeTrailingZeros(currentPrice() * order.baseAmount, 2)
-                            : parseFloat(0).toPrecision(6)}{" "}
+                          ? removeTrailingZeros(currentPrice() * order.baseAmount, 2)
+                          : parseFloat(0).toPrecision(6)}{" "}
                         {marketInfo.quote_asset_name}
                       </>
                     ) : (
                       <>
-                        {(marketSummary.price * order.baseAmount).toPrecision(5)} {" "} {marketInfo.quote_asset_name}
+                        {(marketSummary.price * order.baseAmount).toPrecision(5)} {marketInfo.quote_asset_name}
                       </>
                     )}
                   </strong>

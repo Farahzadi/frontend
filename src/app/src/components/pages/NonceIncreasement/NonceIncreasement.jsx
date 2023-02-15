@@ -5,7 +5,6 @@ import { useSelector } from "react-redux";
 import "./NonceIncreasement.css";
 import { Button } from "react-bootstrap";
 import { networkSelector, userSelector } from "lib/store/features/api/apiSlice";
-import { toast } from "react-toastify";
 import Modal from "../../atoms/Modal";
 import Core from "lib/api/Core";
 
@@ -35,7 +34,7 @@ const NonceIncreasement = () => {
       const res = await Core.run("increaseWalletNonce");
       const success = res.response.success;
       if (success) {
-        toast.success("wallet nonce increased");
+        Core.run("notify", "success", "Wallet nonce increased", { save: true });
       }
       window.location.reload(false);
     } catch (error) {
