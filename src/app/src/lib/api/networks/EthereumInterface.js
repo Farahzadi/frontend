@@ -94,15 +94,15 @@ export default class EthereumInterface extends NetworkInterface {
       if (res) {
         let newAllowance = {
           value: allowance,
-          valueReadable: getValueReadable(allowance),
+          valueReadable: getValueReadable(allowance, ticker),
         };
         this.emit(setAllowance, newAllowance, ticker);
-        toast.success("Allowance was successfully revoked.");
-      } else {
-        toast.success("Error in revoking allowance");
+        return true;
       }
+      return false;
     }, error => {
-      toast.success("Error in revoking allowance");
+      console.log(error);
+      return false;
     });
   }
 

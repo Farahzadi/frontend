@@ -236,10 +236,7 @@ export function getFillDetailsWithoutFee(fill) {
   };
 }
 
-export const getValueReadable = (value, token, options = {}) => {
-  const { decimals } = Currencies[token];
-  let { precision, zeros } = options;
-  precision = precision ?? 5;
-  const res = Decimal.div(value, Decimal.pow(10, decimals)).toFixed(Decimal.min(precision, decimals).toNumber());
-  return zeros ? res : new Decimal(res).toFixed();
+export const getValueReadable = (value, ticker, options = {}) => {
+  const { decimals } = Currencies[ticker];
+  return fromBaseUnit(value, decimals, options);
 };

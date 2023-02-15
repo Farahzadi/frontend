@@ -112,13 +112,16 @@ const Allowance = () => {
     setPending(true);
     if (preAllowance === allowance) return;
     if (allowance === -1) approvedValue = maxAllowance;
-    await Core.run(approve, currency, approvedValue)
-      .catch(err => {
-        console.log(err);
-      })
-      .finally(() => {
-        setPending(false);
-      });
+    try {
+      const response = await Core.run(approve, currency, approvedValue);
+      if (!response) {
+        throw new Error();
+      }
+      toast.success(`Allowance was successfully ${allowance !== -1 ? "revoked" : "set to max"}.`);
+    } catch (error) {
+      toast.error("Error in revoking allowance");
+    }
+    setPending(false);
   };
   const handleChangeAllowance = e => setAllowance(e.target.value);
   const setBtnText = () => {

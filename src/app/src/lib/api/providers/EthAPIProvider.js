@@ -204,7 +204,7 @@ export default class EthAPIProvider extends APIProvider {
     amount = ethers.BigNumber.from(amount);
     const contract = new ethers.Contract(tokenAddress, erc20ContractABI, this.wallet);
     const tx = await contract.approve(spenderAddress, amount);
-    await tx.wait();
+    return await tx.wait();
   }
 
   async getBalance(userAddress) {
@@ -233,14 +233,14 @@ export default class EthAPIProvider extends APIProvider {
     const contract = new ethers.Contract(contractAddr, WETHContractABI, this.wallet);
     amount = Decimal.mul(amount, Decimal.pow(10, decimals)).toString();
     const tx = await contract.deposit({ value: amount });
-    await tx.wait();
+    return await tx.wait();
   }
 
   async unwrap(amount, contractAddr, decimals) {
     const contract = new ethers.Contract(contractAddr, WETHContractABI, this.wallet);
     amount = Decimal.mul(amount, Decimal.pow(10, decimals)).toString();
     const tx = await contract.withdraw(amount);
-    await tx.wait();
+    return await tx.wait();
   }
 
   async getEvents(contractAddr, eventName, fromBlock, toBlock) {
