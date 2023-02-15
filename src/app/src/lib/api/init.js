@@ -20,6 +20,7 @@ import {
   setStage,
   addNotification,
   removeNotification,
+  updateNotification,
   clearNotifications,
 } from "lib/store/features/api/apiSlice";
 
@@ -39,6 +40,7 @@ export const initActions = (core, store) => {
   core.on("signOut", () => {
     store.dispatch(clearUserOrders());
     store.dispatch(clearUserDetails());
+    store.dispatch(clearNotifications());
   });
 
   core.on("networkChange", payload => {
@@ -101,13 +103,18 @@ export const initActions = (core, store) => {
   core.on("notifications", (action, ...args) => {
     switch (action) {
     case "add": {
-      const [id, type, message, toast] = args;
-      store.dispatch(addNotification({ id, type, message, toast }));
+      const { id, type, message, toast, show, options } = args[0] ?? {};
+      store.dispatch(addNotification({ id, type, message, toast, show, options }));
       break;
     }
     case "remove": {
-      const [id] = args;
+      const { id } = args[0] ?? {};
       store.dispatch(removeNotification(id));
+      break;
+    }
+    case "update": {
+      const { id, ...props } = args[0] ?? {};
+      store.dispatch(updateNotification({ id, props }));
       break;
     }
     case "clear": {
