@@ -20,6 +20,7 @@ import {
   setStage,
   setUserNonce,
   setAllowance,
+  setL1Allowance,
   addNotification,
   removeNotification,
   updateNotification,
@@ -28,6 +29,7 @@ import {
 
 export const updateUserNonce = "updateUserNonce";
 export const updateAllowance = "updateAllowance";
+export const updateL1Allowance = "updateL1Allowance";
 
 export const initActions = (core, store) => {
   core.on("bridgeReceipt", bridgeReceipt => {
@@ -109,6 +111,9 @@ export const initActions = (core, store) => {
   });
   core.on(updateAllowance, (allowance, currency) => {
     store.dispatch(setAllowance({ allowance, currency }));
+  });
+  core.on(updateL1Allowance, (allowance, currency) => {
+    store.dispatch(setL1Allowance({ allowance, currency }));
   });
   core.on("notifications", (action, ...args) => {
     switch (action) {

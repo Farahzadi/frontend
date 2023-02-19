@@ -10,8 +10,8 @@ export const apiSlice = createSlice({
     networks: [],
     network: {
       name: null,
+      isL2: null,
       hasBridge: null,
-      hasContract: null,
       hasWrapper: null,
       securityType: null,
     },
@@ -409,6 +409,12 @@ export const apiSlice = createSlice({
         state.user.chainDetails.allowances[currency] = allowance;
       }
     },
+    setL1Allowance(state, { payload }) {
+      const { allowance, currency } = payload;
+      if (state.user.chainDetails.L1Allowances) {
+        state.user.chainDetails.L1Allowances[currency] = allowance;
+      }
+    },
     addNotification(state, { payload }) {
       state.notifications.unshift(payload);
     },
@@ -454,6 +460,7 @@ export const {
   clearUserDetails,
   setStage,
   setAllowance,
+  setL1Allowance,
   addNotification,
   removeNotification,
   updateNotification,
