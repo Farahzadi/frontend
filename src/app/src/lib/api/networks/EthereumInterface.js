@@ -92,18 +92,22 @@ export default class EthereumInterface extends NetworkInterface {
       )
       .then(
         res => {
-          if (res) {
-            let newAllowance = {
-              value: allowance,
-              valueReadable: getValueReadable(allowance, ticker),
-            };
-            this.emit(this.IS_L2 && !isLayerTwo ? updateL1Allowance : updateAllowance, newAllowance, ticker);
+          try {
+            if (res) {
+              allowance = allowance.toString();
+              let newAllowance = {
+                value: allowance,
+                valueReadable: getValueReadable(allowance, ticker),
+              };
+              this.emit(this.IS_L2 && !isLayerTwo ? updateL1Allowance : updateAllowance, newAllowance, ticker);
+              return true;
+            }
+          } catch (err) {
             return true;
           }
           return false;
         },
         error => {
-          console.log(error);
           return false;
         },
       );

@@ -88,7 +88,7 @@ const Allowance = () => {
   useEffect(() => {
     if (currency) {
       let allowance = allowances?.[currency]?.value;
-      allowance = BigNumber.from(allowance);
+      allowance = BigNumber.from(allowance ?? 0);
       if (allowance.lt(maxAllowance.div(2))) {
         setAllowance(0);
         setPreAllowance(0);
@@ -119,9 +119,11 @@ const Allowance = () => {
       if (!response) {
         throw new Error();
       }
-      toast.success(`Allowance was successfully ${allowance !== -1 ? "revoked" : "set to max"}.`);
+      Core.run("notify", "success", `Allowance was successfully ${allowance !== -1 ? "revoked" : "set to max"}.`, {
+        save: true,
+      });
     } catch (error) {
-      toast.error("Error in revoking allowance");
+      Core.run("notify", "error", "Error in revoking allowance");
     }
     setPending(false);
   };
