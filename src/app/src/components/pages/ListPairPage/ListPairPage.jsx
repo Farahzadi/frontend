@@ -35,7 +35,7 @@ export const TRADING_VIEW_CHART_KEY = "tradingViewChart";
 export default function ListPairPage() {
   const userChainDetails = useSelector(userChainDetailsSelector);
   const userAddress = useSelector(userAddressSelector);
-  const isUserLoggedIn = userChainDetails.user_id !== null && userChainDetails.user_id !== undefined;
+  const isUserLoggedIn = userChainDetails.userId != null;
 
   const arweaveAllocation = useSelector(arweaveAllocationSelector);
   const arweaveAllocationKB = Number(arweaveAllocation) / 1000;
