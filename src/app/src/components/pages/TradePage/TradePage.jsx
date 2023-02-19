@@ -249,4 +249,4 @@ const TradePage = () => {
     </DefaultTemplate>
   );
 };
-export default Tra;
+export default TradePage;
