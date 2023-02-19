@@ -125,7 +125,7 @@ const ZksyncGuide = () => {
     },
   ];
   const [isMinimized, setIsMinimized] = useState(false);
-  if (!stage) {
+  if (!stage || stage === "UNKNOWN") {
     return null;
   }
   return createPortal(

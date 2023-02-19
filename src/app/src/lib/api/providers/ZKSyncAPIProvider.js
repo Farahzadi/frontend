@@ -157,7 +157,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
     let feeToken;
     for (let prop in minimumBalances) {
       const balance = balances[prop];
-      const minimum = minimumBalance[prop];
+      const minimum = minimumBalances[prop];
       if (balance && balance > minimum) {
         feeToken = prop;
       }
