@@ -14,6 +14,7 @@ import CoinSelect from "components/molecules/CoinSelect";
 import { maxAllowance } from "lib/api/constants";
 import { approve } from "lib/api/Actions";
 import ConnectButton from "components/molecules/ConnectButton/ConnectButton";
+import { BigNumber } from "ethers";
 
 const Container = styled("div")(({ theme }) => ({
   justifyContent: "center",
@@ -86,8 +87,9 @@ const Allowance = () => {
   ];
   useEffect(() => {
     if (currency) {
-      const allowance = allowances?.[currency]?.value;
-      if (+allowance < +maxAllowance) {
+      let allowance = allowances?.[currency]?.value;
+      allowance = BigNumber.from(allowance);
+      if (allowance.lt(maxAllowance.div(2))) {
         setAllowance(0);
         setPreAllowance(0);
       } else {
