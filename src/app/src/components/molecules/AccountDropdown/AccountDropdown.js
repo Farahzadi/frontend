@@ -197,7 +197,7 @@ export const AccountDropdown = () => {
   const userName = useSelector(userNameSelector);
   const userImage = useSelector(userImageSelector);
   const networkConfig = useSelector(networkConfigSelector);
-  const { hasBridge } = networkConfig;
+  const { isL2 } = networkConfig;
   const userChainDetails = useSelector(userChainDetailsSelector);
   const userL1Balances = userChainDetails?.L1Balances;
   const userBalances = useSelector(userBalancesSelector);
@@ -212,7 +212,7 @@ export const AccountDropdown = () => {
     { id: 2, name: "L2" },
   ];
 
-  const wallet = !hasBridge || selectedLayer === 2 ? userBalances : userL1Balances;
+  const wallet = !isL2 || selectedLayer === 2 ? userBalances : userL1Balances;
 
   useEffect(() => {
     const tickers = Object.keys(getNetworkCurrencies(network)).sort();
@@ -261,7 +261,7 @@ export const AccountDropdown = () => {
       <DropdownDisplay className={`${windowSize.innerWidth <= "960" ? "mobile-account-dropdown" : ""} `} show={show}>
         <DropdownHeader>
           <h3>Your Wallet</h3>{" "}
-          {hasBridge && (
+          {isL2 && (
             <WalletToggle>
               {layers.map(({ id, name }) => (
                 <WalletToggleItem key={id} onClick={() => setSelectedLayer(id)} selected={selectedLayer === id}>
