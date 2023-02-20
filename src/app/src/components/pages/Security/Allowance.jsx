@@ -123,7 +123,7 @@ const Allowance = () => {
         save: true,
       });
     } catch (error) {
-      Core.run("notify", "error", "Error in revoking allowance");
+      Core.run("notify", "error", `Error in  ${allowance !== -1 ? "revoked" : "set to max"} allowance`);
     }
     setPending(false);
   };
