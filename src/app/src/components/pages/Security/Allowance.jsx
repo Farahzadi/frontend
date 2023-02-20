@@ -97,7 +97,7 @@ const Allowance = () => {
         setPreAllowance(-1);
       }
     }
-  }, [currency]);
+  }, [currency, allowances]);
   useEffect(() => {
     if (truncated) {
       const trimNum = matches ? 320 : 550;
