@@ -109,15 +109,15 @@ const TradePage = () => {
   const askBins =
     allOrders !== {}
       ? Object.values(allOrders)
-          .filter(order => order.side === "s")
-          .reverse()
+        .filter(order => order.side === "s")
+        .reverse()
       : [];
 
   const bidBins =
     allOrders !== {}
       ? Object.values(allOrders)
-          .filter(order => order.side === "b")
-          .reverse()
+        .filter(order => order.side === "b")
+        .reverse()
       : [];
 
   return (

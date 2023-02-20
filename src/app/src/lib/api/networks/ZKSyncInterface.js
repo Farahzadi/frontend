@@ -9,12 +9,14 @@ import * as zksync from "zksync";
 import Currencies, { getNetworkCurrency } from "config/Currencies";
 import { maxAllowance } from "../constants";
 import { Stage } from "../utils/Stage";
+import { toast } from "react-toastify";
+import { increaseNonce } from "../Actions";
 
 export default class ZKSyncInterface extends EthereumInterface {
 
   static Actions = [
     ...super.Actions,
-    "increaseNonce",
+    increaseNonce,
     "changePubKeyFee",
     "depositL2",
     "withdrawL2",
@@ -25,7 +27,7 @@ export default class ZKSyncInterface extends EthereumInterface {
 
   static Provider = ZKSyncAPIProvider;
   NETWORK = "zksyncv1";
-  HAS_CONTRACT = false;
+  IS_L2 = true;
   HAS_BRIDGE = true;
   HAS_WRAPPER = false;
   BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
@@ -43,17 +45,15 @@ export default class ZKSyncInterface extends EthereumInterface {
 
   async increaseNonce() {
     let increaseNonceResult = {};
-
     const increaseNonceRes = await this.apiProvider.increaseWalletNonce();
     // cancel all orders if wallet nonce is increased
-    this.core.cancelAllOrders();
-    const verifiedAccountNonce = await this._accountState.verified.nonce;
-    if (increaseNonceRes) {
-      increaseNonceResult.response = increaseNonceRes;
-      increaseNonceResult.verifiedAccountNonce = verifiedAccountNonce;
+    if (increaseNonceRes.success) {
+      this.updateNonce();
+      this.core.cancelAllOrders();
+      toast.success("wallet nonce was successfully increased.");
+      return true;
     }
-
-    return increaseNonceResult;
+    return false;
   }
 
   async fetchL1Balances() {
@@ -114,11 +114,9 @@ export default class ZKSyncInterface extends EthereumInterface {
     if (!this.apiProvider) return;
     const accountStatePromise = (async () => _accountState ?? (await this.apiProvider.getAccountState()))();
     const balancesPromise = this.fetchL1Balances();
-    const allowancesPromise = this.fetchL1Allowances();
-    const [accountState, l1Balances, allowances] = await Promise.all([
+    const [accountState, l1Balances] = await Promise.all([
       accountStatePromise,
       balancesPromise,
-      allowancesPromise,
     ]);
     const verifiedZkBalances = this.formatZkSyncBalances(accountState.verified.balances);
     const depositingZkBalances = this.formatZkSyncBalances(accountState.depositing.balances);
@@ -132,7 +130,6 @@ export default class ZKSyncInterface extends EthereumInterface {
       },
       userId: accountState.id,
       L1Balances: formatBalances(l1Balances, Currencies),
-      allowances: formatBalances(allowances, Currencies),
     };
   }
 

@@ -12,6 +12,8 @@ import {
 } from "lib/store/features/api/apiSlice";
 import { formatBalances, getCurrentValidUntil, State, toBaseUnit } from "lib/utils";
 import { isString } from "lodash";
+import { connectWallet } from "../Actions";
+import { updateUserNonce } from "../init";
 import APIProvider from "../providers/APIProvider";
 import { Stage, StageManager } from "../utils/Stage";
 
@@ -33,7 +35,7 @@ export default class NetworkInterface {
   };
 
   static Actions = [
-    "connectWallet",
+    connectWallet,
     "disconnectWallet",
     "updateAddress",
     "updateNonce",
@@ -52,13 +54,28 @@ export default class NetworkInterface {
 
   state = new NetworkInterface.State();
 
+  // Locally standard network (chain) name
   NETWORK = "unknown";
+
+  // The symbol (ticker) of the main currency in this network (to avoid fetching allowance for)
   CURRENCY = "CURRENCY_SYMBOL";
-  HAS_CONTRACT = false;
+
+  // Is the current network an EVM based layer two network
+  IS_L2 = false;
+
+  // Does our app implement a bridge for the current network
   HAS_BRIDGE = false;
+
+  // Does our app implement a wrapper for the current network
   HAS_WRAPPER = false;
+
+  // Type of the security page for the current network
   SECURITY_TYPE = null;
+
+  // Contract address used for Bridge
   BRIDGE_CONTRACT = null;
+
+  // Our own contract address for trades (either on first or second layer)
   DEX_CONTRACT = null;
 
   core = null;
@@ -90,9 +107,9 @@ export default class NetworkInterface {
 
   getConfig() {
     return {
+      isL2: this.IS_L2,
       hasBridge: this.HAS_BRIDGE,
       hasWrapper: this.HAS_WRAPPER,
-      hasContract: this.HAS_CONTRACT,
       securityType: this.SECURITY_TYPE,
     };
   }
@@ -258,10 +275,11 @@ export default class NetworkInterface {
   async updateNonce(...args) {
     const result = await this._updateNonce(...args);
     this.stageManager.emit("NONCE_UPDATED", this.userDetails.nonce);
+    this.emit(updateUserNonce, this.userDetails.nonce);
     return result;
   }
 
-  async getNonce() {
+  getNonce() {
     return this.userDetails.nonce;
   }
 
@@ -427,7 +445,7 @@ export default class NetworkInterface {
       const state = this.getStoreState();
 
       try {
-        if (this.HAS_CONTRACT) {
+        if (!this.HAS_BRIDGE) {
           const selectedNet = networkListSelector(state).find(net => net.network === this.NETWORK);
           fee = Decimal.div(selectedNet.maxFeeRatio, 1000);
         } else {

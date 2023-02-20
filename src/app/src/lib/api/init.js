@@ -18,11 +18,18 @@ import {
   clearUserDetails,
   setUserChainDetails,
   setStage,
+  setUserNonce,
+  setAllowance,
+  setL1Allowance,
   addNotification,
   removeNotification,
   updateNotification,
   clearNotifications,
 } from "lib/store/features/api/apiSlice";
+
+export const updateUserNonce = "updateUserNonce";
+export const updateAllowance = "updateAllowance";
+export const updateL1Allowance = "updateL1Allowance";
 
 export const initActions = (core, store) => {
   core.on("bridgeReceipt", bridgeReceipt => {
@@ -79,6 +86,9 @@ export const initActions = (core, store) => {
   core.on("updateUser", user => {
     store.dispatch(setUserDetails(user));
   });
+  core.on("updateUserNonce", user => {
+    store.dispatch(setUserNonce(user));
+  });
 
   core.on("updateUserAddress", userAddress => {
     store.dispatch(setUserAddress(userAddress));
@@ -99,7 +109,12 @@ export const initActions = (core, store) => {
   core.on("setStage", (type, stage) => {
     store.dispatch(setStage({ type, stage }));
   });
-
+  core.on(updateAllowance, (allowance, currency) => {
+    store.dispatch(setAllowance({ allowance, currency }));
+  });
+  core.on(updateL1Allowance, (allowance, currency) => {
+    store.dispatch(setL1Allowance({ allowance, currency }));
+  });
   core.on("notifications", (action, ...args) => {
     switch (action) {
     case "add": {

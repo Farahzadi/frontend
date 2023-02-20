@@ -3,20 +3,21 @@ import { getNetworkCurrencies, getNetworkCurrency } from "config/Currencies";
 import Decimal from "decimal.js";
 import { BigNumber, ethers } from "ethers";
 import { getENSName } from "lib/ens";
-import { formatBalances, getCurrentValidUntil, switchRatio } from "lib/utils";
+import { formatBalances, getCurrentValidUntil, getValueReadable, switchRatio } from "lib/utils";
+import { approve } from "../Actions";
 import { maxAllowance } from "../constants";
+import { updateAllowance, updateL1Allowance } from "../init";
 import EthAPIProvider from "../providers/EthAPIProvider";
 import NetworkInterface from "./NetworkInterface";
 
 const ETHEREUM_DEX_CONTRACT = process.env.REACT_APP_ETHEREUM_DEX_CONTRACT;
 export default class EthereumInterface extends NetworkInterface {
 
-  static Actions = [...super.Actions, "approve", "wrapToken", "unwrapToken", "getEvent"];
+  static Actions = [...super.Actions, approve, "wrapToken", "unwrapToken", "getEvent"];
   static Provider = EthAPIProvider;
   NETWORK = "ethereum";
   CURRENCY = "ETH";
   CHAIN_ID = 1;
-  HAS_CONTRACT = true;
   HAS_WRAPPER = true;
   DEX_CONTRACT = ETHEREUM_DEX_CONTRACT;
   SECURITY_TYPE = SecurityTypeList.allowance;
@@ -29,7 +30,7 @@ export default class EthereumInterface extends NetworkInterface {
     if (ticker === this.CURRENCY) balance = await this.apiProvider.getBalance(userAddress);
     else
       balance = await this.apiProvider.getTokenBalance(
-        !this.HAS_BRIDGE || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
+        !this.IS_L2 || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
         userAddress,
       );
     return balance.toString();
@@ -59,9 +60,9 @@ export default class EthereumInterface extends NetworkInterface {
     const currency = getNetworkCurrency(this.NETWORK, ticker);
     if (!currency || ticker === this.CURRENCY) return "0";
     const allowance = await this.apiProvider.getAllowance(
-      !this.HAS_BRIDGE || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
+      !this.IS_L2 || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
       userAddress,
-      !this.HAS_BRIDGE || isLayerTwo ? this.DEX_CONTRACT : this.BRIDGE_CONTRACT,
+      !this.IS_L2 || isLayerTwo ? this.DEX_CONTRACT : this.BRIDGE_CONTRACT,
     );
     return allowance.toString();
   }
@@ -83,11 +84,33 @@ export default class EthereumInterface extends NetworkInterface {
     const currency = getNetworkCurrency(this.NETWORK, ticker);
     if (!currency || ticker === this.CURRENCY) return;
     allowance = BigNumber.from(allowance ?? maxAllowance);
-    return await this.apiProvider?.approve(
-      !this.HAS_BRIDGE || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
-      !this.HAS_BRIDGE || isLayerTwo ? this.DEX_CONTRACT : this.BRIDGE_CONTRACT,
-      allowance,
-    );
+    return await this.apiProvider
+      ?.approve(
+        !this.IS_L2 || !isLayerTwo ? currency.info.contract : currency.info.L2Contract,
+        !this.IS_L2 || isLayerTwo ? this.DEX_CONTRACT : this.BRIDGE_CONTRACT,
+        allowance,
+      )
+      .then(
+        res => {
+          try {
+            if (res) {
+              allowance = allowance.toString();
+              let newAllowance = {
+                value: allowance,
+                valueReadable: getValueReadable(allowance, ticker),
+              };
+              this.emit(this.IS_L2 && !isLayerTwo ? updateL1Allowance : updateAllowance, newAllowance, ticker);
+              return true;
+            }
+          } catch (err) {
+            return true;
+          }
+          return false;
+        },
+        error => {
+          return false;
+        },
+      );
   }
 
   async _updateChainDetails() {

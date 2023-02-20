@@ -12,6 +12,9 @@ import { Button } from "components/atoms/Button";
 import { DefaultTemplate } from "components/templates/DefaultTemplate";
 import CoinSelect from "components/molecules/CoinSelect";
 import { maxAllowance } from "lib/api/constants";
+import { approve } from "lib/api/Actions";
+import ConnectButton from "components/molecules/ConnectButton/ConnectButton";
+import { BigNumber } from "ethers";
 
 const Container = styled("div")(({ theme }) => ({
   justifyContent: "center",
@@ -84,8 +87,9 @@ const Allowance = () => {
   ];
   useEffect(() => {
     if (currency) {
-      const allowance = allowances?.[currency]?.value;
-      if (+allowance < +maxAllowance) {
+      let allowance = allowances?.[currency]?.value;
+      allowance = BigNumber.from(allowance ?? 0);
+      if (allowance.lt(maxAllowance.div(2))) {
         setAllowance(0);
         setPreAllowance(0);
       } else {
@@ -93,7 +97,7 @@ const Allowance = () => {
         setPreAllowance(-1);
       }
     }
-  }, [currency]);
+  }, [currency, allowances]);
   useEffect(() => {
     if (truncated) {
       const trimNum = matches ? 320 : 550;
@@ -110,15 +114,26 @@ const Allowance = () => {
     setPending(true);
     if (preAllowance === allowance) return;
     if (allowance === -1) approvedValue = maxAllowance;
-    await Core.run("approve", currency, approvedValue)
-      .catch(err => {
-        console.log(err);
-      })
-      .finally(() => {
-        setPending(false);
+    try {
+      const response = await Core.run(approve, currency, approvedValue);
+      if (!response) {
+        throw new Error();
+      }
+      Core.run("notify", "success", `Allowance was successfully ${allowance !== -1 ? "revoked" : "set to max"}.`, {
+        save: true,
       });
+    } catch (error) {
+      Core.run("notify", "error", `Error in  ${allowance !== -1 ? "revoked" : "set to max"} allowance`);
+    }
+    setPending(false);
   };
   const handleChangeAllowance = e => setAllowance(e.target.value);
+  const setBtnText = () => {
+    if (allowance === -1) {
+      return "Allowance";
+    }
+    return "Revoke Allowance";
+  };
   return (
     <DefaultTemplate>
       <Container>
@@ -143,13 +158,15 @@ const Allowance = () => {
             </InputContainer>
           </FormContainer>
           <BtnContainer>
-            <Button
-              text="Revoke Allowance"
-              className="bg_btn"
-              disabled={pending || allowance === preAllowance}
-              loading={pending}
-              onClick={handleSubmitAllowance}
-            />
+            <ConnectButton>
+              <Button
+                text={setBtnText()}
+                className="bg_btn"
+                disabled={pending || allowance === preAllowance}
+                loading={pending}
+                onClick={handleSubmitAllowance}
+              />
+            </ConnectButton>
           </BtnContainer>
         </InnerContainer>
       </Container>

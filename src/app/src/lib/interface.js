@@ -24,6 +24,12 @@ export const OrderSide = {
   s: "sell",
 };
 
+export const NetworkStages = {
+  READY: "READY",
+  CONNECTING: "CONNECTING",
+  CONNECTED: "CONNECTED",
+  DISCONNECTED: "DISCONNECTED",
+};
 export const OrderSideKeyMap = {
   buy: "b",
   sell: "s",

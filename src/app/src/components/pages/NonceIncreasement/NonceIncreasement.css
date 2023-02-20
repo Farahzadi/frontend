@@ -1,5 +1,6 @@
 .nonce-bg {
   height: calc(100vh - 50px);
+  padding: 1.3rem 0;
   background-color: var(--dexpressoBackground);
   display: flex;
   align-items: center;
@@ -37,7 +38,7 @@
 }
 .nonce-bg form {
   margin: 20px 0;
-  width: 1000px;
+  /* width: 1000px; */
   max-width: 90%;
   text-align: center;
 }
@@ -47,4 +48,7 @@
 .nonce-bg .bg_btn {
   width: 500px;
   max-width: 90%;
+}
+.checkbox-container {
+  position: relative;
 }

@@ -301,19 +301,13 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
   }
 
   async increaseWalletNonce() {
-    // const token = "ETH";
-    // const memo = "";
-    // const walletAddress = await this.ethWallet.getAddress();
-    // //fee is optional
-    // const fee = zksync.utils.closestPackableTransactionFee(ethers.utils.parseEther("0.001"))
-    //with zero amount for increase nonce
+    // transfer zero amount to the user him/herself wallet for increasing nonce in order to cancel all previous orders
     const transfer = await this.syncWallet.syncTransfer({
       to: this.syncWallet?.address(),
       token: "ETH",
       amount: "0",
     });
     const transferReceipt = await transfer.awaitReceipt();
-
     return transferReceipt;
   }
 
@@ -329,6 +323,11 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
   getAccountState = async () => {
     const accountState = await this.syncWallet?.getAccountState();
     return accountState;
+  };
+
+  getNonce = async () => {
+    const accountState = await this.getAccountState();
+    return accountState.committed.nonce || accountState.verified.nonce;
   };
 
 }

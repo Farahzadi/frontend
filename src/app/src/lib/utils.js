@@ -1,3 +1,4 @@
+import Currencies from "config/Currencies";
 import Decimal from "decimal.js";
 
 export function formatUSD(floatNum) {
@@ -234,6 +235,11 @@ export function getFillDetailsWithoutFee(fill) {
     time,
   };
 }
+
+export const getValueReadable = (value, ticker, options = {}) => {
+  const { decimals } = Currencies[ticker];
+  return fromBaseUnit(value, decimals, options);
+};
 export const removeTrailingZeros = (number, decimals) => {
   let num = parseFloat(number);
   num = decimals ? num.toFixed(decimals) : num;

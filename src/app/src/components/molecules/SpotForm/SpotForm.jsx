@@ -52,11 +52,11 @@ const SpotForm = () => {
   const [baseCurrency, quoteCurrency] = useSelector(currencySelector);
   const marketSummary = useSelector(marketSummarySelector);
   const activeLimitAndMarketOrders = Object.values(useSelector(userOrdersSelector)).filter(
-    order => activeOrderStatuses.includes(order.status) && order.type === "l"
+    order => activeOrderStatuses.includes(order.status) && order.type === "l",
   );
 
   const activeSwapOrders = Object.values(useSelector(userOrdersSelector)).filter(
-    order => activeOrderStatuses.includes(order.status) && order.type === "s"
+    order => activeOrderStatuses.includes(order.status) && order.type === "s",
   );
   const [flags, setFlags] = useState({
     maxSizeSelected: false,
@@ -422,10 +422,10 @@ const SpotForm = () => {
               orderType === "marketOrder"
                 ? "Market"
                 : !isNaN(getPrice()) && orderType !== "limit"
-                ? getPrice()
-                : selectedPrice > 0
-                ? selectedPrice
-                : order.price
+                  ? getPrice()
+                  : selectedPrice > 0
+                    ? selectedPrice
+                    : order.price
             }
             placeholder="0.0000"
             onChange={updatePrice}
@@ -458,8 +458,8 @@ const SpotForm = () => {
                         {rangePrice > 0 && selectedPrice
                           ? removeTrailingZeros(rangePrice * selectedPrice, 2)
                           : order.price || selectedPrice
-                          ? removeTrailingZeros(currentPrice() * order.baseAmount, 2)
-                          : parseFloat(0).toPrecision(6)}{" "}
+                            ? removeTrailingZeros(currentPrice() * order.baseAmount, 2)
+                            : parseFloat(0).toPrecision(6)}{" "}
                         {marketInfo.quote_asset_name}
                       </>
                     ) : (

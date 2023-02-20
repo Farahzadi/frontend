@@ -1,4 +1,3 @@
-
 export const translators = {
   // used for both initial orders and order updates
   userOrder: o => ({
