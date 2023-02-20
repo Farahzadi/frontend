@@ -20,6 +20,7 @@ const Chevron = styled(FiChevronDown)(() => ({
   left: "auto",
   top: "calc(50% - 10.2px)",
   fontSize: "1.2rem",
+  cursor: "pointer",
 }));
 const SelectAllowance = ({ value, handleChange, items }) => {
   return (
