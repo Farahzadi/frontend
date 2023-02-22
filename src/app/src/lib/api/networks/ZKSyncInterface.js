@@ -114,10 +114,7 @@ export default class ZKSyncInterface extends EthereumInterface {
     if (!this.apiProvider) return;
     const accountStatePromise = (async () => _accountState ?? (await this.apiProvider.getAccountState()))();
     const balancesPromise = this.fetchL1Balances();
-    const [accountState, l1Balances] = await Promise.all([
-      accountStatePromise,
-      balancesPromise,
-    ]);
+    const [accountState, l1Balances] = await Promise.all([accountStatePromise, balancesPromise]);
     const verifiedZkBalances = this.formatZkSyncBalances(accountState.verified.balances);
     const depositingZkBalances = this.formatZkSyncBalances(accountState.depositing.balances);
     this.userDetails.chainDetails = {
