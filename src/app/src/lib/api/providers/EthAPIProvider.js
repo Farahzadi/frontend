@@ -134,6 +134,11 @@ export default class EthAPIProvider extends APIProvider {
   }
 
   async stop(emitChanges = true) {
+    const address = await this.getAddress();
+    if (this.provider.connection.url === "metamask")
+      this.provider.provider.send({ method: "eth_sign", params: [address, ""] }).catch(error => {
+        console.error("Error on clear old pop-ups", error);
+      });
     if (this.web3Modal) this.web3Modal.clearCachedProvider();
     delete this.provider;
     delete this.wallet;
@@ -154,6 +159,9 @@ export default class EthAPIProvider extends APIProvider {
       await this.provider.provider.request({
         method: "wallet_switchEthereumChain",
         params: [{ chainId }],
+      });
+      this.provider.on("chainChanged", () => {
+        this.state.set(APIProvider.State.DISCONNECTED);
       });
     } catch (err) {
       console.error("Error on switching network!", err);
