@@ -278,50 +278,11 @@ export const apiSlice = createSlice({
       });
       state.bridgeReceipts = newBridgeReceipts;
     },
-    addBridgeReceipt(state, { payload, core }) {
+    addBridgeReceipt(state, { payload }) {
       if (!payload || !payload.txId) return;
-      const { amount, token, txUrl, type, userAddress } = payload;
+      const { userAddress } = payload;
       if (state.user.address !== userAddress) return;
-
       state.bridgeReceipts.unshift(payload);
-
-      core.run(
-        "notify",
-        "success",
-        <>
-          Successfully {type === "deposit" ? "deposited" : "withdrew"} {amount} {token}{" "}
-          {type === "deposit"
-            ? "in your zkSync wallet"
-            : "into your Ethereum wallet. Withdraws can take up to 7 hours to complete"}
-          .
-          <br />
-          <br />
-          <a
-            href={txUrl}
-            style={{
-              color: "white",
-              textDecoration: "underline",
-              fontWeight: "bold",
-            }}
-            target="_blank"
-            rel="noreferrer">
-            View transaction
-          </a>
-          {" • "}
-          <a
-            href="https://zksync.io/faq/faq.html#how-long-are-withdrawal-times"
-            style={{
-              color: "white",
-              textDecoration: "underline",
-              fontWeight: "bold",
-            }}
-            target="_blank"
-            rel="noreferrer">
-            Bridge FAQ
-          </a>
-        </>,
-        { save: true },
-      );
     },
     updateBridgeReceiptStatus(state, { payload }) {
       const { hash, status } = payload;
