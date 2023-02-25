@@ -30,6 +30,7 @@ export default class ZKSyncInterface extends EthereumInterface {
   IS_L2 = true;
   HAS_BRIDGE = true;
   HAS_WRAPPER = false;
+  TRADE_NEEDS_ALLOWANCE = false;
   BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
   SECURITY_TYPE = SecurityTypeList.nonce;
 

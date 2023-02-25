@@ -69,6 +69,9 @@ export default class NetworkInterface {
   // Does our app implement a wrapper for the current network
   HAS_WRAPPER = false;
 
+  // Does trade need allowance
+  TRADE_NEEDS_ALLOWANCE = false;
+
   // Type of the security page for the current network
   SECURITY_TYPE = null;
 
@@ -110,6 +113,7 @@ export default class NetworkInterface {
       isL2: this.IS_L2,
       hasBridge: this.HAS_BRIDGE,
       hasWrapper: this.HAS_WRAPPER,
+      tradeNeedsAllowance: this.TRADE_NEEDS_ALLOWANCE,
       securityType: this.SECURITY_TYPE,
     };
   }
