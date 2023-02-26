@@ -8,14 +8,14 @@ import { connectWallet } from "lib/api/Actions";
 
 const ConnectButton = ({ children }) => {
   const connection = useSelector(connectionStageSelector);
-  const [loading, setLoading] = useState(false);
+  const isConnected = connection === NetworkStages.CONNECTED;
+  const isConnecting = connection === NetworkStages.CONNECTING;
   const handleConnect = () => {
-    setLoading(true);
-    Core.run(connectWallet).finally(() => setLoading(false));
+    Core.run(connectWallet);
   };
-  if (connection !== NetworkStages.CONNECTED) {
+  if (!isConnected) {
     return (
-      <Button loading={loading} className="bg_btn mx-auto" onClick={handleConnect}>
+      <Button loading={isConnecting} className="bg_btn mx-auto" onClick={handleConnect}>
         CONNECT
       </Button>
     );
