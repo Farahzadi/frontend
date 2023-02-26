@@ -203,7 +203,6 @@ export default class NetworkInterface {
     this.state.set(NetworkInterface.State.SIGNING_IN);
 
     const address = await this.apiProvider.getAddress();
-
     const networkKey = `login:${network}`;
 
     let signature = sessionStorage.getItem(networkKey);
@@ -224,9 +223,9 @@ export default class NetworkInterface {
     this.emit("updateUserAddress", address);
 
     await this.core.sendRequest("login", "POST", {
-      network: network,
-      address: address,
-      signature: signature,
+      network,
+      address,
+      signature,
       user_data: true,
       uuid,
     });
@@ -377,7 +376,9 @@ export default class NetworkInterface {
   }
 
   async updateUserState(shouldFetch = false) {
-    if (shouldFetch) await this.updateUserDetails();
+    if (shouldFetch) {
+      await this.updateUserDetails();
+    }
     const userDetails = await this.getUserDetails();
     this.emit("updateUser", userDetails);
   }

@@ -216,7 +216,6 @@ export const AccountDropdown = () => {
 
   useEffect(() => {
     const tickers = Object.keys(getNetworkCurrencies(network)).sort();
-
     setTickers(tickers);
   }, [network]);
 
