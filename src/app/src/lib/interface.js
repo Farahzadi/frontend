@@ -25,7 +25,6 @@ export const OrderSide = {
 };
 
 export const NetworkStages = {
-  READY: "READY",
   CONNECTING: "CONNECTING",
   CONNECTED: "CONNECTED",
   DISCONNECTED: "DISCONNECTED",
