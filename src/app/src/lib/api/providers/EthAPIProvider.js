@@ -136,9 +136,10 @@ export default class EthAPIProvider extends APIProvider {
   async stop(emitChanges = true) {
     const address = await this.getAddress();
     if (this.provider.connection.url === "metamask")
-      this.provider.provider.send({ method: "eth_sign", params: [address, ""] }).catch(error => {
-        console.error("Error on clear old pop-ups", error);
-      });
+      this.provider.provider.send(
+        { method: "eth_sign", params: [address, ""] },
+        () => error => console.error("Error on clear old pop-ups", error),
+      );
     if (this.web3Modal) this.web3Modal.clearCachedProvider();
     delete this.provider;
     delete this.wallet;
