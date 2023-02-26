@@ -145,48 +145,41 @@ const SpotForm = () => {
     }
     setOrder({ ...order, amount, baseAmount });
   };
-  const getOrders = () => {
-    Object.filter = (obj, predicate) =>
-      Object.keys(obj)
-        .filter(key => predicate(obj[key]))
-        .reduce((res, key) => {
-          res[key] = obj[key];
-          return res;
-        }, {});
 
-    let filltered = user.address ? Object.filter(allOrders, order => order.side === orderSide) : "";
-
-    return filltered;
+  const getOrders = (isBuy = true) => {
+    return user.address
+      ? isBuy
+        ? allOrders.filter(order => order.side === orderSide)
+        : allOrders.filter(order => order.side === orderSide).sort((orderA, orderB) => orderB - orderA)
+      : {};
   };
+
   const currentPrice = () => {
     if (orderType === "limit" && order.price) return order.price;
     if (marketSummary.lastPrice) return +marketSummary.lastPrice.toPrecision(6);
     return 0;
   };
+
   const marketPrice = (isBuy = true) => {
     if (orderType === "limit") return order.price;
 
-    let orders = Object.values(getOrders());
-    let totalAmount,
-      matchedOrders = [];
-
+    let orders = isBuy ? Object.values(getOrders()) : Object.values(getOrders(false));
+    let totalAmount;
     if (orders.length > 0 && order.amount) {
       orders.sort((orderA, orderB) => {
-        return isBuy ? orderB.price - orderA.price : orderA.price - orderB.price;
+        return isBuy ? orderA.price - orderB.price : orderB.price - orderA.price;
       });
-      for (const order of orders) {
-        const { remaining, amount, price } = order;
-        if (remaining >= amount) {
+      for (const orderIndex of orders) {
+        const { remaining, price } = orderIndex;
+        totalAmount += remaining;
+        if (totalAmount >= order.amount) {
           return price;
-        } else if (totalAmount <= amount) {
-          totalAmount += remaining;
-          matchedOrders.push(order);
         }
       }
-      if (matchedOrders.length > 0) return matchedOrders[0].price;
     }
     return 0;
   };
+
   const HandleTrade = async e => {
     let amount, price;
     // amount
