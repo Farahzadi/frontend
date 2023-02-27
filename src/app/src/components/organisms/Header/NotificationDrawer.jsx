@@ -11,6 +11,7 @@ import Alert from "@mui/material/Alert";
 import { useSelector } from "react-redux";
 import { notificationsSelector } from "lib/store/features/api/apiSlice";
 import Core from "lib/api/Core";
+import { Badge } from "@mui/material";
 
 export const NotificationDrawer = () => {
   const [right, setRight] = useState(false);
@@ -75,7 +76,9 @@ export const NotificationDrawer = () => {
     <div>
       <>
         <NotifictionSidebar onClick={toggleDrawer(true)}>
-          <i class="icon-bell-alt"></i>
+          <Badge badgeContent={notifData.length} color="primary">
+            <i class="icon-bell-alt"></i>
+          </Badge>
         </NotifictionSidebar>
         <SwipeableDrawer
           sx={{ backdropFilter: "blur(2px)" }}
