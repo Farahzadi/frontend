@@ -41,6 +41,7 @@ const SpotForm = () => {
   const currentMarket = useSelector(currentMarketSelector);
   const marketSummary = useSelector(marketSummarySelector);
   const [baseCurrency, quoteCurrency] = useSelector(currencySelector);
+  const connetionStage = useSelector(connectionStageSelector);
 
   const activeLimitAndMarketOrders = Object.values(useSelector(userOrdersSelector)).filter(
     order => activeOrderStatuses.includes(order.status) && order.type === "l",
@@ -56,6 +57,9 @@ const SpotForm = () => {
     baseAmount: "",
     orderSide: "",
   });
+  const isUserConnected = () => {
+    return connetionStage === "CONNECTED";
+  };
   const getBaseBalance = () => {
     return user.availableBalances?.[baseCurrency]?.valueReadable ?? "0";
   };
@@ -64,7 +68,7 @@ const SpotForm = () => {
     return user.availableBalances?.[quoteCurrency]?.valueReadable ?? "0";
   };
   const rangeSliderHandler = (e, val) => {
-    if (!user.address) return;
+    if (!isUserConnected) return;
     Core.run("emit", "rangePrice", 0);
     const baseBalance = getBaseBalance();
     const decimals = Currencies[baseCurrency].decimals;
@@ -147,10 +151,10 @@ const SpotForm = () => {
   };
 
   const getOrders = (isBuy = true) => {
-    return user.address
+    return isUserConnected
       ? isBuy
-        ? allOrders.filter(order => order.side === orderSide)
-        : allOrders.filter(order => order.side === orderSide).sort((orderA, orderB) => orderB - orderA)
+        ? allOrders.sort((orderA, orderB) => orderA - orderB)
+        : allOrders.sort((orderA, orderB) => orderB - orderA)
       : {};
   };
 
@@ -255,7 +259,7 @@ const SpotForm = () => {
   };
 
   const amountPercentOfMax = () => {
-    if (!user.address) return 0;
+    if (isUserConnected) return 0;
     const validOrderTypes = ["limit", "marketOrder", "market"];
     const baseBalance = getBaseBalance();
     const quoteBalance = getQuoteBalance();
@@ -315,7 +319,7 @@ const SpotForm = () => {
   const getQuoteCurrency = () => currentMarket?.split("-")[0];
   const renderBalance = () => {
     let baseBalance, quoteBalance;
-    if (user.address) {
+    if (isUserConnected) {
       baseBalance = getBaseBalance();
       quoteBalance = getQuoteBalance();
     } else {
@@ -398,7 +402,7 @@ const SpotForm = () => {
         </div>
         <div className="spot_box_footer">
           <div className="connect-btn">
-            {user.address ? (
+            {isUserConnected ? (
               <>
                 <div className="spf_head_total_amount">
                   <span>{SpenderSide[orderSide]}</span>
