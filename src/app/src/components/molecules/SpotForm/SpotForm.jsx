@@ -15,13 +15,14 @@ import {
   currentMarketSelector,
   currencySelector,
   marketSummarySelector,
+  connectionStageSelector,
 } from "lib/store/features/api/apiSlice";
 import { RangeSlider } from "components";
 import "./SpotForm.css";
 import Currencies from "config/Currencies";
 import Core from "lib/api/Core";
 import { removeTrailingZeros } from "lib/utils";
-import { activeOrderStatuses } from "lib/interface";
+import { activeOrderStatuses, NetworkStages } from "lib/interface";
 
 const numberRegex = /^[0-9]*\.?[0-9]*$/;
 export const SpenderSide = {
@@ -57,9 +58,7 @@ const SpotForm = () => {
     baseAmount: "",
     orderSide: "",
   });
-  const isUserConnected = () => {
-    return connetionStage === "CONNECTED";
-  };
+  const isUserConnected = connetionStage === NetworkStages.CONNECTED;
   const getBaseBalance = () => {
     return user.availableBalances?.[baseCurrency]?.valueReadable ?? "0";
   };
@@ -150,8 +149,11 @@ const SpotForm = () => {
     setOrder({ ...order, amount, baseAmount });
   };
 
-  const getOrders = (isBuy = true) =>
-    isBuy ? allOrders.sort((orderA, orderB) => orderA - orderB) : allOrders.sort((orderA, orderB) => orderB - orderA);
+  const getOrders = (isBuy = true) => {
+    return isBuy
+      ? Object.values(allOrders.filter(order => order.side === "b").sort((orderA, orderB) => orderB - orderA))
+      : Object.values(allOrders.filter(order => order.side === "s").sort((orderA, orderB) => orderA - orderB));
+  };
   const currentPrice = () => {
     if (orderType === "limit" && order.price) return order.price;
     if (marketSummary.lastPrice) return +marketSummary.lastPrice.toPrecision(6);
@@ -161,14 +163,14 @@ const SpotForm = () => {
   const marketPrice = (isBuy = true) => {
     if (orderType === "limit") return order.price;
 
-    let orders = isBuy ? Object.values(getOrders(false)) : Object.values(getOrders());
+    let orders = getOrders(!isBuy);
     let totalAmount;
     if (orders.length > 0 && order.amount) {
       orders.sort((orderA, orderB) => {
         return isBuy ? orderA.price - orderB.price : orderB.price - orderA.price;
       });
-      for (const selectedOrders of orders) {
-        const { remaining, price } = selectedOrders;
+      for (const selectedOrder of orders) {
+        const { remaining, price } = selectedOrder;
         totalAmount += remaining;
         if (totalAmount >= order.amount) {
           return price;
