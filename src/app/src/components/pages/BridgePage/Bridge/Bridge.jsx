@@ -4,9 +4,9 @@ import { SwapButton, Button, useCoinEstimator } from "components";
 import {
   networkSelector,
   userChainDetailsSelector,
-  userAddressSelector,
   userBalancesSelector,
   networkConfigSelector,
+  connectionStageSelector,
 } from "lib/store/features/api/apiSlice";
 import Loader from "react-loader-spinner";
 import ethLogo from "assets/images/currency/ETH.svg";
@@ -21,18 +21,20 @@ import BridgeModal from "../BridgeModal/BridgeModal";
 
 import Core from "lib/api/Core";
 import Modal from "components/atoms/Modal";
+import { NetworkStages } from "lib/interface";
 
 const defaultTransfer = {
   type: "deposit",
 };
 
 const Bridge = ({ checkBridge, checkWrapper }) => {
-  const userAddress = useSelector(userAddressSelector);
   const userChainDetails = useSelector(userChainDetailsSelector);
   const userL1Balances = userChainDetails?.L1Balances;
   const userBalances = useSelector(userBalancesSelector);
   const userAllowances = userChainDetails?.allowances;
   const networkConfig = useSelector(networkConfigSelector);
+  const connectionStage = useSelector(connectionStageSelector);
+  const isConnected = connectionStage === NetworkStages.CONNECTED;
   const [isApproving, setApproving] = useState(false);
   const [formErr, setFormErr] = useState("");
   const [bridgeFee, setBridgeFee] = useState(null);
@@ -93,7 +95,7 @@ const Bridge = ({ checkBridge, checkWrapper }) => {
       }
     };
 
-    if (userAddress && transfer.type === "withdraw") {
+    if (isConnected && transfer.type === "withdraw") {
       setFee(null);
       Core.run("withdrawL2Fee", details.currency)
         .then(fee => setFee(fee))
@@ -111,13 +113,13 @@ const Bridge = ({ checkBridge, checkWrapper }) => {
       const type = (transfer.type = "withdraw");
       setTransfer({ type });
     } else {
-      Core.run("updateUserBalancesState", true);
+      if (isConnected) Core.run("updateUserBalancesState", true);
       const type = (transfer.type = "deposit");
       setTransfer({ type });
     }
 
     if (fromNetwork.from.key === "ethereum") {
-      Core.run("updateUserBalancesState", true);
+      if (isConnected) Core.run("updateUserBalancesState", true);
       const currency = switchClicking ? swapDetails.currency : "ETH";
       setSwapDetails({ amount: "", currency });
     } else if (fromNetwork.from.key === "zksync" && toNetwork.key === "ethereum") {
@@ -130,7 +132,7 @@ const Bridge = ({ checkBridge, checkWrapper }) => {
   useEffect(() => {
     (async () => {
       // update changePubKeyFee fee if needed
-      if (userAddress && checkBridge) {
+      if (isConnected && checkBridge) {
         // TODO
         const usdFee = await Core.run("changePubKeyFee");
         setUsdFee(usdFee);
@@ -145,7 +147,7 @@ const Bridge = ({ checkBridge, checkWrapper }) => {
         }
       }
     })();
-  }, [fromNetwork, toNetwork, swapDetails.currency, userAddress]);
+  }, [fromNetwork, toNetwork, swapDetails.currency, isConnected]);
   useEffect(() => {
     function handleWindowResize() {
       setWindowSize(getWindowSize());
@@ -352,7 +354,7 @@ const Bridge = ({ checkBridge, checkWrapper }) => {
                             swapDetails,
                             bridgeFee,
                             formErr,
-                            userAddress,
+                            isConnected,
                             balances,
                             userChainDetails,
                             disconnect,

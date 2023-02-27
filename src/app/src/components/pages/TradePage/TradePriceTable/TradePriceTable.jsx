@@ -6,13 +6,7 @@ import { connect } from "react-redux";
 import { numStringToSymbol } from "lib/utils";
 import Tooltip from "@mui/material/Tooltip";
 import { Fade } from "@mui/material";
-import {
-  setOrderType,
-  orderTypeSelector,
-  allOrdersSelector,
-  userAddressSelector,
-  orderSideSelector,
-} from "lib/store/features/api/apiSlice";
+import { setOrderType } from "lib/store/features/api/apiSlice";
 import Core from "lib/api/Core";
 
 class TradePriceTable extends React.Component {
@@ -212,11 +206,6 @@ class TradePriceTable extends React.Component {
   }
 
 }
-const mapStateToProps = state => ({
-  orderType: orderTypeSelector(state),
-  allOrders: allOrdersSelector(state),
-  userAddress: userAddressSelector(state),
-  orderSide: orderSideSelector(state),
-});
+const mapStateToProps = state => ({});
 
 export default connect(mapStateToProps, { setOrderType })(TradePriceTable);

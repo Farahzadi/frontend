@@ -27,9 +27,6 @@ import ConnectButton from "components/molecules/ConnectButton/ConnectButton";
 export const Header = () => {
   // state to open or close the sidebar in mobile
   const [show, setShow] = useState(false);
-  const [connecting, setConnecting] = useState(false);
-  const userChainDetails = useSelector(userChainDetailsSelector);
-  const userAddress = useSelector(userAddressSelector);
   const networkConfig = useSelector(networkConfigSelector);
   const { hasBridge, hasWrapper } = networkConfig;
   const links = [
@@ -51,12 +48,6 @@ export const Header = () => {
     }
   };
 
-  const connect = () => {
-    setConnecting(true);
-    Core.run("connectWallet").finally(() => {
-      setConnecting(false);
-    });
-  };
   const handleOpenNavbar = () => {
     const body = document.getElementsByTagName("body")[0];
     if (!show) {
