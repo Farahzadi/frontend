@@ -175,7 +175,7 @@ const SpotForm = () => {
     if (orderType === "limit") return order.price;
 
     let orders = getOrders(!isBuy);
-    let totalAmount;
+    let totalAmount = 0;
     if (orders.length > 0 && order.amount) {
       orders.sort((orderA, orderB) => {
         return isBuy ? orderA.price - orderB.price : orderB.price - orderA.price;
