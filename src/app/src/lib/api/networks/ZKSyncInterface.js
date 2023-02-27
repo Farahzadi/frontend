@@ -30,6 +30,7 @@ export default class ZKSyncInterface extends EthereumInterface {
   IS_L2 = true;
   HAS_BRIDGE = true;
   HAS_WRAPPER = false;
+  TRADE_NEEDS_ALLOWANCE = false;
   BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
   SECURITY_TYPE = SecurityTypeList.nonce;
 
@@ -208,6 +209,46 @@ export default class ZKSyncInterface extends EthereumInterface {
     const readableAmount = fromBaseUnit(amount.toString(), decimals);
 
     const bridgeReceipt = this.handleBridgeReceipt(transfer, readableAmount, token, type, address, receipt?.status);
+    {
+      const { amount, token, txUrl, type, userAddress } = bridgeReceipt;
+      this.core.run(
+        "notify",
+        "success",
+        <>
+          Successfully {type === "deposit" ? "deposited" : "withdrew"} {amount} {token}{" "}
+          {type === "deposit"
+            ? "in your zkSync wallet"
+            : "into your Ethereum wallet. Withdraws can take up to 7 hours to complete"}
+          .
+          <br />
+          <br />
+          <a
+            href={txUrl}
+            style={{
+              color: "white",
+              textDecoration: "underline",
+              fontWeight: "bold",
+            }}
+            target="_blank"
+            rel="noreferrer">
+            View transaction
+          </a>
+          {" • "}
+          <a
+            href="https://zksync.io/faq/faq.html#how-long-are-withdrawal-times"
+            style={{
+              color: "white",
+              textDecoration: "underline",
+              fontWeight: "bold",
+            }}
+            target="_blank"
+            rel="noreferrer">
+            Bridge FAQ
+          </a>
+        </>,
+        { save: true },
+      );
+    }
     this.emit("bridgeReceipt", bridgeReceipt);
     return transfer;
   }
