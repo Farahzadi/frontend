@@ -5,7 +5,6 @@ import { Button, Dropdown, AccountDropdown, Menu, MenuItem } from "components";
 import { networkConfigSelector, userChainDetailsSelector, userAddressSelector } from "lib/store/features/api/apiSlice";
 import logo from "assets/images/LogoMarkCremeLight.svg";
 import menu from "assets/icons/menu.png";
-import darkPlugHead from "assets/icons/dark-plug-head.png";
 import NetworkSelection from "components/molecules/NetworkSelection/NetworkSelection";
 import { getDocsLink } from "lib/helpers/env";
 import { styled, useMediaQuery } from "@mui/material";
@@ -23,6 +22,7 @@ import {
   ResponsiveItems,
 } from "./Header.module";
 import Core from "lib/api/Core";
+import ConnectButton from "components/molecules/ConnectButton/ConnectButton";
 
 export const Header = () => {
   // state to open or close the sidebar in mobile
@@ -102,18 +102,9 @@ export const Header = () => {
         </NavUl>
         <ActionBtnContainer>
           <NetworkSelection />
-          {userAddress ? (
+          <ConnectButton hasIcon={true} text="CONNECT WALLET">
             <AccountDropdown />
-          ) : (
-            <Button
-              className="bg_btn"
-              loading={connecting}
-              text="CONNECT WALLET"
-              img={darkPlugHead}
-              onClick={connect}
-              style={{ width: "auto" }}
-            />
-          )}
+          </ConnectButton>
           {process.env.NODE_ENV === "development" && !matches && <NotificationDrawer />}
         </ActionBtnContainer>
       </MainContent>
