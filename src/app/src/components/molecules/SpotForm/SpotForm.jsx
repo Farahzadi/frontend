@@ -436,7 +436,7 @@ const SpotForm = () => {
             key={"top"}
             placement="top"
             overlay={
-              <Tooltip id={"top"}>Fiest you need to approve your token assets to be able to create an order</Tooltip>
+              <Tooltip id={"top"}>First you need to approve your token assets to be able to create an order</Tooltip>
             }>
             <div key={"top"} className="spf_fee">
               <i className="icon-info-sign"></i>
