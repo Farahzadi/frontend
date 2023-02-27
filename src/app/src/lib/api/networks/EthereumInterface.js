@@ -19,6 +19,7 @@ export default class EthereumInterface extends NetworkInterface {
   CURRENCY = "ETH";
   CHAIN_ID = 1;
   HAS_WRAPPER = true;
+  TRADE_NEEDS_ALLOWANCE = true;
   DEX_CONTRACT = ETHEREUM_DEX_CONTRACT;
   SECURITY_TYPE = SecurityTypeList.allowance;
   EVENTS_NAME = ["Deposit", "Withdrawal"];

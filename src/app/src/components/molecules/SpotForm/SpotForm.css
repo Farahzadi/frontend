@@ -108,11 +108,20 @@
   text-transform: capitalize;
 }
 
+.approve_btn {
+  background: #0a82b6;
+  text-transform: capitalize;
+}
+
 .buy_btn:hover {
   filter: brightness(120%);
 }
 
 .sell_btn:hover {
+  filter: brightness(120%);
+}
+
+.approve_btn:hover {
   filter: brightness(120%);
 }
 
