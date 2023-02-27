@@ -202,7 +202,7 @@ const SpotForm = () => {
     } else {
       amount = order.amount;
     }
-    return Decimal("0" + amount ?? "").toFixed();
+    return Decimal("0" + (amount ?? "")).toFixed();
   };
 
   const needsAllowance = networkConfig.tradeNeedsAllowance;
