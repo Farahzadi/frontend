@@ -59,7 +59,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
     return ethers.utils.getAddress(address);
   }
 
-  async isActivated() {
+  async isSigningKeySet() {
     return this.syncWallet?.isSigningKeySet();
   }
 
@@ -152,7 +152,7 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
         { save: true },
       );
     }
-    const _accountState = accountState || (await this.syncWallet?.getAccountState());
+    const _accountState = accountState ?? (await this.getAccountState());
     const balances = _accountState.committed.balances;
     let feeToken;
     for (let prop in minimumBalances) {
@@ -329,5 +329,9 @@ export default class ZKSyncAPIProvider extends EthAPIProvider {
     const accountState = await this.getAccountState();
     return accountState.committed.nonce || accountState.verified.nonce;
   };
+
+  async getPubKeyHash() {
+    return await this.syncWallet.signer.pubKeyHash();
+  }
 
 }
