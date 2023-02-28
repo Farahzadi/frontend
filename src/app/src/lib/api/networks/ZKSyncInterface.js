@@ -122,9 +122,13 @@ export default class ZKSyncInterface extends EthereumInterface {
       verified: {
         nonce: +accountState.verified.nonce,
         balances: formatBalances(verifiedZkBalances, Currencies),
+        pubKeyHash: accountState.verified.pubKeyHash,
       },
       depositing: {
         balances: formatBalances(depositingZkBalances, Currencies),
+      },
+      committed: {
+        pubKeyHash: accountState.committed.pubKeyHash,
       },
       userId: accountState.id,
       L1Balances: formatBalances(l1Balances, Currencies),
@@ -298,6 +302,13 @@ export default class ZKSyncInterface extends EthereumInterface {
     return await this.apiProvider?.changePubKeyFee();
   }
 
+  async isActivated() {
+    const networkPubKeyHash = this.userDetails.chainDetails.committed.pubKeyHash;
+    if (!networkPubKeyHash) return false;
+    const signerPubKeyHash = await this.apiProvider.getPubKeyHash();
+    return networkPubKeyHash && networkPubKeyHash === signerPubKeyHash;
+  }
+
   setStagesInitialStates() {
     super.setStagesInitialStates();
     this.emit("setStage", "zksyncActivation", "UNKNOWN");
@@ -331,7 +342,6 @@ export default class ZKSyncInterface extends EthereumInterface {
         async (skip, start) => {
           if (balanceChecker(this.userDetails.balances)) return skip();
           if (depositChecker(this.userDetails.chainDetails)) return start();
-          if (await this.apiProvider.isActivated()) return skip();
           this.emit("setStage", "zksyncActivation", "MUST_DEPOSIT");
         },
         async () => {
@@ -359,7 +369,7 @@ export default class ZKSyncInterface extends EthereumInterface {
         ["ZK_PUBLIC_KEY_REQUESTED"],
         ["ZK_PUBLIC_KEY_SET"],
         async skip => {
-          if (await this.apiProvider.isActivated()) return skip();
+          if (await this.isActivated()) return skip();
           this.stageManager.emit("ZK_PUBLIC_KEY_REQUESTED");
         },
         async () => {
