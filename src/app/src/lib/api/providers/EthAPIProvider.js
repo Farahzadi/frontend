@@ -1,146 +1,72 @@
 import { ethers } from "ethers";
-import WalletConnectProvider from "@walletconnect/web3-provider";
-import MetaMaskOnboarding from "@metamask/onboarding";
-import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
+import Onboard from "@web3-onboard/core";
+import injectedModule from "@web3-onboard/injected-wallets";
+import walletConnectModule from "@web3-onboard/walletconnect";
+import walletLinkModule from "@web3-onboard/coinbase";
+import Decimal from "decimal.js";
 
-import Web3Modal, { providers } from "web3modal";
 import APIProvider from "./APIProvider";
 import erc20ContractABI from "lib/contracts/ERC20.json";
-import binanceLogo from "../../../assets/images/binance-smart-chain.png";
 import WETHContractABI from "lib/contracts/WETH.json";
-import Decimal from "decimal.js";
 
 export default class EthAPIProvider extends APIProvider {
 
   async start(infuraId, emitChanges = true) {
     if (emitChanges) this.state.set(APIProvider.State.CONNECTING);
-    const providerOptions = {
-      injected: {
-        display: {
-          name: "MetaMask",
-          description: "Connect to your MetaMask Wallet",
+    const injected = injectedModule();
+    const walletConnect = walletConnectModule();
+    const walletLink = walletLinkModule();
+    const GOERLI_RPC_URL = `https://goerli.infura.io/v3/${infuraId}`;
+    const MAINNET_RPC_URL = `https://mainnet.infura.io/v3/${infuraId}`;
+    const onboard = Onboard({
+      wallets: [injected, walletLink, walletConnect],
+      theme: "dark",
+      connect: { showSidebar: false },
+      chains: [
+        {
+          id: "0x1",
+          token: "ETH",
+          namespace: "evm",
+          label: "Ethereum Mainnet",
+          rpcUrl: MAINNET_RPC_URL,
         },
-        package: null,
-      },
-      walletconnect: {
-        package: WalletConnectProvider,
-        options: {
-          infuraId,
+        {
+          id: "0x5",
+          token: "gETH",
+          namespace: "evm",
+          label: "Ethereum Goerli Testnet",
+          rpcUrl: GOERLI_RPC_URL,
         },
-      },
-      binancechainwallet: {
-        package: true,
-      },
-      coinbasewallet: {
-        package: CoinbaseWalletSDK,
-        options: {
-          appName: "Coinbase",
-          infuraId,
-        },
-      },
-      "custom-coinbase": {
-        display: {
-          logo: providers.COINBASE.logo,
-          name: providers.COINBASE.name,
-          description: "Scan with WalletLink to connect",
-        },
-        options: {
-          appName: "app", // Your app name
-          infuraId,
-        },
-        package: WalletLink,
-        connector: async (_, options) => {
-          const { appName } = options;
-          const walletLink = new CoinbaseWalletSDK({
-            appName,
-          });
-          const provider = walletLink.makeWeb3Provider();
-          await provider.enable();
-          return provider;
-        },
-      },
-      "custom-binancechainwallet": {
-        display: {
-          logo: binanceLogo,
-          name: "Binance Chain Wallet",
-          description: "Connect to your Binance Chain Wallet",
-        },
-        package: true,
-        connector: async () => {
-          let provider = null;
-          if (typeof window.BinanceChain !== "undefined") {
-            provider = window.BinanceChain;
-            try {
-              await provider.request({ method: "eth_requestAccounts" });
-            } catch (error) {
-              throw new Error(error);
-            }
-          } else {
-            return window.open(
-              "https://chrome.google.com/webstore/detail/binance-wallet/fhbohimaelbohpjbbldcngcnapndodjp",
-            );
-          }
-          return provider;
-        },
-      },
-    };
+      ],
+    });
 
     if (typeof window === "undefined") {
       this.networkInterface.core.run("notify", "error", "Browser doesn't support Web3.", { save: true });
       return;
     }
+    onboard.state.actions.updateAccountCenter({ enabled: false });
+    this.onboard = onboard;
 
-    if (!window.ethereum) {
-      providerOptions["custom-metamask"] = {
-        display: {
-          logo: providers.METAMASK.logo,
-          name: "Install MetaMask",
-          description: "Connect using browser wallet",
-        },
-        package: {},
-        connector: async () => {
-          const onboarding = new MetaMaskOnboarding();
-          if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
-            onboarding.startOnboarding();
-            onboarding.stopOnboarding();
-            return new Error("Metamask installation started. Disconnecting.");
-          }
-        },
-      };
-    }
-
-    this.web3Modal = new Web3Modal({
-      network: this.NETWORK_NAME,
-      cacheProvider: true,
-      providerOptions,
-      theme: "dark",
-    });
-
-    const provider = await this.web3Modal.connect();
+    const signer = await onboard.connectWallet();
+    const { provider, chains } = signer[0];
 
     if (provider instanceof Error) throw provider.message;
-
     this.provider = new ethers.providers.Web3Provider(provider);
+
+    this.chains = chains;
 
     const networkChanged = await this.switchNetwork();
 
     if (networkChanged) return await this.start();
-
-    const signer = this.provider.getSigner();
-
-    this.wallet = signer;
+    this.wallet = this.provider.getSigner();
 
     if (emitChanges) this.state.set(APIProvider.State.CONNECTED);
   }
 
   async stop(emitChanges = true) {
-    const address = await this.getAddress();
-    if (this.provider.connection.url === "metamask")
-      this.provider.provider.send(
-        { method: "eth_sign", params: [address, ""] },
-        () => error => console.error("Error on clear old pop-ups", error),
-      );
-    if (this.web3Modal) this.web3Modal.clearCachedProvider();
+    const [primaryWallet] = this.onboard.state.get().wallets;
+    if (!primaryWallet) return;
+    await this.onboard.disconnectWallet({ label: primaryWallet.label });
     delete this.provider;
     delete this.wallet;
     if (emitChanges) this.state.set(APIProvider.State.DISCONNECTED);
@@ -156,11 +82,8 @@ export default class EthAPIProvider extends APIProvider {
     try {
       const currentChainId = ethers.utils.hexStripZeros((await this.provider.getNetwork())?.chainId ?? 0);
       if (currentChainId === chainId) return false;
+      await this.onboard.setChain({ chainId: currentChainId });
 
-      await this.provider.provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId }],
-      });
       this.provider.on("chainChanged", () => {
         this.state.set(APIProvider.State.DISCONNECTED);
       });
@@ -229,7 +152,8 @@ export default class EthAPIProvider extends APIProvider {
   }
 
   async getNonce() {
-    return await this.wallet.getTransactionCount();
+    let userAddress = await this.getAddress();
+    return await this.provider.getTransactionCount(userAddress);
   }
 
   async signOrder({ orderHash }) {
