@@ -72,7 +72,7 @@ export const Header = () => {
       <BrandLogo />
       {matches && (
         <ResponsiveItems>
-          {process.env.NODE_ENV === "development" && <NotificationDrawer />}
+          <NotificationDrawer />
           <HamburgerIcon isClicked={show} handleClick={handleOpenNavbar} />
         </ResponsiveItems>
       )}
@@ -114,7 +114,7 @@ export const Header = () => {
               style={{ width: "auto" }}
             />
           )}
-          {process.env.NODE_ENV === "development" && !matches && <NotificationDrawer />}
+          {!matches && <NotificationDrawer />}
         </ActionBtnContainer>
       </MainContent>
     </DexHeader>
