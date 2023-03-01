@@ -28,6 +28,7 @@ import { activeOrderStatuses, OrderSide, OrderSideKeyMap, NetworkStages } from "
 import Decimal from "decimal.js";
 import { approve } from "lib/api/Actions";
 import { maxAllowance } from "lib/api/constants";
+import ConnectButton from "../ConnectButton/ConnectButton";
 
 const numberRegex = /^[0-9]*\.?[0-9]*$/;
 const SpenderSide = {
@@ -489,13 +490,15 @@ const SpotForm = () => {
           </div>
 
           <div className="spf_btn">
-            <button
-              type="button"
-              className={"bg_btn btn_fix " + getClassName()}
-              onClick={needsApprove ? HandleApprove : HandleTrade}
-              disabled={isTradeDisabled()}>
-              {getBtnText()}
-            </button>
+            <ConnectButton>
+              <button
+                type="button"
+                className={"bg_btn btn_fix " + getClassName()}
+                onClick={needsApprove ? HandleApprove : HandleTrade}
+                disabled={isTradeDisabled()}>
+                {getBtnText()}
+              </button>
+            </ConnectButton>
           </div>
         </div>
       </form>
