@@ -82,8 +82,10 @@ export default class EthAPIProvider extends APIProvider {
     try {
       const currentChainId = ethers.utils.hexStripZeros((await this.provider.getNetwork())?.chainId ?? 0);
       if (currentChainId === chainId) return false;
-      await this.onboard.setChain({ chainId: currentChainId });
-
+      await this.provider.provider.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId }],
+      });
       this.provider.on("chainChanged", () => {
         this.state.set(APIProvider.State.DISCONNECTED);
       });
