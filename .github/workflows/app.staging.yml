@@ -20,7 +20,7 @@ on:
 jobs:
 
   build_and_push:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
     - name: pull latest code
       uses: actions/checkout@v3    
@@ -40,7 +40,7 @@ jobs:
   
   
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: build_and_push
     steps:
     - name: run command on remote

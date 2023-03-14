@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { connect, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
 import {
@@ -7,29 +7,31 @@ import {
   rangePriceSelector,
   selectedPriceSelector,
   userOrdersSelector,
-  networkListSelector,
-  networkSelector,
-  networkConfigSelector,
-  lastPricesSelector,
   orderSideSelector,
   allOrdersSelector,
   marketInfoSelector,
-  liquiditySelector,
   userSelector,
   orderTypeSelector,
   currentMarketSelector,
   currencySelector,
   marketSummarySelector,
+  connectionStageSelector,
+  userChainDetailsSelector,
+  networkConfigSelector,
 } from "lib/store/features/api/apiSlice";
-import { RangeSlider, Button } from "components";
+import { RangeSlider } from "components";
 import "./SpotForm.css";
 import Currencies from "config/Currencies";
 import Core from "lib/api/Core";
 import { removeTrailingZeros } from "lib/utils";
-import { activeOrderStatuses, OrderSide, OrderSideKeyMap } from "lib/interface";
+import { activeOrderStatuses, OrderSide, OrderSideKeyMap, NetworkStages } from "lib/interface";
+import Decimal from "decimal.js";
+import { approve } from "lib/api/Actions";
+import { maxAllowance } from "lib/api/constants";
+import ConnectButton from "../ConnectButton/ConnectButton";
 
 const numberRegex = /^[0-9]*\.?[0-9]*$/;
-export const SpenderSide = {
+const SpenderSide = {
   b: "Send",
   s: "Recieve",
 };
@@ -38,25 +40,20 @@ const SpotForm = () => {
   const config = useSelector(configSelector);
   const rangePrice = useSelector(rangePriceSelector);
   const selectedPrice = useSelector(selectedPriceSelector);
-  const userOrders = useSelector(userOrdersSelector);
-  const networkList = useSelector(networkListSelector);
-  const network = useSelector(networkSelector);
-  const networkConfig = useSelector(networkConfigSelector);
   const orderSide = useSelector(orderSideSelector);
   const allOrders = useSelector(allOrdersSelector);
   const marketInfo = useSelector(marketInfoSelector);
-  const liquidity = useSelector(liquiditySelector);
   const user = useSelector(userSelector);
   const orderType = useSelector(orderTypeSelector);
   const currentMarket = useSelector(currentMarketSelector);
+  const connetionStage = useSelector(connectionStageSelector);
   const [baseCurrency, quoteCurrency] = useSelector(currencySelector);
+  const [buyCurrency, sellCurrency] = orderSide === "b" ? [baseCurrency, quoteCurrency] : [quoteCurrency, baseCurrency];
   const marketSummary = useSelector(marketSummarySelector);
+  const userChainDetails = useSelector(userChainDetailsSelector);
+  const networkConfig = useSelector(networkConfigSelector);
   const activeLimitAndMarketOrders = Object.values(useSelector(userOrdersSelector)).filter(
     order => activeOrderStatuses.includes(order.status) && order.type === "l",
-  );
-
-  const activeSwapOrders = Object.values(useSelector(userOrdersSelector)).filter(
-    order => activeOrderStatuses.includes(order.status) && order.type === "s",
   );
   const [flags, setFlags] = useState({
     maxSizeSelected: false,
@@ -69,6 +66,7 @@ const SpotForm = () => {
     baseAmount: "",
     orderSide: "",
   });
+  const isUserConnected = connetionStage === NetworkStages.CONNECTED;
   const getBaseBalance = () => {
     return user.availableBalances?.[baseCurrency]?.valueReadable ?? "0";
   };
@@ -77,7 +75,7 @@ const SpotForm = () => {
     return user.availableBalances?.[quoteCurrency]?.valueReadable ?? "0";
   };
   const rangeSliderHandler = (e, val) => {
-    if (!user.address) return;
+    if (!isUserConnected) return;
     Core.run("emit", "rangePrice", 0);
     const baseBalance = getBaseBalance();
     const decimals = Currencies[baseCurrency].decimals;
@@ -158,79 +156,44 @@ const SpotForm = () => {
     }
     setOrder({ ...order, amount, baseAmount });
   };
-  const getOrders = () => {
-    Object.filter = (obj, predicate) =>
-      Object.keys(obj)
-        .filter(key => predicate(obj[key]))
-        .reduce((res, key) => {
-          res[key] = obj[key];
-          return res;
-        }, {});
 
-    let filltered = user.address ? Object.filter(allOrders, order => order.side === orderSide) : "";
-
-    return filltered;
+  const getOrders = (isBuy = true) => {
+    return isBuy
+      ? Object.values(allOrders)
+        .filter(order => order.side === "b")
+        .sort((orderA, orderB) => orderB - orderA)
+      : Object.values(allOrders)
+        .filter(order => order.side === "s")
+        .sort((orderA, orderB) => orderA - orderB);
   };
   const currentPrice = () => {
     if (orderType === "limit" && order.price) return order.price;
     if (marketSummary.lastPrice) return +marketSummary.lastPrice.toPrecision(6);
     return 0;
   };
-  const marketPrice = () => {
-    if (orderType === "limit" && order.price) return order.price;
-    if (orderType === "market") return currentPrice();
 
-    let orders = Object.values(getOrders());
-    let closestOrder,
-      sum = 0,
-      mOrders = [],
-      bestPrice = 0;
+  const marketPrice = (isBuy = true) => {
+    if (orderType === "limit") return order.price;
+
+    let orders = getOrders(!isBuy);
+    let totalAmount = 0;
     if (orders.length > 0 && order.amount) {
-      if (orderSide === "b") {
-        orders.sort((a, b) => {
-          return b.price - a.price;
-        });
-        for (let i = 0; i < orders.length; i++) {
-          if (orders[i].remaining >= order.amount) {
-            closestOrder = orders[i];
-            return !closestOrder ? 0 : closestOrder.price;
-          } else if (sum <= order.amount) {
-            sum += orders[i].remaining;
-            mOrders.push(orders[i]);
-          }
-        }
-
-        if (mOrders.length > 0) {
-          bestPrice = Math.max(...mOrders.map(order => order.price));
-          return !bestPrice ? 0 : bestPrice;
-        }
-      }
-      if (orderSide === "s") {
-        orders.sort((a, b) => {
-          return a.price - b.price;
-        });
-        for (let i = 0; i < orders.length; i++) {
-          if (orders[i].remaining > order.amount) {
-            closestOrder = orders[i];
-            return !closestOrder ? 0 : closestOrder.price;
-          } else if (sum <= order.amount) {
-            sum += orders[i].remaining;
-            mOrders.push(orders[i]);
-          }
-        }
-
-        if (mOrders.length > 0) {
-          bestPrice = Math.min(...mOrders.map(order => order.price));
-          return !bestPrice ? 0 : bestPrice;
+      orders.sort((orderA, orderB) => {
+        return isBuy ? orderA.price - orderB.price : orderB.price - orderA.price;
+      });
+      for (const selectedOrder of orders) {
+        const { remaining, price } = selectedOrder;
+        totalAmount += remaining;
+        if (totalAmount >= order.amount) {
+          return price;
         }
       }
     }
-
     return 0;
   };
-  const HandleTrade = async e => {
-    let amount, price, newstate;
-    // amount
+
+  const getAmount = () => {
+    let amount;
     if (typeof order.amount === "string") {
       if (rangePrice > 0) {
         amount = rangePrice.replace(",", ".");
@@ -240,6 +203,18 @@ const SpotForm = () => {
     } else {
       amount = order.amount;
     }
+    return Decimal("0" + (amount ?? "")).toFixed();
+  };
+
+  const needsAllowance = networkConfig.tradeNeedsAllowance;
+  const sellAllowance = new Decimal(userChainDetails?.allowances?.[sellCurrency]?.value ?? 0);
+  const amount = getAmount();
+  const needsApprove = Boolean(needsAllowance && Decimal(amount).gt(sellAllowance));
+
+  const HandleTrade = async e => {
+    let amount, price, newstate;
+
+    amount = getAmount();
 
     if (sessionStorage.getItem("test") === null) {
       Core.run("notify", "warning", "Dear user, there is no guarantee from us for your definite performance", {
@@ -256,10 +231,8 @@ const SpotForm = () => {
     }
 
     // price
-    if (orderType === "market") {
-      price = currentPrice();
-    } else if (orderType === "marketOrder") {
-      price = marketPrice();
+    if (orderType === "marketOrder") {
+      price = orderSide === "s" ? marketPrice(false) : marketPrice();
     } else {
       if (selectedPrice) {
         price = selectedPrice;
@@ -300,12 +273,28 @@ const SpotForm = () => {
     setFlags({ ...flags, orderButtonDisabled: false });
   };
 
+  const HandleApprove = async e => {
+    setFlags({ ...flags, orderButtonDisabled: true });
+    try {
+      const response = await Core.run(approve, sellCurrency, maxAllowance);
+      if (!response) {
+        throw new Error();
+      }
+      Core.run("notify", "success", `Successfully approved ${sellCurrency} token.`, {
+        save: true,
+      });
+    } catch (error) {
+      Core.run("notify", "error", `${sellCurrency} token wasn't approved successfully.`);
+    }
+    setFlags({ ...flags, orderButtonDisabled: false });
+  };
+
   const priceIsDisabled = () => {
     return orderType === "market" || orderType === "marketOrder";
   };
 
   const amountPercentOfMax = () => {
-    if (!user.address) return 0;
+    if (isUserConnected) return 0;
     const validOrderTypes = ["limit", "marketOrder", "market"];
     const baseBalance = getBaseBalance();
     const quoteBalance = getQuoteBalance();
@@ -352,6 +341,7 @@ const SpotForm = () => {
   };
 
   const isTradeDisabled = () => {
+    if (flags.orderButtonDisabled) return true;
     if (
       (orderType === "limit" && config.limitEnabled) ||
       (orderType === "market" && config.swapEnabled) ||
@@ -365,7 +355,7 @@ const SpotForm = () => {
   const getQuoteCurrency = () => currentMarket?.split("-")[0];
   const renderBalance = () => {
     let baseBalance, quoteBalance;
-    if (user.address) {
+    if (isUserConnected) {
       baseBalance = getBaseBalance();
       quoteBalance = getQuoteBalance();
     } else {
@@ -393,6 +383,22 @@ const SpotForm = () => {
   };
 
   const getBtnText = () => {
+    if (needsApprove)
+      return (
+        <>
+          APPROVE
+          <OverlayTrigger
+            key={"top"}
+            placement="top"
+            overlay={
+              <Tooltip id={"top"}>First you need to approve your token assets to be able to create an order</Tooltip>
+            }>
+            <div key={"top"} className="spf_fee">
+              <i className="icon-info-sign"></i>
+            </div>
+          </OverlayTrigger>
+        </>
+      );
     if (orderSide === "b") {
       return "BUY";
     } else if (orderSide === "s") {
@@ -400,6 +406,7 @@ const SpotForm = () => {
     }
   };
   const getClassName = () => {
+    if (needsApprove) return " approve_btn";
     if (orderSide === "b") {
       return " buy_btn";
     } else if (orderSide === "s") {
@@ -448,7 +455,7 @@ const SpotForm = () => {
         </div>
         <div className="spot_box_footer">
           <div className="connect-btn">
-            {user.address ? (
+            {isUserConnected ? (
               <>
                 <div className="spf_head_total_amount">
                   <span>{SpenderSide[orderSide]}</span>
@@ -483,13 +490,15 @@ const SpotForm = () => {
           </div>
 
           <div className="spf_btn">
-            <button
-              type="button"
-              className={"bg_btn btn_fix " + getClassName()}
-              onClick={HandleTrade}
-              disabled={isTradeDisabled()}>
-              {getBtnText()}
-            </button>
+            <ConnectButton>
+              <button
+                type="button"
+                className={"bg_btn btn_fix " + getClassName()}
+                onClick={needsApprove ? HandleApprove : HandleTrade}
+                disabled={isTradeDisabled()}>
+                {getBtnText()}
+              </button>
+            </ConnectButton>
           </div>
         </div>
       </form>

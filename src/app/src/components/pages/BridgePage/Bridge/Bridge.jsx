@@ -210,8 +210,8 @@ const Bridge = ({ checkBridge, checkWrapper }) => {
       else await Core.run("withdrawL2", swapDetails.amount, swapDetails.currency);
     } catch (err) {
       Core.run("notify", "error", err.message);
+      console.error(err);
     }
-    // await new Promise((res, rej) => setTimeout(() => res(), 2000));
   };
 
   const doWrap = async () => {
@@ -220,8 +220,8 @@ const Bridge = ({ checkBridge, checkWrapper }) => {
       else await Core.run("unwrapToken", swapDetails.amount);
     } catch (err) {
       Core.run("notify", "error", err.message);
+      console.error(err);
     }
-    // await new Promise((res, rej) => setTimeout(() => res(), 2000));
   };
 
   const tokenTransfer = checkBridge ? doTransfer : doWrap;

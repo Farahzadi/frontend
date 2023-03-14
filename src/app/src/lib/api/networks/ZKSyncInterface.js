@@ -30,6 +30,7 @@ export default class ZKSyncInterface extends EthereumInterface {
   IS_L2 = true;
   HAS_BRIDGE = true;
   HAS_WRAPPER = false;
+  TRADE_NEEDS_ALLOWANCE = false;
   BRIDGE_CONTRACT = "0xaBEA9132b05A70803a4E85094fD0e1800777fBEF";
   SECURITY_TYPE = SecurityTypeList.nonce;
 
@@ -114,19 +115,20 @@ export default class ZKSyncInterface extends EthereumInterface {
     if (!this.apiProvider) return;
     const accountStatePromise = (async () => _accountState ?? (await this.apiProvider.getAccountState()))();
     const balancesPromise = this.fetchL1Balances();
-    const [accountState, l1Balances] = await Promise.all([
-      accountStatePromise,
-      balancesPromise,
-    ]);
+    const [accountState, l1Balances] = await Promise.all([accountStatePromise, balancesPromise]);
     const verifiedZkBalances = this.formatZkSyncBalances(accountState.verified.balances);
     const depositingZkBalances = this.formatZkSyncBalances(accountState.depositing.balances);
     this.userDetails.chainDetails = {
       verified: {
         nonce: +accountState.verified.nonce,
         balances: formatBalances(verifiedZkBalances, Currencies),
+        pubKeyHash: accountState.verified.pubKeyHash,
       },
       depositing: {
         balances: formatBalances(depositingZkBalances, Currencies),
+      },
+      committed: {
+        pubKeyHash: accountState.committed.pubKeyHash,
       },
       userId: accountState.id,
       L1Balances: formatBalances(l1Balances, Currencies),
@@ -211,6 +213,46 @@ export default class ZKSyncInterface extends EthereumInterface {
     const readableAmount = fromBaseUnit(amount.toString(), decimals);
 
     const bridgeReceipt = this.handleBridgeReceipt(transfer, readableAmount, token, type, address, receipt?.status);
+    {
+      const { amount, token, txUrl, type, userAddress } = bridgeReceipt;
+      this.core.run(
+        "notify",
+        "success",
+        <>
+          Successfully {type === "deposit" ? "deposited" : "withdrew"} {amount} {token}{" "}
+          {type === "deposit"
+            ? "in your zkSync wallet"
+            : "into your Ethereum wallet. Withdraws can take up to 7 hours to complete"}
+          .
+          <br />
+          <br />
+          <a
+            href={txUrl}
+            style={{
+              color: "white",
+              textDecoration: "underline",
+              fontWeight: "bold",
+            }}
+            target="_blank"
+            rel="noreferrer">
+            View transaction
+          </a>
+          {" • "}
+          <a
+            href="https://zksync.io/faq/faq.html#how-long-are-withdrawal-times"
+            style={{
+              color: "white",
+              textDecoration: "underline",
+              fontWeight: "bold",
+            }}
+            target="_blank"
+            rel="noreferrer">
+            Bridge FAQ
+          </a>
+        </>,
+        { save: true },
+      );
+    }
     this.emit("bridgeReceipt", bridgeReceipt);
     return transfer;
   }
@@ -260,6 +302,13 @@ export default class ZKSyncInterface extends EthereumInterface {
     return await this.apiProvider?.changePubKeyFee();
   }
 
+  async isActivated() {
+    const networkPubKeyHash = this.userDetails.chainDetails.committed.pubKeyHash;
+    if (!networkPubKeyHash) return false;
+    const signerPubKeyHash = await this.apiProvider.getPubKeyHash();
+    return networkPubKeyHash && networkPubKeyHash === signerPubKeyHash;
+  }
+
   setStagesInitialStates() {
     super.setStagesInitialStates();
     this.emit("setStage", "zksyncActivation", "UNKNOWN");
@@ -293,7 +342,6 @@ export default class ZKSyncInterface extends EthereumInterface {
         async (skip, start) => {
           if (balanceChecker(this.userDetails.balances)) return skip();
           if (depositChecker(this.userDetails.chainDetails)) return start();
-          if (await this.apiProvider.isActivated()) return skip();
           this.emit("setStage", "zksyncActivation", "MUST_DEPOSIT");
         },
         async () => {
@@ -321,7 +369,7 @@ export default class ZKSyncInterface extends EthereumInterface {
         ["ZK_PUBLIC_KEY_REQUESTED"],
         ["ZK_PUBLIC_KEY_SET"],
         async skip => {
-          if (await this.apiProvider.isActivated()) return skip();
+          if (await this.isActivated()) return skip();
           this.stageManager.emit("ZK_PUBLIC_KEY_REQUESTED");
         },
         async () => {
