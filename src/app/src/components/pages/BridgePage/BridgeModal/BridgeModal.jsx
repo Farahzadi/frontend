@@ -17,7 +17,7 @@ const BridgeModal = ({
   swapDetails,
   bridgeFee,
   formErr,
-  userAddress,
+  isConnected,
   balances,
   userChainDetails,
   disconnect,
@@ -118,7 +118,7 @@ const BridgeModal = ({
         </div>
       </div>
       <div className="bridge_button">
-        {!userAddress && (
+        {!isConnected && (
           <Button
             className="bg_btn bg_btn-transfer"
             text="CONNECT WALLET"
@@ -126,7 +126,7 @@ const BridgeModal = ({
             onClick={() => Core.run("connectWallet")}
           />
         )}
-        {userAddress && balances?.[swapDetails.currency] && !hasAllowance && (
+        {isConnected && balances?.[swapDetails.currency] && !hasAllowance && (
           <Button
             loading={isApproving}
             className={cx("bg_btn bg_btn-transfer", {
@@ -137,10 +137,10 @@ const BridgeModal = ({
             onClick={approveSpend}
           />
         )}
-        {userAddress && hasError && (
+        {isConnected && hasError && (
           <Button className="bg_btn bg_btn-transfer zig_btn_disabled bg_err" text={formErr} icon={<BiError />} />
         )}
-        {userAddress && !hasError && (
+        {isConnected && !hasError && (
           <Button
             loading={loading}
             className={cx("bg_btn bg_btn-transfer", {
@@ -153,7 +153,7 @@ const BridgeModal = ({
         )}
       </div>
       <div>
-        {userAddress ? (
+        {isConnected ? (
           <div className="bridge_connected_as">
             <span onClick={disconnect} className="bridge_disconnect">
               {" • "}
@@ -167,7 +167,7 @@ const BridgeModal = ({
           </div>
         )}
       </div>
-      {transfer.type === "deposit" && userAddress && !userChainDetails?.userId && (
+      {transfer.type === "deposit" && isConnected && !userChainDetails?.userId && (
         <div className="bridge_transfer_fee">
           <div>
             One-Time Activation Fee: {activationFee} {swapDetails.currency} (~${usdFee})
@@ -177,7 +177,7 @@ const BridgeModal = ({
         </div>
       )}
 
-      {userAddress ? (
+      {isConnected ? (
         userChainDetails?.userId && (
           <div className="bridge_transfer_fee">
             <div>

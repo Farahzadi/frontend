@@ -5,7 +5,6 @@ import { Button, Dropdown, AccountDropdown, Menu, MenuItem } from "components";
 import { networkConfigSelector, userChainDetailsSelector, userAddressSelector } from "lib/store/features/api/apiSlice";
 import logo from "assets/images/LogoMarkCremeLight.svg";
 import menu from "assets/icons/menu.png";
-import darkPlugHead from "assets/icons/dark-plug-head.png";
 import NetworkSelection from "components/molecules/NetworkSelection/NetworkSelection";
 import { getDocsLink } from "lib/helpers/env";
 import { styled, useMediaQuery } from "@mui/material";
@@ -23,13 +22,11 @@ import {
   ResponsiveItems,
 } from "./Header.module";
 import Core from "lib/api/Core";
+import ConnectButton from "components/molecules/ConnectButton/ConnectButton";
 
 export const Header = () => {
   // state to open or close the sidebar in mobile
   const [show, setShow] = useState(false);
-  const [connecting, setConnecting] = useState(false);
-  const userChainDetails = useSelector(userChainDetailsSelector);
-  const userAddress = useSelector(userAddressSelector);
   const networkConfig = useSelector(networkConfigSelector);
   const { hasBridge, hasWrapper } = networkConfig;
   const links = [
@@ -51,12 +48,6 @@ export const Header = () => {
     }
   };
 
-  const connect = () => {
-    setConnecting(true);
-    Core.run("connectWallet").finally(() => {
-      setConnecting(false);
-    });
-  };
   const handleOpenNavbar = () => {
     const body = document.getElementsByTagName("body")[0];
     if (!show) {
@@ -102,18 +93,9 @@ export const Header = () => {
         </NavUl>
         <ActionBtnContainer>
           <NetworkSelection />
-          {userAddress ? (
+          <ConnectButton hasIcon={true} text="CONNECT WALLET">
             <AccountDropdown />
-          ) : (
-            <Button
-              className="bg_btn"
-              loading={connecting}
-              text="CONNECT WALLET"
-              img={darkPlugHead}
-              onClick={connect}
-              style={{ width: "auto" }}
-            />
-          )}
+          </ConnectButton>
           {!matches && <NotificationDrawer />}
         </ActionBtnContainer>
       </MainContent>

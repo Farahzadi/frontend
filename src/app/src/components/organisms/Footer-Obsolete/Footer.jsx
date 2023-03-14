@@ -589,7 +589,6 @@ class Footer extends React.Component {
 const mapStateToProps = state => ({
   currentMarket: currentMarketSelector(state),
   unbroadcasted: unbroadcastedSelector(state),
-  lastPrices: lastPricesSelector(state),
   network: networkSelector(state),
 });
 
